@@ -22,7 +22,7 @@ const paths = {
             less: ['./src/static/**/*.less', '!./src/static/**/_*.less'],
             sass: ['./src/static/**/*.{scss,sass}', '!./src/static/**/_*.{scss,sass}'],
             css: ['./src/static/**/*.css'],
-            scripts: ['./src/static/**/*.js', '!./src/static/**/_*.min.js'],
+            scripts: ['./src/static/**/*.js', '!./src/static/**/*.min.js'],
             files: ['./src/static/**/*.{eot,svg,otf,ttf,woff,woff2,json,php,swf,min.js,txt,md,xml}'],
             images: './src/static/**/*.{jpg,jpeg,png,gif}',
             html: './src/static/**/*.{html,tpl}'
