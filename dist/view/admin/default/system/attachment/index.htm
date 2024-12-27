@@ -1,0 +1,34 @@
+{extend name="layout" /} {block name="content"} {include file="common/table_body" /} {/block} {block name="js"}<script>
+    layui.use(['laytable', 'uploads', 'popup'], function () {
+        let popup = layui.popup, laytable = layui.laytable, uploads = layui.uploads, opt = {
+            elem: '#{:get_lay_table_id()}',
+            headers: {out: 'json'},
+            cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
+            toolbar: "#{:get_lay_table_id()}-toolbarTop",
+            page: true,
+            dataUrls: {
+                add: "{:url('add')}",
+                edit: "{:url('edit')}",
+                del: "{:url('delete')}",
+                quick: "{:url('quickEdit')}",
+            },
+            isTree: JSON.parse('{$is_tree|default=false|json_encode}'),
+            toolTplData: JSON.parse('{$tables.right_button|default=[]|raw|json_encode}'),
+            toolbarEvent: {
+                cleanDuplicates: function (obj) {
+                    var url = this.dataset.load; // 确保 this 指向触发事件的元素
+                    $.ajax({
+                        url: url,
+                        success: function (res) {
+                            popup.success(res.msg);
+                            laytable.reload(obj.config.id); // 重新加载表格
+                        }
+                    });
+                }
+            }
+        }
+        laytable.render(opt);
+
+    });
+
+</script> {/block}

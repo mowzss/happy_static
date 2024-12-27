@@ -1,0 +1,26 @@
+{
+  "name": "mowzs/static",
+  "description": "静态资源",
+  "type": "happy-module",
+  "authors": [
+    {
+      "name": "sunboy",
+      "email": "qysk@vip.qq.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.0.0",
+    "mowzs/lib": "dev-master"
+  },
+  "extra": {
+    "module": {
+      "make": {
+        "public/static/admin": "dist/static/admin",
+        "public/static/libs": "dist/static/libs",
+        "view/admin_style/default": "dist/view/admin/default",
+        "view/forms_style/default": "dist/view/forms/default"
+      },
+      "del": true
+    }
+  }
+}

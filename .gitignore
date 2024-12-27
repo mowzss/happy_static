@@ -1,0 +1,16 @@
+*.log
+.env
+composer.phar
+composer.lock
+.DS_Store
+.php-cs-fixer.cache
+Thumbs.db
+package-lock.json
+node_modules
+/.idea
+/.vscode
+/vendor
+/.settings
+/.buildpath
+/.project
+/dev

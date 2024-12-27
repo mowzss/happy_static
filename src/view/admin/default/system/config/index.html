@@ -1,0 +1,40 @@
+{extend name="layout" /}
+{block name="content"}
+{include file="common/table_body" /}
+{/block}
+{block name="js"}
+<script>
+    layui.use(['laytable'], function () {
+        let laytable = layui.laytable, opt = {
+            elem: '#{:get_lay_table_id()}',
+            headers: {out: 'json'},
+            cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
+            page: true,
+            dataUrls: {
+                add: "{:url('add')}",
+                edit: "{:url('edit')}",
+                del: "{:url('delete')}",
+                quick: "{:url('quickEdit')}",
+            },
+            isTree: JSON.parse('{$is_tree|default=false|json_encode}'),
+            toolTplData: JSON.parse('{$tables.right_button|default=[]|raw|json_encode}'),
+            where: {
+                group_id: "{$get.group_id|default=''}",
+            }
+        }
+        if (opt.isTree) {
+            opt.tree = {
+                customName: {
+                    name: 'title',
+                    pid: 'pid'
+                }
+            }
+        }
+        // 渲染表格
+        laytable.render(opt);
+
+    });
+
+</script>
+
+{/block}

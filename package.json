@@ -1,0 +1,42 @@
+{
+  "name": "myadmin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "install": "npm install",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "gulp dev",
+    "dev-static": "gulp static",
+    "dev-template": "gulp template",
+    "dev-watch": "gulp watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/mowzs/sunboys.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.22.9",
+    "@babel/preset-env": "^7.22.9",
+    "del": "^2.2.2",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "gulp-changed": "^4.0.3",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-cleanhtml": "^1.0.3",
+    "gulp-header": "^2.0.9",
+    "gulp-image-resize": "^0.13.1",
+    "gulp-less": "^5.0.0",
+    "gulp-rename": "^2.0.0",
+    "gulp-sass": "^5.1.0",
+    "gulp-uglify": "^3.0.2",
+    "minimist": "^1.2.8",
+    "readable-stream": "^4.4.2",
+    "sass": "^1.64.1"
+  },
+  "dependencies": {
+    "jquery": "^3.7.0"
+  }
+}
