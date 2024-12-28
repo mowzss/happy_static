@@ -33,15 +33,11 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                         "data": res.data.data // 解析数据列表
                     };
                 },
-                done: function (res, curr, count) {
-                    $("table").css("width", "100%");
-                    $("tbody").css("width", "100%");
-                },
                 loading: true, // 加载条
                 initSort: {
                     field: 'id', // 按 id 字段排序
                     type: 'desc' // 降序排序
-                }
+                },
 
             };
 

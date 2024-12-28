@@ -1,46 +1,72 @@
 // admin.js
-layui.define(['util', 'element', 'layer', 'jquery', 'pageTab'], function (exports) {
+layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function (exports) {
     "use strict";
     let util = layui.util,
         layer = layui.layer,
         $ = layui.jquery,
         pageTab = layui.pageTab,
+        menu = layui.menu,
         element = layui.element;
 
     let admin = {
         config: {
             tabFilter: 'layout-filter-tab',//tab选择器
             tabsContent: '#happy-content > .layui-body-tabs',
-            recordTabs: true,//是否记录tab信息
-            tabsList: []//tab列表
+            menuUrl: '',
         },
-
         // 初始化
-        render: function () {
+        render: function (options) {
+            this.config = $.extend({}, this.config, options);
             this.renderTabs();//渲染tabs
+
+            menu.render(this.config.menuUrl);
+            this.initTabs();
+            pageTab.onTab(); // 监听标签页切换事件
             this.events();
             this.onMenu();
             pageTab.rightMenu({filter: this.config.tabFilter}); // 渲染右键菜单
-            pageTab.changeTab(); // 监听标签页切换事件
             this.closeLoading()
+        },
+        //初始化记录的标签
+        initTabs: function () {
+            let that = this;
+            let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
+            let activeId = sessionStorage.getItem('tabsActiveId');
+
+            // 重新添加所有保存的Tab
+            tabs.forEach((tab) => {
+                element.tabAdd(that.config.tabFilter, tab);
+            });
+            // 设置激活的Tab
+            if (activeId && tabs.some(tab => tab.id === activeId)) {
+                element.tabChange(that.config.tabFilter, activeId);
+            } else if (tabs.length > 0) {
+                // 如果没有保存的激活Tab，选择第一个Tab作为默认激活
+                element.tabChange(that.config.tabFilter, tabs[0].id);
+            }
+            element.init();
         },
         // 动态渲染layui-body-tabs
         renderTabs: function () {
             let tabsHtml = `
-        <div class="layui-body-tabs layui-tab-rollTool layui-tab" lay-unauto lay-filter="${admin.config.tabFilter}" lay-allowclose="true">
+        <div class="layui-body-tabs layui-tab-rollTool layui-tab" lay-allowclose="true" lay-unauto lay-filter="${admin.config.tabFilter}">
             <ul class="layui-tab-title"></ul>
             <div class="layui-tab-content"></div>
             <div class="layui-tab-subsidiary">
-                <span class="layui-tab-subsidiary-refresh">
-                    <em class="layui-icon layui-icon-refresh" lay-header-event="refreshTab"></em>
+                <span class="layui-tab-subsidiary-refresh" lay-header-event="refreshTab">
+                    <em class="layui-icon layui-icon-refresh"></em>
+                </span>
+                <span class="layui-tab-subsidiary-screen-full" lay-header-event="tabFullScreen">
+                    <em class="layui-icon layui-icon-screen-full"></em>
                 </span>
                 <span class="layui-tab-subsidiary-prev" lay-header-event="moveTabs" data-value="prev"><em class="layui-icon layui-icon-prev"></em></span>
                 <span class="layui-tab-subsidiary-next" lay-header-event="moveTabs" data-value="next"><em class="layui-icon layui-icon-next"></em></span>
+                 
             </div>
         </div>
     `;
             // 插入到#happy-content中
-            $(admin.config.tabsContent).html(tabsHtml);
+            $("#happy-content").html(tabsHtml);
             // 初始化element模块，确保新添加的元素可以正常工作
             element.init();
         },
@@ -51,6 +77,62 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab'], function (export
         // 事件监听
         events: function () {
             util.event('lay-header-event', {
+                //清理缓存
+                cleanCache: function (othis) {
+                    let url = othis.data('url')
+                    layer.confirm('确认清理缓存？', function () {
+                        sessionStorage.clear();
+                        if (url) {
+                            $.ajax({
+                                url: url,
+                                type: 'GET',
+                                success: function (res) {
+                                    layer.msg(res.msg);
+                                }
+                            })
+                        } else {
+                            layer.msg('本地缓存已清空')
+                        }
+                    })
+                },
+                // 网页全屏
+                fullScreen: function (othis) {
+                    // 使用 othis.find() 获取图标元素
+                    let iconElement = othis.find('em');
+                    // 检查当前是否处于全屏模式
+                    if (!document.fullscreenElement) {
+                        // 请求全屏
+                        try {
+                            pageTab.requestFullscreen(document.documentElement).then(() => {
+                                // 更新图标为退出全屏图标
+                                iconElement.removeClass('layui-icon-screen-full').addClass('layui-icon-screen-restore');
+                                othis.attr('title', "退出全屏");
+                            }).catch(err => {
+                                layer.msg("无法进入全屏模式,请手动操作");
+                            });
+                        } catch (err) {
+                            layer.msg("无法进入全屏模式,请手动操作");
+                        }
+                    } else {
+                        // 退出全屏
+                        try {
+                            pageTab.exitFullscreen().then(() => {
+                                // 更新图标为进入全屏图标
+                                iconElement.removeClass('layui-icon-screen-restore').addClass('layui-icon-screen-full');
+                                othis.attr('title', "全屏");
+                            }).catch(err => {
+                                layer.msg("无法退出全屏模式,请手动操作");
+                            });
+                        } catch (err) {
+                            layer.msg("无法退出全屏模式,请手动操作");
+                        }
+                    }
+                },
+                //tab全屏
+                tabFullScreen: function (othis) {
+                    $('.right-menu').find('[data-event="toggleFullScreen"]').trigger('click');
+                },
+                //菜单切换
                 menuSwitch: function (othis) { // 左侧菜单事件
                     var elem = $(".happy-admin-layout").find('.layui-layout-admin');
                     var flag = elem.hasClass("mini-nav");
@@ -64,14 +146,23 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab'], function (export
                         localStorage.setItem('mimiMenu', 'true');
                     }
                 },
+                //刷新tab
                 refreshTab: function () {
                     pageTab.refreshTab();
                 },
+                //移动标签
                 moveTabs: function (othis) {
                     let value = othis.data('value');
                     pageTab.moveTabs(value);
-                }
+                },
+
             });
+            //lay-on 监听事件
+            util.event('lay-on', {
+                open: function () {
+
+                }
+            })
         },
 
         // 菜单点击事件
@@ -87,105 +178,19 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab'], function (export
                     var title = obj.find(".happy-nav-title").html();
                     var id = obj.attr("lay-id");
                     var url = obj.attr("lay-url");
-
                     // 添加新标签页
                     pageTab.addTab({
                         id: id,
                         title: title,
-                        url: url
+                        url: url,
+                        allowClose: true
                     });
                 }
             });
         },
-        // 构建菜单
-        buildMenu: function (url) {
-            // 生成时间戳或随机数作为动态参数
-            var timestamp = Date.now(); // 使用时间戳
-            // 将时间戳作为查询参数附加到 URL 上
-            var fullUrl = url + (url.includes('?') ? '&' : '?') + 'ts=' + timestamp;
 
-            // 发送 AJAX 请求获取菜单数据
-            $.ajax({
-                url: fullUrl,
-                method: 'GET',
-                success: function (response) {
-                    // 确保返回的数据是 JSON 格式
-                    if (response && response.length > 0) {
-                        // 调用函数生成菜单 HTML
-                        var menuHtml = generateMenuHtml(response);
-                        // 将生成的 HTML 插入到 #menu-container 中
-                        $('#menu-container ul').html(menuHtml);
-
-                        // 初始化 Layui 的 element 模块，确保菜单可以正常使用
-                        layui.element.init();
-
-                        // 找到第一个叶子节点菜单项
-                        var firstMenuItem = findFirstLeafMenuItem(response);
-                        if (firstMenuItem) {
-                            // 添加默认打开的标签页
-                            pageTab.addTab({
-                                id: firstMenuItem.id,
-                                title: firstMenuItem.title,
-                                url: firstMenuItem.href,
-                                active: true, // 设置为激活状态
-                                allowClose: false // 首页不允许关闭
-                            });
-                        }
-                    } else {
-                        console.error('菜单数据为空');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error('获取菜单数据失败:', error);
-                }
-            });
-        }
     }
 
-// 查找第一个叶子节点菜单项
-    function findFirstLeafMenuItem(menuData) {
-        for (let item of menuData) {
-            if (item.type === 1) { // 叶子节点菜单
-                return item;
-            } else if (item.children && item.children.length > 0) {
-                let result = findFirstLeafMenuItem(item.children);
-                if (result) return result; // 如果找到就立即返回
-            }
-        }
-        return null;
-    }
-
-    // 递归生成菜单 HTML 的函数
-    function generateMenuHtml(menuData) {
-        var html = '';
-
-        // 遍历每个菜单项
-        menuData.forEach(function (item) {
-            if (item.type === 0) { // 父级菜单
-                html += '<li class="layui-nav-item">';
-                html += '<a>';
-                html += '<i class="' + item.icon + '"></i><span class="happy-nav-title">' + item.title + '</span>';
-                html += '</a>';
-
-                if (item.children && item.children.length > 0) {
-                    html += '<dl class="layui-nav-child">';
-                    html += generateMenuHtml(item.children); // 递归生成子菜单
-                    html += '</dl>';
-                }
-
-                html += '</li>';
-            } else if (item.type === 1) { // 叶子节点菜单
-                html += '<li class="layui-nav-item">';
-                html += '<a lay-url="' + item.href + '" lay-id="' + item.id + '">';
-                html += '<span class="happy-nav-title">' + item.title + '</span>';
-                html += '</a>';
-                html += '</li>';
-            }
-        });
-
-        return html;
-    }
 
     exports('admin', admin);
-})
-;
+});

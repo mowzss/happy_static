@@ -24,8 +24,8 @@ layui.define([], function (exports) {
                 toolbar: settings.elem + '-tool',
                 fixed: 'right',
                 align: 'left',
-                width: 160,
-                // maxWidth: 260
+                minWidth: 160,
+                maxWidth: 260
             });
         }
 
@@ -116,9 +116,9 @@ layui.define([], function (exports) {
                 col.width = 50;
             }
             if (col.icon === "switch" && !col.width) {
-                col.width = 70;
+                col.width = 90;
             }
-           
+
 
         }
     }

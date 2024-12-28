@@ -29,6 +29,216 @@
 
 .happy-admin-layout {
   overflow-x: hidden;
+
+
+  //顶部
+  .layui-layout-admin {
+    height: 100vh;
+
+    .layui-header {
+      background: #fff;
+      box-shadow: 0 1px 0 0 rgba(0, 0, 0, .05);
+
+      .layui-logo {
+        background: #000 !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+
+        img {
+          height: 30px;
+          line-height: 30px;
+        }
+
+        .site-name {
+          height: 30px;
+          line-height: 30px;
+        }
+      }
+
+      .layui-nav {
+        color: #2e2d3c !important;
+
+        .layui-this {
+          &:after {
+            display: none;
+          }
+        }
+
+        a {
+          color: #2e2d3c !important;
+        }
+
+        .layui-nav-bar {
+          top: 0 !important;
+          height: 2px !important;
+        }
+      }
+
+      #topNav {
+        position: absolute;
+        left: 285px;
+        padding: 0;
+      }
+    }
+
+
+  }
+
+  //左栏
+  .happy-bg-black {
+    background: #000;
+
+    .layui-side-scroll {
+
+      .layui-nav-tree {
+
+        .layui-nav-bar {
+          width: 4px !important;
+          background-color: #16b777 !important;
+        }
+
+        .layui-this {
+          background: #16b777;
+
+          a {
+            background: #16b777;
+          }
+        }
+      }
+
+      .layui-nav {
+        background: #000;
+
+        .layui-nav-item {
+          line-height: 40px;
+
+          .layui-nav-child {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 0;
+
+            a {
+              padding: 0 20px 0 50px;
+              cursor: pointer;
+            }
+          }
+
+          a {
+            cursor: pointer;
+            height: 40px;
+            line-height: 40px;
+            padding-left: 20px;
+            padding-right: 30px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 16px;
+
+            i {
+              font-size: 16px;
+              text-align: center;
+            }
+
+          }
+        }
+
+      }
+    }
+  }
+
+  //内容区域
+  .layui-body {
+    bottom: 0;
+    padding-bottom: 0;
+    background-color: whitesmoke;
+    height: calc(100% - 105px);
+    overflow-y: auto;
+
+    > div {
+      height: 100%;
+      position: relative;
+
+      .layui-body-tabs.layui-tab {
+        width: 100%;
+        height: 100%;
+        line-height: 40px;
+        background: #fff;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .1);
+        margin: 0;
+
+        > .layui-tab-title {
+          border-bottom-width: 0;
+          padding-left: 80px;
+          padding-right: 80px;
+          overflow: hidden;
+
+          li + li {
+            border-left: #f6f6f6 1px solid;
+          }
+
+          > .layui-this {
+            height: 38px;
+            line-height: 38px;
+            background: #f6f6f6;
+            border-top: #16b777 2px solid;
+
+            &::after {
+              display: none;
+            }
+          }
+        }
+
+        .layui-tab-content {
+          height: calc(100% - 42px) !important;
+          padding: 0;
+
+          .layui-tab-item {
+            overflow-y: auto;
+            height: 100%;
+
+            .happy-tab-content {
+              background: #f1f1f1 !important;
+            }
+          }
+        }
+
+        .layui-tab-subsidiary {
+          &-refresh, &-next, &-prev, &-screen-full {
+            background: #fff;
+            border-right: #eee 1px solid;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+          }
+
+          &-prev {
+            border-left: none;
+            border-right: #eee 1px solid;
+            left: 41px;
+          }
+
+          &-screen-full {
+            right: 0;
+            left: unset;
+          }
+
+          &-next {
+            border-left: #eee 1px solid;
+            right: 41px;
+            left: unset;
+          }
+        }
+
+      }
+    }
+  }
+
   //收缩导航
   .mini-nav {
     .layui-header {
@@ -38,6 +248,10 @@
 
       .site-name {
         display: none;
+      }
+
+      #topNav {
+        left: 145px;
       }
     }
 
@@ -104,197 +318,5 @@
     }
 
 
-  }
-
-  //顶部
-  .layui-layout-admin {
-    height: 100vh;
-
-    .layui-header {
-      background: #fff;
-      box-shadow: 0 1px 0 0 rgba(0, 0, 0, .05);
-
-      .layui-logo {
-        background: #000 !important;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 16px;
-
-        img {
-          height: 30px;
-          line-height: 30px;
-        }
-
-        .site-name {
-          height: 30px;
-          line-height: 30px;
-        }
-      }
-
-      .layui-nav {
-        color: #2e2d3c !important;
-
-        .layui-this {
-          &:after {
-            display: none;
-          }
-        }
-
-        a {
-          color: #2e2d3c !important;
-        }
-
-        .layui-nav-bar {
-          top: 0 !important;
-          height: 2px !important;
-        }
-      }
-    }
-
-
-  }
-
-  //左栏
-  .happy-bg-black {
-    background: #000;
-
-    .layui-side-scroll {
-
-      .layui-nav-tree {
-
-        .layui-nav-bar {
-          width: 4px !important;
-          background-color: #16b777 !important;
-        }
-
-        .layui-this {
-          background: #16b777;
-
-          a {
-            background: #16b777;
-          }
-        }
-      }
-
-      .layui-nav {
-        background: #000;
-
-        .layui-nav-item {
-          .layui-nav-child {
-            background-color: rgba(255, 255, 255, 0.1);
-
-            a {
-              padding-left: 30px;
-              cursor: pointer;
-            }
-          }
-
-          a {
-            cursor: pointer;
-            height: 40px;
-            line-height: 40px;
-            padding-left: 20px;
-            padding-right: 30px;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            align-items: center;
-            gap: 16px;
-
-            i {
-              font-size: 16px;
-              text-align: center;
-            }
-
-          }
-        }
-
-      }
-    }
-  }
-
-  //内容区域
-  .layui-body {
-    bottom: 0;
-    padding-bottom: 0;
-    background-color: whitesmoke;
-    height: calc(100% - 105px);
-    overflow-y: auto;
-
-    > div {
-      height: 100%;
-      position: relative;
-
-      .layui-body-tabs.layui-tab {
-        width: 100%;
-        height: 100%;
-        line-height: 40px;
-        background: #fff;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .1);
-        margin: 0;
-
-        > .layui-tab-title {
-          border-bottom-width: 0;
-          padding-left: 40px;
-          padding-right: 80px;
-          overflow: hidden;
-
-          li + li {
-            border-left: #f6f6f6 1px solid;
-          }
-
-          > .layui-this {
-            height: 38px;
-            line-height: 38px;
-            background: #f6f6f6;
-            border-top: #16b777 2px solid;
-
-            &::after {
-              display: none;
-            }
-          }
-        }
-
-        .layui-tab-content {
-          height: calc(100% - 42px) !important;
-          padding: 0;
-
-          .layui-tab-item {
-            overflow-y: auto;
-            height: 100%;
-
-            .happy-tab-content {
-              background: #f1f1f1 !important;
-            }
-          }
-        }
-
-        .layui-tab-subsidiary {
-          &-refresh, &-next, &-prev {
-            background: #fff;
-            border-left: #eee 1px solid;
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-            text-align: center;
-          }
-
-          &-prev {
-            border-right: #eee 1px solid;
-            left: 0;
-            right: unset;
-          }
-
-          &-next {
-            right: 41px;
-          }
-        }
-
-      }
-    }
   }
 }

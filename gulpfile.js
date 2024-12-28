@@ -27,10 +27,23 @@ const paths = {
             images: './src/static/**/*.{jpg,jpeg,png,gif}',
             html: './src/static/**/*.{html,tpl}'
         },
+        watchSrc: {
+            less: ['./src/static/**/*.less'],
+            sass: ['./src/static/**/*.{scss,sass}'],
+            css: ['./src/static/**/*.css'],
+            scripts: ['./src/static/**/*.js'],
+            images: './src/static/**/*.{jpg,jpeg,png,gif}',
+            files: './src/static/**/*.{eot,svg,otf,ttf,woff,woff2,json,php,swf,min.js,txt,md,xml}',
+            html: './src/static/**/*.{html,tpl}'
+        },
         dist: `${outputDir}/static`
     },
     template: {
         src: {
+            html: './src/view/**/*.html',
+            file: './src/view/**/*.{php,js}'
+        },
+        watchSrc: {
             html: './src/view/**/*.html',
             file: './src/view/**/*.{php,js}'
         },
@@ -119,18 +132,18 @@ function buildTemplateFile() {
 
 // 监听任务
 function watchStatic() {
-    watch(paths.static.src.less, buildLess);
-    watch(paths.static.src.sass, buildSass);
-    watch(paths.static.src.css, buildCss);
-    watch(paths.static.src.scripts, buildScripts);
-    watch(paths.static.src.images, buildImages);
-    watch(paths.static.src.files, buildFiles);
-    watch(paths.static.src.html, buildStaticHtml);
+    watch(paths.static.watchSrc.less, buildLess);
+    watch(paths.static.watchSrc.sass, buildSass);
+    watch(paths.static.watchSrc.css, buildCss);
+    watch(paths.static.watchSrc.scripts, buildScripts);
+    watch(paths.static.watchSrc.images, buildImages);
+    watch(paths.static.watchSrc.files, buildFiles);
+    watch(paths.static.watchSrc.html, buildStaticHtml);
 }
 
 function watchTemplate() {
-    watch(paths.template.src.html, buildTemplateHtml);
-    watch(paths.template.src.file, buildTemplateFile);
+    watch(paths.template.watchSrc.html, buildTemplateHtml);
+    watch(paths.template.watchSrc.file, buildTemplateFile);
 }
 
 // 默认任务
@@ -145,8 +158,12 @@ exports.dev = series(
     cleanStatic,
     parallel(buildLess, buildSass, buildCss, buildScripts, buildImages, buildFiles, buildStaticHtml),
     parallel(buildTemplateHtml, buildTemplateFile),
-    watchStatic,
-    watchTemplate
+    () => {
+        console.log('Starting watchers...');
+        watchStatic();
+        watchTemplate(); // 确保调用这个函数
+        return Promise.resolve(); // 返回一个已解决的Promise，以确保Gulp知道这是一个异步任务
+    }
 );
 
 // 生产环境任务
