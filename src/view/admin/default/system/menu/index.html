@@ -6,10 +6,10 @@
 <script>
     layui.use(['laytable'], function () {
         let laytable = layui.laytable, opt = {
-            elem: '#{:get_lay_table_id()}',
+            elem: '#happyTable',
             headers: {out: 'json'},
             cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
-            toolbar: "#{:get_lay_table_id()}-toolbarTop",
+            toolbar: "#happyTableToolbarTop",
             page: false,
             dataUrls: {
                 add: "{:url('add')}",

@@ -396,16 +396,17 @@ layui.define(["element", 'util', "layer"], function (exports) {
         },
         updateTabData: function (tabId, newOpt) {
             let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
+            let tabsId = String(tabId);
             // 找到需要更新的Tab
-            let index = tabs.findIndex(tab => tab.id === tabId);
+            let index = tabs.findIndex(tab => tab.id === tabsId);
 
             if (index === -1) {
                 // 如果未找到Tab，则直接新增到最后
-                tabs.push({id: tabId, ...newOpt});
+                tabs.push({id: tabsId, ...newOpt});
             }
             // 更新 sessionStorage
             sessionStorage.setItem('tabsList', JSON.stringify(tabs));
-            sessionStorage.setItem('tabsActiveId', tabId);
+            sessionStorage.setItem('tabsActiveId', tabsId);
 
         },
         delTabData: function (tabId) {

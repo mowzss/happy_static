@@ -11,10 +11,10 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
         eventListeners: {},
         // 初始化表格
         render: function (options) {
-            var layThis = this;
-            var urlParams = getUrlParams();
+            var that = this;
             // 默认选项（仅包含 laytable 特定的扩展逻辑）
             var defaults = {
+                elem: '#happyTable',
                 where: {}, // 用户可以自定义 where 参数
                 on: {},   // 用户可以自定义事件监听器
                 isTree: false, // 是否使用 treeTable 模式，默认为 false
@@ -46,9 +46,11 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
 
             // 如果没有设置 toolbar，默认使用 elem + '-toolbarTop'
             if (!settings.toolbar) {
-                settings.toolbar = settings.elem + '-toolbarTop';
+                settings.toolbar = settings.elem + 'ToolbarTop';
             }
-
+            if (!settings.layFilters) {
+                settings.layFilters = settings.elem.replace(/^#/, '');
+            }
             // 从目标元素获取 data-url 属性
             if (!settings.url) {
                 settings.url = $(settings.elem).data('url');
@@ -60,8 +62,8 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
             // 默认的工具栏事件处理程序
             var defaultToolbarHandlers = {
                 add: function (obj, callback, defaultHandler) {
-                    layThis.defaultSaveHandler(this, settings.dataUrls.add, function () {
-                        layThis.reload(obj.config.id); // 刷新表格
+                    that.defaultSaveHandler(this, settings.dataUrls.add, function () {
+                        that.reload(obj.config.id); // 刷新表格
                     });
                 },
                 del: function (obj, callback, defaultHandler) {
@@ -70,8 +72,8 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                     var ids = data.map(function (item) {
                         return item.id;
                     }); // 提取选中的ID
-                    layThis.defaultDeleteHandler(settings.dataUrls.del, ids, function () {
-                        layThis.reload(obj.config.id); // 刷新表格
+                    that.defaultDeleteHandler(settings.dataUrls.del, ids, function () {
+                        that.reload(obj.config.id); // 刷新表格
                     });
                 }
             };
@@ -80,14 +82,14 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
             var defaultToolHandlers = {
                 del: function (obj, callback, defaultHandler) {
                     var ids = obj.data.id; // 获得当前行数据
-                    layThis.defaultDeleteHandler(settings.dataUrls.del, ids, function () {
-                        layThis.reload(obj.config.id); // 刷新表格
+                    that.defaultDeleteHandler(settings.dataUrls.del, ids, function () {
+                        that.reload(obj.config.id); // 刷新表格
                     });
                 },
                 edit: function (obj, callback, defaultHandler) {
                     var url = updateUrlParams(settings.dataUrls.edit, {id: obj.data.id});
-                    layThis.defaultSaveHandler(this, url, function () {
-                        layThis.reload(obj.config.id); // 刷新表格
+                    that.defaultSaveHandler(this, url, function () {
+                        that.reload(obj.config.id); // 刷新表格
                     });
                 }
             };
@@ -113,7 +115,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                     var eventHandler = defaultToolbarHandlers[obj.event];
                     if (typeof eventHandler === 'function') {
                         eventHandler.call(this, obj, function () {
-                            layThis.reload(obj.config.id); // 刷新表格
+                            that.reload(obj.config.id); // 刷新表格
                         }, settings.defaultDeleteHandler);
                     }
                 };
@@ -130,7 +132,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                     var eventHandler = defaultToolHandlers[obj.event];
                     if (typeof eventHandler === 'function') {
                         eventHandler.call(this, obj, function () {
-                            layThis.reload(obj.config.id); // 刷新表格
+                            that.reload(obj.config.id); // 刷新表格
                         }, settings.defaultDeleteHandler);
                     }
                 };
@@ -144,7 +146,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                     }
                     var field = obj.field;
                     var type = obj.type;
-                    layThis.reload(obj.config.id, {
+                    that.reload(obj.config.id, {
                         initSort: obj, // 记录初始排序，以标记表头的排序状态
                         where: {
                             _order: field,
@@ -207,7 +209,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                 // 注册事件监听器
                 for (var event in settings.on) {
                     if (settings.on.hasOwnProperty(event)) {
-                        treeTable.on(event, settings.on[event]);
+                        treeTable.on(event + '(' + settings.layFilters + ')', settings.on[event]);
                     }
                 }
             } else {
@@ -216,13 +218,13 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                 // 注册事件监听器
                 for (var event in settings.on) {
                     if (settings.on.hasOwnProperty(event)) {
-                        table.on(event, settings.on[event]);
+                        table.on(event + '(' + settings.layFilters + ')', settings.on[event]);
                     }
                 }
             }
 
             // 返回渲染实例，以便后续操作
-            return layThis;
+            return that;
         },
         // 重载表格
         reload: function (elem, options) {

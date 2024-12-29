@@ -2,10 +2,11 @@
     layui.use(['laytable'], function () {
         let laytable = layui.laytable, order = JSON.parse('{$default_order|default=["id"=>"desc"]|raw|json_encode}'),
             opt = {
-                elem: '#{:get_lay_table_id()}',
+                elem: '#happyTable',
+                layFilters: 'happyTable',
                 headers: {out: 'json'},
                 cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
-                toolbar: "#{:get_lay_table_id()}-toolbarTop",
+                toolbar: "#happyTableToolbarTop",
                 page: true,
                 dataUrls: {
                     add: "{:url('add')}",
@@ -14,7 +15,6 @@
                     quick: "{:url('quickEdit')}",
                 },
                 isTree: JSON.parse('{$is_tree|default=false|json_encode}'),
-                toolTplData: JSON.parse('{$tables.right_button|default=[]|raw|json_encode}')
             }
         // 获取 order 对象的所有键
         Object.keys(order).forEach(key => {

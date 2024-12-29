@@ -21,7 +21,7 @@ layui.define([], function (exports) {
         if (!settings.cols[0].some(col => col && col.fixed === 'right' && col.title === '操作')) {
             settings.cols[0].push({
                 title: '操作',
-                toolbar: settings.elem + '-tool',
+                toolbar: settings.elem + 'Tool',
                 fixed: 'right',
                 align: 'left',
                 minWidth: 160,
