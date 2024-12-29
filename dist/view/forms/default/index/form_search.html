@@ -8,15 +8,15 @@
         border: 1px solid rgba(255, 255, 255, 0)
     }
 </style><form class="layui-form  layui-form-pane" action="{$action}" method="{$method?:'post'}" id="{$lay_filter}" {$form_html|raw}><div class='layui-form-item'> {volist name="fields" id="item"} {switch name="item.type"} {case 'hidden'}<div class="layui-inline"> {$renderer->renderField($item)|raw}</div> {/case} {default /}<div class="layui-inline" id="item-{$item.name}"> <label class="layui-form-label">{$item.label??''}</label><div class="layui-input-inline"> {$renderer->renderField($item)|raw}</div></div> {/switch} {/volist}<div class='layui-inline'> {$submit|raw} <button type="button" class="layui-btn layui-btn-primary expand"></button></div></div></form><script>
-    layui.use(['form', 'layer', 'jquery', 'laytable'], function () {
+    layui.use(['form', 'layer', 'jquery', 'laytable', 'formsbuild'], function () {
         let form = layui.form, layer = layui.layer, $ = layui.jquery, laytable = layui.laytable;
-
+        var formsbuild = layui.formsbuild;
+        formsbuild.inputDate();
         form.render();
         // 提交事件
         form.on('submit({$lay_filter})', function (data) {
             var field = data.field;
             laytable.reload($(data.form).data('tableId'), {
-                
                 where: field
             })
             return false; // 阻止默认 form 跳转
@@ -25,7 +25,6 @@
         formToggle({
             elem: "#{$lay_filter}",
         });
-
 
         function formToggle(options) {
             // 定义默认配置项
@@ -71,8 +70,8 @@
             (function init() {
                 initToggleButton();
                 updateVisibility(settings.isExpand);
-
                 $expandButton.on('click', toggleForm);
+                $()
             })();
         }
 
