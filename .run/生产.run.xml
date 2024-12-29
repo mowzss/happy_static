@@ -7,7 +7,9 @@
       <task>prod</task>
     </tasks>
     <arguments />
-    <envs />
+    <envs>
+      <env name="NODE_ENV" value="production" />
+    </envs>
     <method v="2" />
   </configuration>
 </component>
