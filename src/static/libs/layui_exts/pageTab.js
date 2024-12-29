@@ -515,7 +515,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
                                 ${res}
                             </div>
                         `);
-                                // element.init();
+                                element.init();
                                 // 应用动画并显示内容
                                 setTimeout(() => {
                                     $targetTabContent.find('.happy-tab-content')

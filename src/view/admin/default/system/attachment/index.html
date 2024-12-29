@@ -9,7 +9,6 @@
             elem: '#{:get_lay_table_id()}',
             headers: {out: 'json'},
             cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
-            toolbar: "#{:get_lay_table_id()}-toolbarTop",
             page: true,
             dataUrls: {
                 add: "{:url('add')}",

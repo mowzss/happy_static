@@ -144,7 +144,7 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
             // 遍历每个菜单项
             menuData.forEach(function (item) {
                 if (item.type === 0) { // 父级菜单
-                    html += '<li class="layui-nav-item">';
+                    html += '<li class="layui-nav-item layui-nav-itemed">';
                     html += '<a>';
                     html += '<i class="' + item.icon + '"></i><span class="happy-nav-title">' + item.title + '</span>';
                     html += '</a>';

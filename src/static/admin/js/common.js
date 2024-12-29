@@ -80,26 +80,4 @@ layui.config({
             }
         });
     });
-    $body.on('click', '[data-href]', function (event) {
-        var href = this.dataset.href
-        window.open(href)
-    })
-    $body.on('click', '[data-load]', function (event) {
-        var href = this.dataset.load, methodType = this.dataset.method || 'get'
-        $.ajax({
-            url: href,
-            type: methodType,
-            dataType: 'json',
-            cache: false,
-            success: function (res) {
-                popup.success(res.msg, function () {
-                    window.location.reload()
-                })
-            },
-            error: function (xhr, textstatus, thrown) {
-                return popup.warming('Status:' + xhr.status + '，' + xhr.statusText + '，请稍后再试！')
-            }
-
-        })
-    })
 });

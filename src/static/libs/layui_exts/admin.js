@@ -22,8 +22,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
             menu.render(this.config.menuUrl);
             this.initTabs();
             pageTab.onTab(); // 监听标签页切换事件
-            this.events();
-            this.onMenu();
+            this.events();//全部监听
             pageTab.rightMenu({filter: this.config.tabFilter}); // 渲染右键菜单
             this.closeLoading()
         },
@@ -68,7 +67,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
             // 插入到#happy-content中
             $("#happy-content").html(tabsHtml);
             // 初始化element模块，确保新添加的元素可以正常工作
-            element.init();
+            element.render('tab', admin.config.tabFilter);
         },
         //关闭遮罩层
         closeLoading: function () {
@@ -162,12 +161,8 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                 open: function () {
 
                 }
-            })
-        },
-
-        // 菜单点击事件
-        onMenu: function () {
-            let that = this;
+            });
+            //导航事件
             element.on('nav(lay-nav)', function (elem) {
                 let $this = $(elem);
                 if ($this.parents('.mini-nav').length === 1) {
@@ -187,6 +182,24 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     });
                 }
             });
+            this.onBody();
+        },
+        // 原生事件监听
+        onBody: function () {
+            let $body = $('body');
+            $body.on('click', '[data-open]', function (e) {
+                let url = $(e.target).data('open'),
+                    id = url.split('?')[0],
+                    title = $(e.target).text();
+
+                // 添加新标签页
+                pageTab.addTab({
+                    id: id,
+                    title: title,
+                    url: url,
+                    allowClose: true
+                });
+            })
         },
 
     }

@@ -6,10 +6,9 @@
 <script>
     layui.use(['laytable'], function () {
         let laytable = layui.laytable, opt = {
-            elem: '#happyTable',
+            elem: '#{:get_lay_table_id()}',
             headers: {out: 'json'},
             cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
-            toolbar: "#happyTableToolbarTop",
             page: false,
             dataUrls: {
                 add: "{:url('add')}",
@@ -18,7 +17,6 @@
                 quick: "{:url('quickEdit')}",
             },
             isTree: JSON.parse('{$is_tree|default=false|json_encode}'),
-            toolTplData: JSON.parse('{$tables.right_button|default=[]|raw|json_encode}'),
             where: {_order: 'list', _by: 'desc'}
         }
         if (opt.isTree) {
