@@ -155,7 +155,7 @@ exports.default = series(
 
 // 开发环境任务
 exports.dev = series(
-    cleanStatic,
+    cleanStatic, cleanTemplate,
     parallel(buildLess, buildSass, buildCss, buildScripts, buildImages, buildFiles, buildStaticHtml),
     parallel(buildTemplateHtml, buildTemplateFile),
     () => {
@@ -168,7 +168,7 @@ exports.dev = series(
 
 // 生产环境任务
 exports.prod = series(
-    cleanStatic,
+    cleanStatic, cleanTemplate,
     parallel(buildLess, buildSass, buildCss, buildScripts, buildImages, buildFiles, buildStaticHtml),
     parallel(buildTemplateHtml, buildTemplateFile)
 );

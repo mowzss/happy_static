@@ -1,1 +1,0 @@
-layui.define(["jquery","element"],function(e){layui.jquery;e("count",new function(){this.up=function(e,n){n=n||{};var t=document.getElementById(e),e=n.time,u=n.num,i=n.regulator,r=u/(e/i),a=0,l=0,o=setInterval(function(){u<=(a+=r)&&(clearInterval(o),a=u);var e=a.toFixed(n.bit||0);e!=l&&(l=e,t.innerHTML=l)},30)}})});
