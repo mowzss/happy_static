@@ -9,7 +9,6 @@
     }
   ],
   "require": {
-    "php": ">=8.0.0",
     "mowzs/lib": "dev-master"
   },
   "extra": {
