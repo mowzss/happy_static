@@ -33,12 +33,17 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
                         var defaultTopNav = $('#topNav .layui-nav-item:first-child a');
                         defaultTopNav.trigger('click');
                         let defaultMenuItem = menu.findFirstLeafMenuItem(response);
-                        pageTab.addTab({
+                        let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
+                        let opt = {
                             id: String(defaultMenuItem.id),
                             title: defaultMenuItem.title,
                             url: defaultMenuItem.href,
                             allowClose: false
-                        })
+                        }
+                        if (tabs.length === 0) {
+                            opt.change = true
+                        }
+                        pageTab.addTab(opt)
                     } else {
                         console.error('菜单数据为空');
                     }

@@ -335,42 +335,43 @@ layui.define(["element", 'util', "layer"], function (exports) {
 
             if (!activeId) return; // 如果没有激活的标签页，直接返回
 
-            let $activeTabTitle = $(this.config.tabsContent).find(`.layui-tab-title li[lay-id="${activeId}"]`);
-            let url = $activeTabTitle.attr('lay-url');
-
-            if (!url) {
-                layer.msg('该标签页没有关联的URL，无法刷新！');
-                return;
-            }
-            let $targetTabContent = $(this.config.tabsContent).find(`.layui-tab-item[lay-id="${activeId}"] .happy-tab-content`);
-            let load = layer.load();
-            $targetTabContent.empty();
-            // 显示加载进度条
-            this.showLoadingBar();
-
-            // 发起 AJAX 请求，重新加载内容
-            $.ajax({
-                url: url,
-                type: 'GET',
-                success: function (res) {
-                    // 更新内容
-                    $targetTabContent.html(res);
-                    layer.close(load)
-                    // 应用动画并显示内容
-                    setTimeout(() => {
-                        $targetTabContent
-                            .show()
-                            .addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
-                    }, 100);
-
-                    // 关闭加载进度条
-                    that.hideLoadingBar();
-                },
-                error: function () {
-                    layer.msg('刷新失败，请重试！');
-                    that.hideLoadingBar();
-                }
-            });
+            element.tabChange(that.config.tabFilter, activeId);
+            // let $activeTabTitle = $(this.config.tabsContent).find(`.layui-tab-title li[lay-id="${activeId}"]`);
+            // let url = $activeTabTitle.attr('lay-url');
+            //
+            // if (!url) {
+            //     layer.msg('该标签页没有关联的URL，无法刷新！');
+            //     return;
+            // }
+            // let $targetTabContent = $(this.config.tabsContent).find(`.layui-tab-item[lay-id="${activeId}"] .happy-tab-content`);
+            // let load = layer.load();
+            // $targetTabContent.empty();
+            // // 显示加载进度条
+            // this.showLoadingBar();
+            //
+            // // 发起 AJAX 请求，重新加载内容
+            // $.ajax({
+            //     url: url,
+            //     type: 'GET',
+            //     success: function (res) {
+            //         // 更新内容
+            //         $targetTabContent.html(res);
+            //         layer.close(load)
+            //         // 应用动画并显示内容
+            //         setTimeout(() => {
+            //             $targetTabContent
+            //                 .show()
+            //                 .addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
+            //         }, 100);
+            //
+            //         // 关闭加载进度条
+            //         that.hideLoadingBar();
+            //     },
+            //     error: function () {
+            //         layer.msg('刷新失败，请重试！');
+            //         that.hideLoadingBar();
+            //     }
+            // });
         },
 
         // 添加新标签页
@@ -378,6 +379,8 @@ layui.define(["element", 'util', "layer"], function (exports) {
             let that = this,
                 id = String(opt.id),
                 url = opt.url,
+                change = opt.change ?? false,
+                allowClose = opt.allowClose ?? true,
                 title = opt.title;
 
             if (!that.tabIsExist(id)) { // 检查是否存在 tab
@@ -386,12 +389,14 @@ layui.define(["element", 'util', "layer"], function (exports) {
                     id: id,
                     title: title,
                     url: url,
-                    change: true,
-                    allowClose: true,
+                    change: change,
+                    allowClose: allowClose,
                 });
             } else {
-                // 如果标签页已经存在，则直接切换到该标签页
-                element.tabChange(that.config.tabFilter, id);
+                $(`[lay-filter="${that.config.tabFilter}"]`).find('[data-page-id="' + id + '"]').attr('data-src', url)
+                if (change) {
+                    element.tabChange(that.config.tabFilter, id);
+                }
             }
         },
         updateTabData: function (tabId, newOpt) {
@@ -465,7 +470,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
             $(this.config.tabsContent).find('.layui-tab-item').each(function () {
                 let tabId = $(this).attr("lay-id");
                 if (tabId !== activeId) {
-                    $(this).empty(); // 清空内容
+                    $(this).find(".happy-tab-content").empty(); // 清空内容
                 }
             });
         },
@@ -481,33 +486,37 @@ layui.define(["element", 'util', "layer"], function (exports) {
                 autoScrollToActiveTab($this, $activeTab);
                 let newId = data.id;
 
-                // 获取目标标签页的URL
-                let $targetTabTitle = $(`.layui-tab-title li[lay-id="${newId}"]`);
+                // 获取目标标签页的信息
+                let $targetTabTitle = $this.find(`.layui-tab-title li[lay-id="${newId}"]`);
                 let url = $targetTabTitle.attr('lay-url');
                 let allowClose = $targetTabTitle.attr('lay-allowclose');
+                // 检查目标标签页是否已经加载过内容
+                let $targetTabContent = $this.find(`.layui-tab-item[lay-id="${newId}"]`);
+                let contentUrl = $targetTabContent.find(".happy-tab-content").attr('data-src');
+                if (contentUrl) {
+                    url = contentUrl;
+                }
                 that.updateTabData(newId, {
                     id: newId,
                     title: $targetTabTitle.text(),
                     url: url,
                     allowClose: allowClose
                 });
-                // 检查目标标签页是否已经加载过内容
-                let $targetTabContent = $(`.layui-tab-item[lay-id="${newId}"]`);
 
-                if ($targetTabContent.find('.happy-tab-content').length === 0 || !$targetTabContent.find('.happy-tab-content').is(':visible')) {
-                    // 如果未加载过或内容不可见，则根据 lay-url 重新加载内容
-                    if (url) {
-                        // 显示加载进度条
-                        pageTab.showLoadingBar();
 
-                        $.ajax({
-                            url: url,
-                            type: 'GET',
-                            dataType: 'html',
-                            async: false,
-                            success: function (res) {
-                                // 更新内容，并为 .happy-tab-content 添加 page-id 和 src 属性
-                                $targetTabContent.html(`
+                // 如果未加载过或内容不可见，则根据 lay-url 重新加载内容
+                if (url) {
+                    // 显示加载进度条
+                    pageTab.showLoadingBar();
+
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        dataType: 'html',
+                        async: false,
+                        success: function (res) {
+                            // 更新内容，并为 .happy-tab-content 添加 page-id 和 src 属性
+                            $targetTabContent.html(`
                             <div class="happy-tab-content" 
                                  style="display:none;" 
                                  data-page-id="${newId}" 
@@ -515,32 +524,23 @@ layui.define(["element", 'util', "layer"], function (exports) {
                                 ${res}
                             </div>
                         `);
-                                element.init();
-                                // 应用动画并显示内容
-                                setTimeout(() => {
-                                    $targetTabContent.find('.happy-tab-content')
-                                        .show()
-                                        .addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
-                                }, 100);
+                            element.init();
+                            // 应用动画并显示内容
+                            setTimeout(() => {
+                                $targetTabContent.find('.happy-tab-content')
+                                    .show()
+                                    .addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
+                            }, 100);
 
-                                // 关闭加载进度条
-                                pageTab.hideLoadingBar();
-                            },
-                            error: function () {
-                                layer.msg('加载失败，请重试！');
-                                pageTab.hideLoadingBar();
-                            }
-                        });
-                    }
-                } else {
-                    // 如果内容已经加载过且可见，则直接应用动画
-                    setTimeout(() => {
-                        $targetTabContent.find('.happy-tab-content')
-                            .show()
-                            .addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
-                    }, 100);
+                            // 关闭加载进度条
+                            pageTab.hideLoadingBar();
+                        },
+                        error: function () {
+                            layer.msg('加载失败，请重试！');
+                            pageTab.hideLoadingBar();
+                        }
+                    });
                 }
-
                 // 确保在切换标签页后，其他标签页的内容被清空
                 pageTab.clearOtherTabsContent(newId);
             });

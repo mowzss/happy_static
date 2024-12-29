@@ -17,12 +17,10 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
         // 初始化
         render: function (options) {
             this.config = $.extend({}, this.config, options);
-            this.renderTabs();//渲染tabs
-
+            this.renderTabs();//渲染tab容器
             menu.render(this.config.menuUrl);
-            this.initTabs();
-            pageTab.onTab(); // 监听标签页切换事件
             this.events();//全部监听
+            this.initTabs();//渲染tab记录
             pageTab.rightMenu({filter: this.config.tabFilter}); // 渲染右键菜单
             this.closeLoading()
         },
@@ -30,11 +28,11 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
         initTabs: function () {
             let that = this;
             let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
-            let activeId = sessionStorage.getItem('tabsActiveId');
+            let activeId = String(sessionStorage.getItem('tabsActiveId'));
 
             // 重新添加所有保存的Tab
             tabs.forEach((tab) => {
-                element.tabAdd(that.config.tabFilter, tab);
+                pageTab.addTab(tab);
             });
             // 设置激活的Tab
             if (activeId && tabs.some(tab => tab.id === activeId)) {
@@ -75,6 +73,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
         },
         // 事件监听
         events: function () {
+            pageTab.onTab(); // 监听标签页切换事件
             util.event('lay-header-event', {
                 //清理缓存
                 cleanCache: function (othis) {
@@ -178,10 +177,11 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                         id: id,
                         title: title,
                         url: url,
-                        allowClose: true
+                        change: true,
                     });
                 }
             });
+            // 原生事件监听
             this.onBody();
         },
         // 原生事件监听
@@ -197,7 +197,8 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     id: id,
                     title: title,
                     url: url,
-                    allowClose: true
+                    allowClose: true,
+                    change: true,
                 });
             })
         },
