@@ -34,15 +34,15 @@
     </div>
 </form>
 <script>
-    layui.use(['form', 'layer', 'jquery', 'laytable'], function () {
+    layui.use(['form', 'layer', 'jquery', 'laytable', 'formsbuild'], function () {
         let form = layui.form, layer = layui.layer, $ = layui.jquery, laytable = layui.laytable;
-
+        var formsbuild = layui.formsbuild;
+        formsbuild.inputDate();
         form.render();
         // 提交事件
         form.on('submit({$lay_filter})', function (data) {
             var field = data.field;
             laytable.reload($(data.form).data('tableId'), {
-                
                 where: field
             })
             return false; // 阻止默认 form 跳转
@@ -51,7 +51,6 @@
         formToggle({
             elem: "#{$lay_filter}",
         });
-
 
         function formToggle(options) {
             // 定义默认配置项
@@ -97,8 +96,8 @@
             (function init() {
                 initToggleButton();
                 updateVisibility(settings.isExpand);
-
                 $expandButton.on('click', toggleForm);
+                $()
             })();
         }
 

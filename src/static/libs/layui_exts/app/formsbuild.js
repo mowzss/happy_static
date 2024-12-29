@@ -1,5 +1,5 @@
 // formsbuild.js
-layui.define(['form', 'layer', 'jquery'], function (exports) {
+layui.define(['form', 'layer', 'jquery', 'laytable'], function (exports) {
     "use strict";
 
     var form = layui.form,
@@ -58,8 +58,9 @@ layui.define(['form', 'layer', 'jquery'], function (exports) {
                         if (response.code === 0) {
                             layer.msg(response.msg, function () {
                                 layer.closeAll();
-                                if (typeof layui.laytable !== 'undefined') {
-                                    layui.laytable.reload();
+                                let $pageTable = $('.page-Table');
+                                if ($pageTable.length > 0) {
+                                    layui.laytable.reload($pageTable.attr('id'));
                                 }
                             });
                         } else {

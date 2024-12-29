@@ -229,14 +229,9 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
         // 重载表格
         reload: function (elem, options) {
             if (elem === null || elem === undefined) {
-                let $content = $('#content'), $elem;
-                $elem = $content.find('.pear-tab-page.layui-tab-rollTool.layui-tab');
-                //多页模式
-                if ($elem.length === 1) {
-                    $elem = $elem.find('.layui-show.layui-tab-item .layui-hide.page-Table');
-                } else {
-                    $elem = $elem.find('layui-hide.page-Table');
-                }
+                let $content = $('#happy-content'), $elem;
+                $elem = $content.find('.layui-body-tabs ');
+                $elem = $elem.find('.layui-tab-item .layui-show .page-Table');
                 if ($elem.length === 0) return;
                 elem = $elem.attr('id');
             }
@@ -275,17 +270,36 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
             });
         },
         defaultSaveHandler: function (elem, url, callback) {
-            let shouldRemoveAfterClick = true; // 设置为 true 或 false 来控制是否移除
-            let newLink = $('<a></a>')
-                .attr({
-                    'href': url,
-                    'data-modal': url, // 设置 data-modal 属性为 URL
-                    'style': 'display:none;', // 隐藏链接
-                    'data-remove-after-click': shouldRemoveAfterClick // 控制是否移除
-                }).text($(elem).text()); // 设置链接文本
+            // 获取元素上的数据属性
+            let title = $(elem).text(),
+                customWidth = '800px', // 使用 || 提供默认值或保持为 undefined
+                customHeight = 'auto', // 同上
+                screenWidth = $(window).width(),
+                modalWidth = screenWidth >= 1400 ? '800px' : '80%'; // 默认宽度
 
-            $('body').append(newLink);
-            newLink.trigger('click');
+            // 如果有自定义宽度，则使用它；否则使用默认宽度
+            if (customWidth) {
+                modalWidth = customWidth;
+            }
+            $.ajax({
+                url: url,
+                method: 'GET',
+                success: function (response) {
+                    if (response.code) {
+                        return layer.msg(response.msg);
+                    }
+                    layer.open({
+                        type: 1,
+                        title: title,
+                        content: response,
+                        area: [modalWidth, customHeight], // 使用自定义高度或自动调整
+                    });
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('Error:', textStatus, errorThrown);
+                    layer.msg('请求失败: ' + textStatus + ', ' + errorThrown, {icon: 5});
+                }
+            });
         }
     };
 
@@ -329,10 +343,8 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
             if (paramsObject.hasOwnProperty(param)) {
                 let value = paramsObject[param];
                 if (params.has(param)) {
-                    console.log(`Parameter "${param}" already exists and its value will be updated.`);
                     params.set(param, value);
                 } else {
-                    console.log(`Adding new parameter "${param}".`);
                     params.append(param, value);
                 }
             }
