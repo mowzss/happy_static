@@ -1,0 +1,40 @@
+{extend name="layout" /} {block name="css"}<style>
+    .layui-setting-box .layui-tab-content {
+        background: #fff;
+        min-height: 40vh;
+    }
+
+    .layui-setting-box .layui-panel {
+        max-width: 900px;
+        border: none;
+        box-shadow: none;
+    }
+</style> {/block} {block name="content"}<div class="layui-setting-box layui-tab layui-tab-card" id="{$layui_id|default='setting-box'}"><ul class="layui-tab-title"> {volist name="list" id="vo"} {eq name="$key" value="0"}<li data-group-id="{$vo.id}" class="layui-this">{$vo.title}</li> {else/}<li data-group-id="{$vo.id}">{$vo.title}</li> {/eq} {/volist}</ul><div class="layui-tab-content"><div class="layui-tab-item layui-show"></div></div></div> {/block} {block name="js"}<script>
+    layui.use(['jquery'], function () {
+        var $ = layui.jquery, $this = $('#{$layui_id|default="setting-box"}');
+        // 确保在文档准备就绪后触发 click 事件
+        $(document).ready(function () {
+            $this.find('li.layui-this').each(function () {
+                $(this).trigger('click');
+            });
+        });
+        $this.find('[data-group-id]').on('click', function () {
+            var that = this;
+            $.ajax({
+                url: '{:url("getForms")}',
+                type: 'get',
+                data: {
+                    'group_id': $(that).data('group-id'),
+                },
+                success: function (res) {
+                    if (res.code === 1) {
+                        var html = '<div class="layui-panel layui-padding-3"><span>' + res.msg + '</span></div>';
+                        $(that).parents('.layui-setting-box').find('.layui-tab-item.layui-show').html(html);
+                    } else {
+                        $(that).parents('.layui-setting-box').find('.layui-tab-item.layui-show').html(res);
+                    }
+                }
+            })
+        })
+    })
+</script> {/block}
