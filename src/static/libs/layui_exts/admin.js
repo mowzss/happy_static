@@ -191,7 +191,6 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                 let url = $(e.target).data('open'),
                     id = url.split('?')[0],
                     title = $(e.target).text();
-
                 // 添加新标签页
                 pageTab.addTab({
                     id: id,

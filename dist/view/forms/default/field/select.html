@@ -1,1 +1,1 @@
-<select name='{$name}' id="input-{$name}"><option value=''>-- 请选择 --</option> {foreach $option as $key=>$val } {eq name="$value" value="$key"}<option value="{$key}" selected>{$val|raw}</option> {else/}<option value="{$key}">{$val|raw}</option> {/eq} {/foreach}</select>
+<select name='{$name}' id="input-{$name}" lay-search="{fuzzy: true}"><option value=''>-- 请选择 --</option> {foreach $option as $key=>$val } {eq name="$value" value="$key"}<option value="{$key}" selected>{$val|raw}</option> {else/}<option value="{$key}">{$val|raw}</option> {/eq} {/foreach}</select>

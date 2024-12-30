@@ -8,7 +8,7 @@ layui.config({
 }).extend({
     admin: "admin",
     pageTab: "pageTab",
-
+    menu: "menu",
     //编辑器
     tiny: "tinymce/tiny",//配置
     tinymce: "tinymce/tinymce.min",//
@@ -17,10 +17,11 @@ layui.config({
     ueditor: "ueditor/ueditor",//配置
     UE: "ueditor/ueditor.all.min",
     UECONFING: "ueditor/ueditor.config",
-
-
+    
     laytable: "laytable",
     fieldHandler: "fieldHandler",
+
+    xmSelect: "xm-select",
 
     popup: "extends/popup",
     count: "extends/count",
@@ -66,7 +67,7 @@ layui.config({
                 layer.open({
                     type: 1,
                     title: title,
-                    content: response,
+                    content: response, maxmin: true,
                     area: [modalWidth, customHeight], // 使用自定义高度或自动调整
                 });
                 // 检查是否需要移除元素

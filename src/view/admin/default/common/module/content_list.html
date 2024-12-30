@@ -16,13 +16,13 @@
                data-url="{:url('index')}"></table>
     </div>
 </div>
-<script type="text/html" id="{:get_lay_table_id()}-toolbarTop">
+<script type="text/html" id="{:get_lay_table_id()}ToolbarTop">
     <div class="layui-btn-container">
         <button class="layui-btn layui-btn-sm " data-open="{:url('add')}">添加</button>
         {$top_button|default=""|raw}
     </div>
 </script>
-<script type="text/html" id="{:get_lay_table_id()}-tool">
+<script type="text/html" id="{:get_lay_table_id()}Tool">
     {$right_button|default=""|raw}
 </script>
 
@@ -36,15 +36,13 @@
                 elem: '#{:get_lay_table_id()}',
                 headers: {out: 'json'},
                 cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
-                toolbar: "#{:get_lay_table_id()}-toolbarTop",
                 page: true,
                 dataUrls: {
                     add: "{:url('add')}",
                     edit: "{:url('edit')}",
                     del: "{:url('delete')}",
                     quick: "{:url('quickEdit')}",
-                },
-                toolTplData: JSON.parse('{$tables.right_button|default=[]|raw|json_encode}')
+                }
             }
         // 渲染表格
         laytable.render(opt);

@@ -1,9 +1,11 @@
 // formsbuild.js
-layui.define(['form', 'layer', 'jquery', 'laytable'], function (exports) {
+
+layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (exports) {
     "use strict";
 
     var form = layui.form,
         layer = layui.layer,
+        element = layui.element,
         $ = layui.jquery;
 
     // 定义 formsbuild 模块
@@ -39,6 +41,8 @@ layui.define(['form', 'layer', 'jquery', 'laytable'], function (exports) {
             this.triggers(triggers, $form);
             // 编辑器
             this.editor();
+            //xmSelect
+            this.xmSelect()
             // 返回 formsbuild 实例
             return formsbuild;
         },
@@ -61,6 +65,12 @@ layui.define(['form', 'layer', 'jquery', 'laytable'], function (exports) {
                                 let $pageTable = $('.page-Table');
                                 if ($pageTable.length > 0) {
                                     layui.laytable.reload($pageTable.attr('id'));
+                                } else {
+                                    let $tabsElem = $("#happy-content").find('.layui-body-tabs'),
+                                        action = $(data.elem.form).attr('action'),
+                                        layid = $tabsElem.find('[data-src="' + action + '"]').data('pageId'),
+                                        filter = $tabsElem.attr('lay-filter');
+                                    element.tabDelete(filter, layid);
                                 }
                             });
                         } else {
@@ -70,6 +80,60 @@ layui.define(['form', 'layer', 'jquery', 'laytable'], function (exports) {
                 });
                 return false; // 阻止默认 form 跳转
             });
+        },
+        xmSelect: function () {
+            $('[data-xm-select]').each(function () {
+                let xmS = [],
+                    that = this, $that = $(this),
+                    name = $that.data('name'),
+                    elemId = '#' + $that.attr('id'),
+                    data = JSON.parse($('[xm-select-value="' + name + '"]').text() || '[]'),
+                    options = JSON.parse($('[xm-select="' + name + '"]').text() || '{}');
+                layui.use(['xmSelect'], function (xmSelect) {
+                    options = Object.assign({}, options, {
+                        el: elemId,
+                        theme: {color: '#16b777'},
+                        name: name,
+                        autoRow: true,
+                        toolbar: {show: true},
+                        filterable: true,
+                        empty: '输入内容搜一下吧！',
+                        max: '{$max}',
+                        paging: true,
+                        pageRemote: true,
+                        prop: {
+                            name: 'title',
+                            value: 'id'
+                        },
+                        data: data,
+                    });
+                    if (options.remoteSearch && options.searchUrl) { //开启远程搜索
+                        options.remoteMethod = function (val, cb, show, pageIndex) {
+                            if (!val) {
+                                return cb([]);
+                            }
+                            $.ajax({
+                                type: "POST",
+                                url: options.searchUrl,
+                                data: {
+                                    keyword: val,
+                                    add: options.autoAdd || false,
+                                    page: pageIndex,
+                                },
+                                success: function (res) {
+                                    cb(res.data.data, res.data.last_page)
+                                },
+                                error: function () {
+                                    layer.msg('搜索异常')
+                                }
+
+                            })
+                        }
+                    }
+                    xmS[name] = xmSelect.render(options)
+                    // xmS[name]
+                })
+            })
         },
         /**
          * 时间选择
