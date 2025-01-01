@@ -65,11 +65,11 @@ layui.define([], function (exports) {
                             let isChecked = currentValue === onValue;
 
                             return `<input type="checkbox" 
-                                       name="status" 
-                                       value="${currentValue}" 
-                                       lay-skin="switch" 
-                                       lay-text="${onText}|${offText}" 
-                                       ${isChecked ? 'checked' : ''}>`;
+                               name="status" 
+                               value="${currentValue}" 
+                               lay-skin="switch" 
+                               lay-text="${onText}|${offText}" 
+                               ${isChecked ? 'checked' : ''}>`;
                         };
                     } else {
                         col.templet = function (d) {
@@ -81,6 +81,26 @@ layui.define([], function (exports) {
                 case 'icon':
                     col.templet = function (d) {
                         return `<em class="${d[col.field]}"></em>`;
+                    };
+                    break;
+
+                case 'image':
+                    col.templet = function (d) {
+                        let imgUrls = d[col.field];
+                        if (!imgUrls) return ''; // 如果没有图片URL，则返回空字符串
+
+                        // 将图片URL转换为数组，考虑到可能为空或单个URL的情况
+                        let urlsArray = imgUrls.split(',').filter(url => url.trim() !== '');
+
+                        // 只取第一张图片来显示
+                        let firstImageUrl = urlsArray.length > 0 ? urlsArray[0].trim() : '';
+
+                        // 定义图片的最大宽度和高度
+                        let maxWidth = 80;
+                        let maxHeight = '100%'; // 假设layui表格行的高度是固定的或者可以适应内容
+
+                        // 构建图片标签
+                        return firstImageUrl ? `<img data-image="hover" src="${firstImageUrl}" alt="Image" style="max-width: ${maxWidth}px; max-height: ${maxHeight};">` : '';
                     };
                     break;
 
