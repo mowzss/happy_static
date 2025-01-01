@@ -140,13 +140,18 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
          */
         inputDate: function () {
             $('[data-input-date]').each(function () {
-                var that = this, type = this.dataset.inputDate || 'date';
+                var that = this, type = this.dataset.inputDate || 'date', range = this.dataset.range || '';
                 layui.use(['laydate'], function () {
-                    var laydate = layui.laydate;
-                    laydate.render({
-                        elem: that,
-                        type: type,
-                    });
+                    let laydate = layui.laydate,
+                        options = {
+                            elem: that,
+                            type: type,
+                        };
+                    if (range) {
+                        options.range = range;
+                        options.rangeLinked = true;
+                    }
+                    laydate.render(options);
                 })
             });
         },
