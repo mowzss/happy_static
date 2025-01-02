@@ -1,0 +1,99 @@
+<div class="layui-panel layui-padding-3"><form class="layui-form" action="{:urls('rule')}" method="post" id="ruleForm"> {foreach $nodes as $rs=>$one}<fieldset class="layui-elem-field"><legend>{$one.node}</legend><div class="layui-field-box"><div class="layui-form-item"> {eq name="$one.node" value="index"} {notempty name="$one.sub"}<div class="layui-input-wrap child-group"> {foreach $one.sub as $v =>$two } {notempty name="$two.is_auth"} <input type="checkbox" class="child-checkbox" name="nodes[]" title="{$two.title|default=''}-({$two.node})" value="{$two.node}" lay-filter="demo-checkbox-filter" checked> {/notempty} {/foreach}</div> {/notempty} {else/} {notempty name="$one.sub"}<div class="layui-input-wrap"> {foreach $one.sub as $v =>$two }<div class="layui-input-wrap child-group"> <input type="checkbox" class="child-checkbox" name="nodes[]" title="{$two.title|default=''}-({$two.node})" value="{$two.node}" lay-filter="demo-checkbox-filter"> {notempty name="$two.sub"}<div class="layui-input-wrap sub-child-group" style="padding-left:40px"> {foreach $two.sub as $k => $three } {notempty name="$three.is_auth"} <input type="checkbox" class="sub-child-checkbox" name="nodes[]" title="{$three.title|default=''}-({$three.node})" value="{$three.node}" lay-filter="demo-checkbox-filter"> {/notempty} {/foreach}</div> {/notempty}</div><hr> {/foreach}</div> {/notempty} {/eq}</div></div></fieldset> {/foreach}<div class="layui-form-item"><div class="layui-input-block"> <input type="hidden" name="id" value="{$get.id}"> <button class="layui-btn" lay-submit lay-filter="formDemo">提交</button> <button type="button" id="toggleAll" class="layui-btn layui-btn-primary">全选</button></div></div></form></div><script>
+    layui.use(['form', 'layer'], function () {
+        var $ = layui.jquery, layer = layui.layer, form = layui.form;
+
+        // 渲染表单
+        form.render();
+
+        // 更新全选/全部取消按钮文本
+        function updateToggleAllText() {
+            var allChecked = $('.child-checkbox, .sub-child-checkbox').length === $('.child-checkbox:checked, .sub-child-checkbox:checked').length;
+            $('#toggleAll').text(allChecked ? '全部取消' : '全选');
+        }
+
+        // 监听全选/全部取消按钮
+        $('#toggleAll').on('click', function () {
+            var checked = !$('.child-checkbox, .sub-child-checkbox').is(':checked');
+
+            // 使用 jQuery 设置所有复选框的状态
+            $('.child-checkbox, .sub-child-checkbox').prop('checked', checked);
+
+            // 重新渲染并更新表单值
+            form.render('checkbox');
+            updateToggleAllText(); // 更新按钮文本
+        });
+
+        // 使用 Layui 原生事件监听器监听复选框变化
+        form.on('checkbox(demo-checkbox-filter)', function (data) {
+            var elem = data.elem; // 获得 checkbox 原始 DOM 对象
+            var checked = elem.checked; // 获得 checkbox 选中状态
+            var value = elem.value; // 获得 checkbox 值
+            var othis = data.othis; // 获得 checkbox 元素被替换后的 jQuery 对象
+
+            // 处理子级复选框逻辑
+            if ($(elem).hasClass('child-checkbox')) {
+                var subChildGroup = $(elem).closest('.child-group').find('.sub-child-checkbox');
+                subChildGroup.prop('checked', checked); // 设置所有孙级复选框的状态
+            }
+
+            // 处理孙级复选框逻辑
+            if ($(elem).hasClass('sub-child-checkbox')) {
+                var parentCheckbox = $(elem).closest('.sub-child-group').prev('.child-checkbox');
+                var subChildGroup = $(elem).closest('.sub-child-group').find('.sub-child-checkbox');
+                var allChecked = subChildGroup.length === subChildGroup.filter(':checked').length;
+
+                // 更新父级复选框的状态
+                parentCheckbox.prop('checked', allChecked);
+            }
+
+            // 重新渲染并更新表单值
+            form.render('checkbox');
+            updateToggleAllText(); // 更新按钮文本
+
+            // 显示选中状态提示
+            // layer.msg('checked 状态: ' + checked);
+        });
+
+        // 监听表单提交事件
+        form.on('submit(formDemo)', function (data) {
+            // 阻止默认提交行为
+            event.preventDefault();
+
+            // 获取表单数据
+            var formData = data.field;
+
+            // 获取表单的 action 和 method
+            var formAction = $('#ruleForm').attr('action');
+            var formMethod = $('#ruleForm').attr('method').toUpperCase();
+
+            // 使用 jQuery 的 $.ajax() 方法提交表单数据
+            $.ajax({
+                url: formAction, // 提交地址
+                type: formMethod, // 提交方法
+                data: formData, // 表单数据
+                dataType: 'json', // 期望返回的数据类型
+                success: function (response) {
+                    // 如果提交成功
+                    if (response.code === 0) {
+                        layer.msg('提交成功', {icon: 1}, function () {
+                            // 提交成功后可以重置表单或其他操作
+
+                        });
+                    } else {
+                        // 如果提交失败
+                        layer.msg('提交失败: ' + response.msg, {icon: 2});
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // 如果请求出错
+                    layer.msg('请求出错: ' + error, {icon: 2});
+                }
+            });
+
+            return false; // 阻止表单默认提交
+        });
+
+        // 初始化时检查并设置全选/全部取消按钮的文本
+        updateToggleAllText();
+    });
+</script>
