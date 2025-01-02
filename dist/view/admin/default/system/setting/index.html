@@ -21,7 +21,7 @@
         $this.find('[data-group-id]').on('click', function () {
             var that = this;
             $.ajax({
-                url: '{:url("getForms")}',
+                url: '{:urls("getForms")}',
                 type: 'get',
                 data: {
                     'group_id': $(that).data('group-id'),

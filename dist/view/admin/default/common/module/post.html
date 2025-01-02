@@ -13,7 +13,7 @@
     .post_ul li + li {
         border-top: 1px solid #eee;
     }
-</style> {/block} {block name="content"}<div id="post_content"><div class="layui-card"><div class="layui-card-header">选择发布内容栏目</div><div class="layui-card-body"><ul class="post_ul"> {volist name="column" id="rs"}<li><a href="javascript:" data-get-content="{:url('add',['cid'=>$rs.id])}">{$rs.title}</a></li> {/volist}</ul></div></div></div> {/block} {block name="js"}<script>
+</style> {/block} {block name="content"}<div id="post_content"><div class="layui-card"><div class="layui-card-header">选择发布内容的模型</div><div class="layui-card-body"><ul class="post_ul"> {volist name="column" id="rs"}<li><a href="javascript:" data-get-content="{:urls('add',['mid'=>$rs.id])}">{$rs.title}</a></li> {/volist}</ul></div></div></div> {/block} {block name="js"}<script>
     layui.use(['jquery', 'layer'], function () {
         let $ = layui.jquery,
             layer = layui.layer;
