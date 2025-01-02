@@ -7,7 +7,6 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
         render: function (url) {
             this.loadAllMenuData(url);
         },
-
         // 加载所有菜单数据
         loadAllMenuData: function (url) {
             // 生成时间戳或随机数作为动态参数
