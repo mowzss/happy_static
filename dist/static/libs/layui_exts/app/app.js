@@ -1,0 +1,1 @@
+layui.define([],function(i){layui.$;i("app",{})});
