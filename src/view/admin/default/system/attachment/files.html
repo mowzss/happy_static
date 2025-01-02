@@ -10,12 +10,12 @@
 <div class="layui-card">
     <div class="layui-card-header">
         {foreach $types as $key=>$vo }
-      
+
         {/foreach}
     </div>
     <div class="layui-card-body">
         <table class="layui-hide page-Table" id="{:get_lay_table_id()}" lay-filter="{:get_lay_table_id()}"
-               data-url="{:url('index')}"></table>
+               data-url="{:urls('index')}"></table>
     </div>
 </div>
 <script type="text/html" id="{:get_lay_table_id()}-toolbarTop">
@@ -43,10 +43,10 @@
             cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
             page: true,
             dataUrls: {
-                add: "{:url('add')}",
-                edit: "{:url('edit')}",
-                del: "{:url('delete')}",
-                quick: "{:url('quickEdit')}",
+                add: "{:urls('add')}",
+                edit: "{:urls('edit')}",
+                del: "{:urls('delete')}",
+                quick: "{:urls('quickEdit')}",
             },
             isTree: JSON.parse('{$is_tree|default=false|json_encode}'),
             toolTplData: JSON.parse('{$tables.right_button|default=[]|raw|json_encode}')

@@ -11,26 +11,26 @@
 <div class="layui-tab layui-tab-card layui-card">
     <ul class="layui-tab-title" id="module_content_list">
         {empty name="$get.mid"}
-        <li lay-ajax="{:url('index')}" class="layui-this">全部内容</li>
+        <li lay-ajax="{:urls('index')}" class="layui-this">全部内容</li>
         {else}
-        <li lay-ajax="{:url('index')}">全部内容</li>
+        <li lay-ajax="{:urls('index')}">全部内容</li>
         {/empty}
         {foreach $model_list as $key=>$name }
         {if isset($get.mid) && $get.mid == $key }
-        <li lay-ajax="{:url('index',['mid'=>$key])}" class="layui-this">{$name}</li>
+        <li lay-ajax="{:urls('index',['mid'=>$key])}" class="layui-this">{$name}</li>
         {else/}
-        <li lay-ajax="{:url('index',['mid'=>$key])}">{$name}</li>
+        <li lay-ajax="{:urls('index',['mid'=>$key])}">{$name}</li>
         {/if}
         {/foreach}
     </ul>
     <div class="layui-card-body">
         <table class="layui-hide page-Table" id="{:get_lay_table_id()}" lay-filter="{:get_lay_table_id()}"
-               data-url="{:url('index')}"></table>
+               data-url="{:urls('index')}"></table>
     </div>
 </div>
 <script type="text/html" id="{:get_lay_table_id()}ToolbarTop">
     <div class="layui-btn-container">
-        <button class="layui-btn layui-btn-sm " data-open="{:url('add')}">添加</button>
+        <button class="layui-btn layui-btn-sm " data-open="{:urls('add')}">添加</button>
         {$top_button|default=""|raw}
     </div>
 </script>
@@ -50,10 +50,10 @@
                 cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
                 page: true,
                 dataUrls: {
-                    add: "{:url('add')}",
-                    edit: "{:url('edit')}",
-                    del: "{:url('delete')}",
-                    quick: "{:url('quickEdit')}",
+                    add: "{:urls('add')}",
+                    edit: "{:urls('edit')}",
+                    del: "{:urls('delete')}",
+                    quick: "{:urls('quickEdit')}",
                 }
             }
         // 初始化 opt.where 为一个空对象，以防后续需要添加内容

@@ -24,7 +24,7 @@
         <div class="layui-card-body">
             <ul class="post_ul">
                 {volist name="column" id="rs"}
-                <li><a href="javascript:" data-get-content="{:url('add',['mid'=>$rs.id])}">{$rs.title}</a></li>
+                <li><a href="javascript:" data-get-content="{:urls('add',['mid'=>$rs.id])}">{$rs.title}</a></li>
                 {/volist}
             </ul>
         </div>
