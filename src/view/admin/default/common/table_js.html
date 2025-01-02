@@ -1,13 +1,13 @@
 <script>
     layui.use(['laytable'], function () {
         let laytable = layui.laytable,
+            isPage = JSON.parse("{$is_page|json_encode}"),
             order = JSON.parse('{$default_order|default=["id"=>"desc"]|raw|json_encode}'),
             where = JSON.parse('{$where|default=[]|raw|json_encode}'),
             opt = {
                 elem: '#{:get_lay_table_id()}',
                 headers: {out: 'json'},
                 cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
-                page: true,
                 dataUrls: {
                     add: "{:urls('add')}",
                     edit: "{:urls('edit')}",
@@ -32,8 +32,6 @@
                 });
             }
         });
-
-        console.log('Final opt.where:', opt.where); // 打印最终的 opt.where
         if (opt.isTree) {
             opt.tree = {
                 customName: {
@@ -42,6 +40,8 @@
                 }
             }
         }
+        opt.page = isPage
+
         // 渲染表格
         laytable.render(opt);
     });

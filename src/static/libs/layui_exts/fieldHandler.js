@@ -71,14 +71,22 @@ layui.define([], function (exports) {
                                lay-text="${onText}|${offText}" 
                                ${isChecked ? 'checked' : ''}>`;
                         };
+
                     } else {
                         col.templet = function (d) {
                             return `<input type="checkbox" name="status" value="${d[col.field]}" lay-skin="switch" lay-text="正常|隐藏" ${d[col.field] === 1 ? 'checked' : ''}>`;
                         };
                     }
+                    if (!col.width) {
+                        col.width = 100
+                    }
+
                     break;
 
                 case 'icon':
+                    if (!col.width) {
+                        col.width = 80
+                    }
                     col.templet = function (d) {
                         return `<em class="${d[col.field]}"></em>`;
                     };
@@ -102,6 +110,9 @@ layui.define([], function (exports) {
                         // 构建图片标签
                         return firstImageUrl ? `<img data-image="hover" src="${firstImageUrl}" alt="Image" style="max-width: ${maxWidth}px; max-height: ${maxHeight};">` : '';
                     };
+                    if (!col.width) {
+                        col.width = 100
+                    }
                     break;
 
                 default:
@@ -132,10 +143,10 @@ layui.define([], function (exports) {
             if (col.field === "title" && !col.width) {
                 col.width = 280;
             }
-            if (col.icon === "icon" && !col.width) {
+            if (col.field === "icon" && !col.width) {
                 col.width = 50;
             }
-            if (col.icon === "switch" && !col.width) {
+            if (col.field === "status" && !col.width) {
                 col.width = 90;
             }
 

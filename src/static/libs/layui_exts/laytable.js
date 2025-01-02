@@ -56,6 +56,9 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                 settings.url = $(settings.elem).data('url');
             }
 
+            if (!settings.page) {
+                settings.limit = '300'
+            }
             // 处理表头字段
             fieldHandler.init(settings);
 
