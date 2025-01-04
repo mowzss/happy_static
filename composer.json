@@ -21,6 +21,9 @@
         "view/forms_style/default": "dist/view/forms/default",
         "view/home_style/default": "dist/view/home/default"
       },
+      "copy": {
+        "view/error": "dist/view/error"
+      },
       "del": true
     }
   }
