@@ -1,7 +1,11 @@
-{foreach $option as $key=>$vals }
-{eq name="$value" value="$key"}
-<input type="radio" name="{$name}" value="{$key}" title="{$vals}" checked>
-{else/}
-<input type="radio" name="{$name}" value="{$key}" title="{$vals}">
-{/eq}
-{/foreach}
+<div>
+    {foreach $option as $key=>$vals }
+
+    {eq name="$value" value="$key"}
+    <input type="radio" name="{$name}" value="{$key}" title="{$vals}" checked>
+    {else/}
+    <input type="radio" name="{$name}" value="{$key}" title="{$vals}">
+    {/eq}
+
+    {/foreach}
+</div>

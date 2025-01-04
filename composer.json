@@ -16,8 +16,10 @@
       "make": {
         "public/static/admin": "dist/static/admin",
         "public/static/libs": "dist/static/libs",
+        "public/static/pc_style": "dist/static/pc_style",
         "view/admin_style/default": "dist/view/admin/default",
-        "view/forms_style/default": "dist/view/forms/default"
+        "view/forms_style/default": "dist/view/forms/default",
+        "view/home_style/default": "dist/view/home/default"
       },
       "del": true
     }
