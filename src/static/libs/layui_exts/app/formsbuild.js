@@ -312,12 +312,11 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                 });
             }
 
-// 初始化表单状态
+            // 初始化表单状态
             function initializeForm() {
                 if (!Array.isArray(triggers) || triggers.length === 0) {
                     return;
                 }
-
                 // 根据当前字段的值来处理依赖字段
                 $.each(triggers, function (index, trigger) {
                     // 转义 trigger.name 以确保选择器有效
