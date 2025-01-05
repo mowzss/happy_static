@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>401 - 未授权</title>
+    <title>操作成功 - 正在跳转...</title>
+    <meta http-equiv="refresh" content="<?php echo($wait);?>;url=<?php echo($url);?>">
     <style>
         body, html {
             height: 100%;
@@ -20,7 +21,7 @@
         }
 
         h1 {
-            font-size: 5rem;
+            font-size: 4rem;
             margin: 0;
             animation: fadeInDown 2s ease-in-out;
         }
@@ -36,14 +37,14 @@
             padding: 10px 20px;
             font-size: 1.2rem;
             color: #fff;
-            background-color: #0d6efd; /* 蓝色 */
+            background-color: #198754; /* 绿色 */
             border-radius: 5px;
             transition: background-color 0.3s;
             animation: fadeInUp 2s ease-in-out 1.5s;
         }
 
         a:hover {
-            background-color: #0b5ed7;
+            background-color: #157347;
         }
 
         @keyframes fadeInDown {
@@ -68,26 +69,39 @@
             }
         }
 
-        .error-icon {
+        .check-icon {
             font-size: 7rem;
             margin-bottom: 20px;
-            color: #0d6efd;
+            color: #198754;
         }
 
-        .login-link {
-            margin-top: 20px;
+        .timer {
+            font-size: 1.5rem;
+            margin-top: 10px;
         }
     </style>
+    <script>
+
+        const timerElement = document.querySelector('.timer');
+        let timeLeft = timerElement.dataset.time;
+        setInterval(() => {
+            if (timeLeft > 0) {
+                timerElement.textContent = `将在 ${timeLeft} 秒后自动跳转...`;
+                timeLeft--;
+            } else {
+                clearInterval(this);
+            }
+        }, 1000);
+    </script>
 </head>
 <body>
 
 <div class="container">
-    <div class="error-icon">🔒</div>
-    <h1>401</h1>
-    <p>您尚未登录或没有权限访问此页面。</p>
-    <a href="/login" class="login-link">前往登录</a>
-    <p>如果您已经拥有账户，请登录以继续。</p>
-    <a href="/">返回首页</a>
+    <div class="check-icon">✅</div>
+    <h1>操作成功</h1>
+    <p><?php echo(strip_tags($msg));?></p>
+    <p class="timer" data-time="<?php echo($wait);?>"></p>
+    <a href="<?php echo($url);?>">跳转</a>
 </div>
 
 </body>

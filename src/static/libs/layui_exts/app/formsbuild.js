@@ -331,12 +331,6 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
             }
 
             if (Array.isArray(triggers) && triggers.length > 0) {
-
-                // $form.on('change', 'input, select, [type="radio"], [type="checkbox"]', function (event) {
-                //     var data = {elem: this, value: $(this).val()};
-                //     handleFormChange(data);
-                // });
-
                 $form.find('input').on('change', function () {
                     var data = {elem: this, value: $(this).val()};
                     handleFormChange(data);
@@ -347,8 +341,6 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                 form.on('select', function (data) {
                     handleFormChange(data);
                 });
-
-
                 // 初始化表单状态
                 initializeForm();
             }
