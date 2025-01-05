@@ -236,6 +236,7 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
          * @param $form
          */
         triggers: function (triggers, $form) {
+
             // 转义选择器中的特殊字符
             function escapeSelector(selector) {
                 return selector.replace(/\[|\]/g, function (match) {
@@ -271,7 +272,7 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                     // 遍历所有依赖字段并隐藏它们
                     allDependentFields.forEach(function (field) {
                         var escapedField = escapeSelector(field);
-                        var dependentItem = $('#item-' + escapedField);
+                        var dependentItem = $form.find('#item-' + escapedField);
                         dependentItem.hide(); // 先隐藏所有依赖字段
                     });
 
@@ -285,8 +286,7 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                                 valueConfig.field.forEach(function (field) {
                                     // 转义 field 以确保选择器有效
                                     var escapedField = escapeSelector(field);
-                                    var dependentItem = $('#item-' + escapedField);
-
+                                    var dependentItem = $form.find('#item-' + escapedField);
                                     dependentItem.show(); // 显示符合条件的依赖字段
                                 });
                             }

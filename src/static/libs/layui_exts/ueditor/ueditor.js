@@ -1,11 +1,11 @@
-layui.define(['jquery','UECONFING', 'UE'], function (exports) {
+layui.define(['jquery', 'UECONFING', 'UE'], function (exports) {
     var $ = layui.jquery;
     var UE = layui.UE;
     var modFile = layui.cache.modules['ueditor'];
     var modPath = modFile.substring(0, modFile.lastIndexOf('/'));
     // 定义配置对象
     var conf = {
-        uploadUrl: '/index.php?s=/Upload/ueditor',
+        uploadUrl: '/index.php?s=/index/Upload/ueditor',
         // 自定义上传配置
         uploadServiceEnable: true,
         uploadServiceUpload: function (type, file, callback, option) {
@@ -14,7 +14,7 @@ layui.define(['jquery','UECONFING', 'UE'], function (exports) {
             formData.append('file', file);  // 文件字段名为 'file'
             // 发起AJAX请求
             $.ajax({
-                url: '/index.php?s=/Upload/save',  // 上传地址
+                url: '/index.php?s=/index/Upload/save',  // 上传地址
                 type: 'POST',
                 data: formData,
                 processData: false,  // 不要处理数据（让数据保持原始格式）

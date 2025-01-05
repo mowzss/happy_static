@@ -9,7 +9,7 @@ layui.define(['jquery', 'toast', 'wangEditor'], function (exports) {
         html: '<p><br></p>',
         height: 400,
         placeholder: 'Type here...',
-        upload_url: '/index.php?s=/Upload/save',
+        upload_url: '/index.php?s=/index/Upload/save',
         base64LimitSize: 100, // base64图片大小限制
         serverResponseSuccessCode: 0, // 上传成功的返回码
         mode: 'default', // or 'simple'
