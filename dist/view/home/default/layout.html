@@ -2,14 +2,12 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>
-        {block name=""}{:sys_config('seo_title')}{/block}
-    </title>
+    <title>{block name="title"}{:sys_config('seo_title')}{/block}</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="keywords" content="{block name='keywords'}{:sys_config('seo_keyword')}{/block}">
-    <meta name="description" content="{block name='description'}{:sys_config('seo_description')}{/block}">
+    <meta name="keywords" content="{block name='keywords'}{:sys_config('seo_keyword')?:''}{/block}">
+    <meta name="description" content="{block name='description'}{:sys_config('seo_description')?:''}{/block}">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="icon" href="favicon.ico">
     <link rel="icon" sizes="16x16 32x32 64x64" href="favicon.ico">
@@ -23,28 +21,18 @@
             {block name="header"}
             <ul class="layui-nav layui-bg-blue">
                 {block name="header_nav"}
-                <li class="layui-nav-item layui-this"><a href="">选中</a></li>
+                {volist name=":get_nav()" id="rs"}
                 <li class="layui-nav-item">
-                    <a href="javascript:;">常规</a>
-                </li>
-                <li class="layui-nav-item"><a href="">导航</a></li>
-                <li class="layui-nav-item">
-                    <a href="javascript:;">子级</a>
+                    <a href="{$rs.url}">{$rs.title}</a>
+                    {notempty name="$rs.sub"}
                     <dl class="layui-nav-child">
-                        <dd><a href="">菜单1</a></dd>
-                        <dd><a href="">菜单2</a></dd>
-                        <dd><a href="">菜单3</a></dd>
+                        {volist name="$rs.sub" id="vs"}
+                        <dd><a href="{$vs.url}">{$vs.title}</a></dd>
+                        {/volist}
                     </dl>
+                    {/notempty}
                 </li>
-                <li class="layui-nav-item">
-                    <a href="javascript:;">选项</a>
-                    <dl class="layui-nav-child">
-                        <dd><a href="">选项1</a></dd>
-                        <dd class="layui-this"><a href="">选项2</a></dd>
-                        <dd><a href="">选项3</a></dd>
-                    </dl>
-                </li>
-                <li class="layui-nav-item"><a href="">演示</a></li>
+                {/volist}
                 {/block}
             </ul>
             {/block}
@@ -55,8 +43,24 @@
         内容区域
         {/block}
     </div>
-    <footer>
-        {block name="footer"}{/block}
+    <footer class="layui-bg-black">
+        <div class="layui-container">
+            {block name="footer"}
+            <h3>友情链接</h3>
+            {block name="footer_links"}
+            {volist name=":get_links(1)" id="rs"}
+            <a href="{$rs.url}" target="_blank" class="layui-font-gray">{$rs.title}</a>
+            {/volist}
+            {/block}
+            <div class="layui-text" style="text-align: center;padding: 20px 0;">
+                © {:sys_config('copyright')} {:date('Y')} All Rights Reserved.
+                {notempty name=":sys_config('icp_number')"}
+                <a href="https://beian.miit.gov.cn/" target="_blank">{:sys_config('icp_number')}</a>
+                {/notempty}
+            </div>
+            {/block}
+        </div>
+
     </footer>
 </div>
 <script src="__STATIC__/libs/layui/layui.js"></script>
