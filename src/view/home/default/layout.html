@@ -43,8 +43,24 @@
         内容区域
         {/block}
     </div>
-    <footer>
-        {block name="footer"}{/block}
+    <footer class="layui-bg-black">
+        <div class="layui-container">
+            {block name="footer"}
+            <h3>友情链接</h3>
+            {block name="footer_links"}
+            {volist name=":get_links(1)" id="rs"}
+            <a href="{$rs.url}" target="_blank" class="layui-font-gray">{$rs.title}</a>
+            {/volist}
+            {/block}
+            <div class="layui-text" style="text-align: center;padding: 20px 0;">
+                © {:sys_config('copyright')} {:date('Y')} All Rights Reserved.
+                {notempty name=":sys_config('icp_number')"}
+                <a href="https://beian.miit.gov.cn/" target="_blank">{:sys_config('icp_number')}</a>
+                {/notempty}
+            </div>
+            {/block}
+        </div>
+
     </footer>
 </div>
 <script src="__STATIC__/libs/layui/layui.js"></script>
