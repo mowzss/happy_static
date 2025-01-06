@@ -1,11 +1,43 @@
-{extend name="layout" /} {block name="content"} {notempty name="$search_code"}<div class="layui-card"><div class="layui-card-body"> {$search_code|raw}</div></div> {/notempty}<div class="layui-tab layui-tab-card layui-card"><ul class="layui-tab-title" id="module_content_list"> {empty name="$get.mid"}<li lay-ajax="{:urls('index')}" class="layui-this">全部内容</li> {else}<li lay-ajax="{:urls('index')}">全部内容</li> {/empty} {foreach $model_list as $key=>$name } {if isset($get.mid) && $get.mid == $key }<li lay-ajax="{:urls('index',['mid'=>$key])}" class="layui-this">{$name}</li> {else/}<li lay-ajax="{:urls('index',['mid'=>$key])}">{$name}</li> {/if} {/foreach}</ul><div class="layui-card-body"><table class="layui-hide page-Table" id="{:get_lay_table_id()}" lay-filter="{:get_lay_table_id()}" data-url="{:urls('index')}"></table></div></div><script type="text/html" id="{:get_lay_table_id()}ToolbarTop">
+{extend name="table" /}
+{block name="content"}
+
+{notempty name="$search_code"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        {$search_code|raw}
+    </div>
+</div>
+{/notempty}
+<div class="layui-tab layui-tab-card layui-card">
+    <ul class="layui-tab-title" id="module_content_list">
+        {empty name="$request->param('mid')"}
+        <li lay-ajax="{:urls('index')}" class="layui-this">全部内容</li>
+        {else}
+        <li lay-ajax="{:urls('index')}">全部内容</li>
+        {/empty}
+        {foreach $model_list as $key=>$name }
+        {if $request->param('mid')== $key }
+        <li lay-ajax="{:urls('index',['mid'=>$key])}" class="layui-this">{$name}</li>
+        {else/}
+        <li lay-ajax="{:urls('index',['mid'=>$key])}">{$name}</li>
+        {/if}
+        {/foreach}
+    </ul>
+    <div class="layui-card-body">
+        <table class="layui-hide page-Table" id="{:get_lay_table_id()}" lay-filter="{:get_lay_table_id()}"
+               data-url="{:urls('index')}"></table>
+    </div>
+</div>
+<script type="text/html" id="{:get_lay_table_id()}ToolbarTop">
     <div class="layui-btn-container">
         <button class="layui-btn layui-btn-sm " data-open="{:urls('add')}">添加</button>
         {$top_button|default=""|raw}
     </div>
-</script><script type="text/html" id="{:get_lay_table_id()}Tool">
+</script>
+<script type="text/html" id="{:get_lay_table_id()}Tool">
     {$right_button|default=""|raw}
-</script><script>
+</script>
+<script>
     layui.use(['laytable', 'dropdown', 'layer', 'jquery'], function () {
         let laytable = layui.laytable,
             layer = layui.layer,
@@ -53,4 +85,6 @@
             })
         })
     });
-</script> {/block}
+</script>
+
+{/block}

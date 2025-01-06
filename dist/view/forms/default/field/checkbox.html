@@ -1,1 +1,9 @@
-<div class="layui-form"> {foreach $option as $key=>$vals } {eq name="$value" value="$key"} <input type="checkbox" name="{$name}" value="{$key}" title="{$vals}" lay-skin="tag" checked> {else/} <input type="checkbox" name="{$name}" value="{$key}" title="{$vals}" lay-skin="tag"> {/eq} {/foreach}</div>
+<div class="layui-form">
+    {foreach $option as $key=>$vals }
+    {eq name="$value" value="$key"}
+    <input type="checkbox" name="{$name}" value="{$key}" title="{$vals}" lay-skin="tag" checked>
+    {else/}
+    <input type="checkbox" name="{$name}" value="{$key}" title="{$vals}" lay-skin="tag">
+    {/eq}
+    {/foreach}
+</div>

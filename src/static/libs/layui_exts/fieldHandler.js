@@ -137,11 +137,11 @@ layui.define([], function (exports) {
             if (col.field === "list" && !col.width) {
                 col.width = 120;
             }
-            if (!col.align) {
-                col.align = 'center';
-            }
             if (col.field === "title" && !col.width) {
                 col.width = 280;
+            }
+            if (col.field === "title" && !col.align) {
+                col.align = 'left';
             }
             if (col.field === "icon" && !col.width) {
                 col.width = 50;
@@ -150,6 +150,9 @@ layui.define([], function (exports) {
                 col.width = 90;
             }
 
+            if (!col.align) {
+                col.align = 'center';
+            }
 
         }
     }

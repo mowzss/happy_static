@@ -120,7 +120,7 @@ function buildStaticHtml() {
 function buildTemplateHtml() {
     return gulp.src(paths.template.src.html)
         .pipe(changed(paths.template.dist))
-        .pipe(cleanHtml())
+        // .pipe(cleanHtml())
         .pipe(gulp.dest(paths.template.dist));
 }
 

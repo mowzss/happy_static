@@ -7,6 +7,13 @@
 </head>
 <body>
 <div class="happy-container">
+    {notempty name="$tables.tips"}
+
+    <blockquote class="layui-elem-quote">
+        {$tables.tips|raw}
+    </blockquote>
+
+    {/notempty}
     {block name="content"}{/block}
 </div>
 {block name="js"}

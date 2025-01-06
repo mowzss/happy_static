@@ -1,4 +1,47 @@
-<div class="layui-panel layui-padding-3"><form class="layui-form happy-admin-post-form" id="form{$lay_filter}" action="{$action}" method="{$method?:'post'}"> {volist name="fields" id="item"} {switch name="item.type"} {case hidden}<div class="layui-hide" id="hidden-{$item.name}"> {$renderer->renderField($item)|raw}</div> {/case} {default /}<div class="layui-form-item" id="item-{$item.name}"> <label class='layui-form-label' for='{$item.name}'>{$item.label??''} {notempty name="$item.required"} <span style="color: red;">*</span> {/notempty}</label><div class='layui-input-block' id="items-{$item.name}"> {$renderer->renderField($item)|raw} {notempty name="$item.help"}<div class='layui-form-mid layui-text-em'>{$item.help|raw}</div> {/notempty}</div></div> {/switch} {/volist}<hr><div class="layui-form-item"><div class="layui-btn-container"> {$submit|raw}</div></div></form></div> {notempty name="$description"}<div class="layui-card"><div class="layui-card-header">提示</div><div class="layui-card-body"> {:$description}</div></div> {/notempty}<script>
+<div class="layui-panel layui-padding-3">
+    <form class="layui-form happy-admin-post-form" id="form{$lay_filter}" action="{$action}" method="{$method?:'post'}">
+
+        {volist name="fields" id="item"}
+        {switch name="item.type"}
+        {case hidden}
+        <div class="layui-hide" id="hidden-{$item.name}">
+            {$renderer->renderField($item)|raw}
+        </div>
+        {/case}
+        {default /}
+        <div class="layui-form-item" id="item-{$item.name}">
+            <label class='layui-form-label' for='{$item.name}'>
+                {$item.label??''}
+                {notempty name="$item.required"}
+                <span style="color: red;">*</span>
+                {/notempty}
+            </label>
+            <div class='layui-input-block' id="items-{$item.name}">
+                {$renderer->renderField($item)|raw}
+                {notempty name="$item.help"}
+                <div class='layui-form-mid layui-text-em'>{$item.help|raw}</div>
+                {/notempty}
+            </div>
+        </div>
+        {/switch}
+        {/volist}
+        <hr>
+        <div class="layui-form-item">
+            <div class="layui-btn-container">
+                {$submit|raw}
+            </div>
+        </div>
+    </form>
+</div>
+{notempty name="$description"}
+<div class="layui-card">
+    <div class="layui-card-header">提示</div>
+    <div class="layui-card-body">
+        {:$description}
+    </div>
+</div>
+{/notempty}
+<script>
     layui.use('formsbuild', function () {
         var formsbuild = layui.formsbuild;
         formsbuild.render({

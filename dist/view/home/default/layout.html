@@ -1,1 +1,66 @@
-<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><title> {block name=""}{:sys_config('seo_title')}{/block}</title><meta name="renderer" content="webkit"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><meta name="keywords" content="{block name='keywords'}{:sys_config('seo_keyword')}{/block}"><meta name="description" content="{block name='description'}{:sys_config('seo_description')}{/block}"><link rel="shortcut icon" href="favicon.ico"><link rel="icon" href="favicon.ico"><link rel="icon" sizes="16x16 32x32 64x64" href="favicon.ico"><link rel="stylesheet" href="__STATIC__/pc_style/css/common.css"> {block name="style"}{/block}</head><body> {block name="content"} 内容区域 {/block}<footer> {block name="footer"}{/block}</footer><script src="__STATIC__/libs/layui/layui.js"></script><script src="__STATIC__/pc_style/js/common.js"></script> {block name="footer_js"}{/block}</body></html>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {block name=""}{:sys_config('seo_title')}{/block}
+    </title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="keywords" content="{block name='keywords'}{:sys_config('seo_keyword')}{/block}">
+    <meta name="description" content="{block name='description'}{:sys_config('seo_description')}{/block}">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="icon" href="favicon.ico">
+    <link rel="icon" sizes="16x16 32x32 64x64" href="favicon.ico">
+    <link rel="stylesheet" href="__STATIC__/pc_style/css/common.css">
+    {block name="style"}{/block}
+</head>
+<body>
+<div class="layui-layout">
+    <div class="layui-fluid layui-bg-blue">
+        <div class="layui-container ">
+            {block name="header"}
+            <ul class="layui-nav layui-bg-blue">
+                {block name="header_nav"}
+                <li class="layui-nav-item layui-this"><a href="">选中</a></li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">常规</a>
+                </li>
+                <li class="layui-nav-item"><a href="">导航</a></li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">子级</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="">菜单1</a></dd>
+                        <dd><a href="">菜单2</a></dd>
+                        <dd><a href="">菜单3</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="javascript:;">选项</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="">选项1</a></dd>
+                        <dd class="layui-this"><a href="">选项2</a></dd>
+                        <dd><a href="">选项3</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item"><a href="">演示</a></li>
+                {/block}
+            </ul>
+            {/block}
+        </div>
+    </div>
+    <div class="layui-container">
+        {block name="content"}
+        内容区域
+        {/block}
+    </div>
+    <footer>
+        {block name="footer"}{/block}
+    </footer>
+</div>
+<script src="__STATIC__/libs/layui/layui.js"></script>
+<script src="__STATIC__/pc_style/js/common.js"></script>
+{block name="footer_js"}{/block}
+</body>
+</html>

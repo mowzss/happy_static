@@ -1,4 +1,10 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>系统安装</title><link rel="stylesheet" href="/static/libs/layui/css/layui.css"><style>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>系统安装</title>
+    <link rel="stylesheet" href="/static/libs/layui/css/layui.css">
+    <style>
         .layui-form-item {
             margin-bottom: 20px;
         }
@@ -7,7 +13,87 @@
             color: red;
             margin-top: 10px;
         }
-    </style></head><body><div class="layui-container" style="margin-top: 50px;"><div class="layui-row"><div class="layui-col-md6 layui-col-md-offset3"><h2 class="layui-text-center">系统安装</h2><form class="layui-form" id="install-form"><div class="layui-form-item"> <label class="layui-form-label">数据库主机:</label><div class="layui-input-block"> <input type="text" name="db_host" id="db_host" required lay-verify="required" placeholder="请输入数据库主机" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"> <label class="layui-form-label">数据库名称:</label><div class="layui-input-block"> <input type="text" name="db_name" id="db_name" required lay-verify="required" placeholder="请输入数据库名称" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"> <label class="layui-form-label">数据库用户名:</label><div class="layui-input-block"> <input type="text" name="db_user" id="db_user" required lay-verify="required" placeholder="请输入数据库用户名" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"> <label class="layui-form-label">数据库密码:</label><div class="layui-input-block"> <input type="password" name="db_pass" id="db_pass" required lay-verify="required" placeholder="请输入数据库密码" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"> <label class="layui-form-label">表前缀:</label><div class="layui-input-block"> <input type="text" name="db_prefix" id="db_prefix" placeholder="请输入表前缀（可选）" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"> <label class="layui-form-label">管理员用户名:</label><div class="layui-input-block"> <input type="text" name="admin_username" id="admin_username" required lay-verify="required" placeholder="请输入管理员用户名" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"> <label class="layui-form-label">管理员密码:</label><div class="layui-input-block"> <input type="password" name="admin_password" id="admin_password" required lay-verify="required" placeholder="请输入管理员密码" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"> <label class="layui-form-label">管理员邮箱:</label><div class="layui-input-block"> <input type="email" name="admin_email" id="admin_email" required lay-verify="required|email" placeholder="请输入管理员邮箱" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item"><div class="layui-input-block"><span id="connection-status"></span></div></div><div class="layui-form-item"><div class="layui-input-block"> <button class="layui-btn" id="submit-btn" disabled>提交</button></div></div></form></div></div></div><script src="/static/libs/layui/layui.js"></script><script>
+    </style>
+</head>
+<body>
+<div class="layui-container" style="margin-top: 50px;">
+    <div class="layui-row">
+        <div class="layui-col-md6 layui-col-md-offset3">
+            <h2 class="layui-text-center">系统安装</h2>
+            <form class="layui-form" id="install-form">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">数据库主机:</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="db_host" id="db_host" required lay-verify="required"
+                               placeholder="请输入数据库主机" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">数据库名称:</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="db_name" id="db_name" required lay-verify="required"
+                               placeholder="请输入数据库名称" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">数据库用户名:</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="db_user" id="db_user" required lay-verify="required"
+                               placeholder="请输入数据库用户名" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">数据库密码:</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="db_pass" id="db_pass" required lay-verify="required"
+                               placeholder="请输入数据库密码" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">表前缀:</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="db_prefix" id="db_prefix" placeholder="请输入表前缀（可选）"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">管理员用户名:</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="admin_username" id="admin_username" required lay-verify="required"
+                               placeholder="请输入管理员用户名" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">管理员密码:</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="admin_password" id="admin_password" required lay-verify="required"
+                               placeholder="请输入管理员密码" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">管理员邮箱:</label>
+                    <div class="layui-input-block">
+                        <input type="email" name="admin_email" id="admin_email" required lay-verify="required|email"
+                               placeholder="请输入管理员邮箱" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <span id="connection-status"></span>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" id="submit-btn" disabled>提交</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/static/libs/layui/layui.js"></script>
+<script>
     layui.use(['form', 'jquery'], function () {
         var form = layui.form;
         var $ = layui.jquery;
@@ -79,4 +165,6 @@
         // 初始化时检查数据库连接
         checkDbConnection();
     });
-</script></body></html>
+</script>
+</body>
+</html>
