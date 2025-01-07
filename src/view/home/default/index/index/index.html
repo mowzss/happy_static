@@ -2,7 +2,7 @@
 {block name="content"}
 <h3>内容列表</h3>
 <ul>
-    {hp:lists name="pc" module="article" mid="1" rows="10"}
+    {hp:lists name="pc" module="article" mid="1" rows="3" page="1"}
     <li><a href="{$rs.url}">
         {notempty name="$rs.image"}
         <img src="{$rs.image|default=''}" alt="  {$rs.title}" srcset="" width="80px" height="40px"/>
@@ -11,6 +11,7 @@
         <div> {$rs.title}</div>
     </a></li>
     {/hp:lists}
+    {$pages|raw}
 </ul>
 
 {/block}
