@@ -24,7 +24,7 @@
       "copy": {
         "view/error": "dist/view/error"
       },
-      "del": true
+      "del": false
     }
   }
 }
