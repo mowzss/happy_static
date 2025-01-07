@@ -13,7 +13,7 @@
   },
   "extra": {
     "module": {
-      "make": {
+      "copy": {
         "public/static/admin": "dist/static/admin",
         "public/static/libs": "dist/static/libs",
         "public/static/pc_style": "dist/static/pc_style",
@@ -21,7 +21,7 @@
         "view/forms_style/default": "dist/view/forms/default",
         "view/home_style/default": "dist/view/home/default"
       },
-      "copy": {
+      "mark": {
         "view/error": "dist/view/error"
       },
       "del": true
