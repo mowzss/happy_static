@@ -22,7 +22,6 @@ layui.config({
     fieldHandler: "fieldHandler",
 
     xmSelect: "xm-select",
-
     popup: "extends/popup",
     count: "extends/count",
     toast: "extends/toast",
@@ -30,7 +29,7 @@ layui.config({
     echarts: "extends/echarts.min",
     echartsTheme: "extends/echartsTheme",
     yaml: "extends/yaml",
-    uploads: '{/}//' + window.location.hostname + '/layui_exts/uploads?',
+    uploads: '{/}//' + window.location.hostname + '/index/upload/index?',
     //app
     formsbuild: "app/formsbuild",
     app: 'app/app'
