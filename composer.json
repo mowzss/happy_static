@@ -13,7 +13,7 @@
   },
   "extra": {
     "module": {
-      "mark": {
+      "make": {
         "public/static/admin": "dist/static/admin",
         "public/static/libs": "dist/static/libs",
         "public/static/pc_style": "dist/static/pc_style",
