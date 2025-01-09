@@ -1,0 +1,27 @@
+{extend name="../common/form" /} {block name="content"}<form class="layui-form" action="{:url()}" data-auto method="post"><div class="layui-form-item"><div class="layui-inline"> <label class="layui-form-label">新邮箱</label><div class="layui-input-inline"> <input type="text" name="email" required lay-verify="required|email" autocomplete="off" class="layui-input bind-email"></div></div></div><div class="layui-form-item"> <label class="layui-form-label">验证码</label><div class="layui-input-inline"> <input type="text" name="vercode" required autocomplete="off" class="layui-input"></div><div class="layui-form-mid" style="padding: 0!important;"> <button type="button" class="layui-btn layui-btn-primary" lay-on="get-vercode">获取验证码</button></div></div> {if !empty($userdb.usermail) && $userdb.usermail_status==1}<div class="layui-form-item"><div class="layui-inline"> <label class="layui-form-label">原邮箱</label><div class="layui-input-inline"> <input type="text" name="old_email" required lay-verify="required|email" autocomplete="off" class="layui-input bind-email"></div><div class="layui-form-mid layui-word-aux">请填写已认证的完整邮箱: {:hide_info($userdb.usermail)}</div></div></div> {/if}<div class="layui-form-item"><div class="layui-input-block"> <button class="layui-btn" lay-submit>提交绑定</button> <button type="reset" class="layui-btn layui-btn-primary">重置</button></div></div></form> {/block} {block name="footer_js"}<script type="text/javascript">
+    // 发送验证码
+    layui.util.on('lay-on', {
+        "get-vercode": function (othis) {
+            var isValid = form.validate('.bind-email');
+            var email = $(".bind-email");
+            if (isValid) {
+                $.ajax({
+                    url: "{:url('getCode')}",
+                    data: {
+                        email: email.val(),
+                        type: 'email'
+                    },
+                    type: 'post',
+                    success: function (result) {
+                        console.log(result)
+                        if (result.code == 1) {
+                            $.msg.success(result.info)
+                        } else {
+                            $.msg.error(result.info)
+                        }
+                    }
+                });
+            }
+        }
+    });
+</script> {/block}

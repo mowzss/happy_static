@@ -1,0 +1,48 @@
+{extend name="layout_page" /}
+{block name="content"}
+<div class="user-top layui-card  box-shadow radius">
+    <div class="layui-card-header"><span>用户信息</span></div>
+    <div class="layui-card-body">
+        <div class="user-base-info">
+            <div class="user-base-avatar">
+                <img alt="{$user.nickname}" src="{$user.avatar|default=''}">
+                <span class="user-base-uid">UID:{$user.id}</span></div>
+            <div class="user-base-info-box">
+                <a class="user-welcome-words" href="{:url('user/edit')}">{$user.nickname}，{:get_hello()}</a>
+                <div class="layui-row user-base-data">
+                    <div class="layui-col-md2"> 积分</div>
+                    <div class="layui-col-md4"> {$user.points??0}</div>
+                    <div class="layui-col-md2"> 最近登录</div>
+                    <div class="layui-col-md4"> {$user.last_time}</div>
+                    <div class="layui-col-md2"> 最近登录地点</div>
+                    <div class="layui-col-md4"> {$user.last_ip}</div>
+                    <div class="layui-col-md2"> 最近登录IP</div>
+                    <div class="layui-col-md4"> {$user.last_ip}</div>
+                </div>
+                <p>{$user.describe??"这个人很懒，什么都没有留下"}</p></div>
+        </div>
+    </div>
+</div>
+<div class="layui-card  box-shadow radius margin-top-20">
+    <div class="layui-card-header"><span>登录记录</span></div>
+    <div class="layui-card-body">
+        <table class="layui-table">
+            <thead>
+            <tr>
+                <th>登录时间</th>
+                <th>登录IP</th>
+                <th>归属地</th>
+            </tr>
+            </thead>
+            <tbody>
+            {volist name="login_log" id="vo"}
+            <tr>
+                <td>{$vo.create_time}</td>
+                <td>{$vo.ip}</td>
+            </tr>
+            {/volist}
+            </tbody>
+        </table>
+    </div>
+</div>
+{/block}
