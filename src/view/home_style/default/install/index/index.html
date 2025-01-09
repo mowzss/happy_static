@@ -31,35 +31,35 @@
                             <label class="layui-form-label">数据库主机:</label>
                             <div class="layui-input-block">
                                 <input type="text" name="db_host" id="db_host" required lay-verify="required"
-                                       placeholder="请输入数据库主机" autocomplete="off" class="layui-input">
+                                       placeholder="请输入数据库主机" class="layui-input" value="127.0.0.1">
                             </div>
                         </div>
                         <div class="layui-form-item">
                             <label class="layui-form-label">数据库名称:</label>
                             <div class="layui-input-block">
                                 <input type="text" name="db_name" id="db_name" required lay-verify="required"
-                                       placeholder="请输入数据库名称" autocomplete="off" class="layui-input">
+                                       placeholder="请输入数据库名称" class="layui-input" value="md_cn">
                             </div>
                         </div>
                         <div class="layui-form-item">
                             <label class="layui-form-label">数据库用户名:</label>
                             <div class="layui-input-block">
                                 <input type="text" name="db_user" id="db_user" required lay-verify="required"
-                                       placeholder="请输入数据库用户名" autocomplete="off" class="layui-input">
+                                       placeholder="请输入数据库用户名" class="layui-input" value="md_cn">
                             </div>
                         </div>
                         <div class="layui-form-item">
                             <label class="layui-form-label">数据库密码:</label>
                             <div class="layui-input-block">
                                 <input type="password" name="db_pass" id="db_pass" required lay-verify="required"
-                                       placeholder="请输入数据库密码" autocomplete="off" class="layui-input">
+                                       placeholder="请输入数据库密码" class="layui-input" value="wn4BbwwSFsJAjkAY">
                             </div>
                         </div>
                         <div class="layui-form-item">
                             <label class="layui-form-label">表前缀:</label>
                             <div class="layui-input-block">
                                 <input type="text" name="db_prefix" id="db_prefix" placeholder="请输入表前缀（可选）"
-                                       autocomplete="off" class="layui-input">
+                                       class="layui-input" value="ha_">
                             </div>
                         </div>
                         <div class="layui-form-item">
@@ -67,7 +67,7 @@
                             <div class="layui-input-block">
                                 <input type="text" name="admin_username" id="admin_username" required
                                        lay-verify="required"
-                                       placeholder="请输入管理员用户名" autocomplete="off" class="layui-input">
+                                       placeholder="请输入管理员用户名" class="layui-input" value="admin">
                             </div>
                         </div>
                         <div class="layui-form-item">
@@ -75,7 +75,7 @@
                             <div class="layui-input-block">
                                 <input type="password" name="admin_password" id="admin_password" required
                                        lay-verify="required"
-                                       placeholder="请输入管理员密码" autocomplete="off" class="layui-input">
+                                       placeholder="请输入管理员密码" class="layui-input" value="123456">
                             </div>
                         </div>
                         <div class="layui-form-item">
@@ -83,7 +83,7 @@
                             <div class="layui-input-block">
                                 <input type="email" name="admin_email" id="admin_email" required
                                        lay-verify="required|email"
-                                       placeholder="请输入管理员邮箱" autocomplete="off" class="layui-input">
+                                       placeholder="请输入管理员邮箱" class="layui-input" value="admin@qq.com">
                             </div>
                         </div>
                         <div class="layui-form-item">
@@ -93,7 +93,9 @@
                         </div>
                         <div class="layui-form-item">
                             <div class="layui-input-block">
-                                <button class="layui-btn" id="submit-btn" disabled>提交</button>
+                                <button class="layui-btn" id="submit-btn" lay-filter="install" lay-submit disabled>
+                                    提交
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -109,15 +111,14 @@
         var form = layui.form;
         var $ = layui.jquery;
 
-        // 实时检测数据库连接
-        form.on('input', function (data) {
-            checkDbConnection();
+        $('#install-form').on('blur', 'input', function () {
+            checkDbConnection()
         });
 
         // 提交表单
-        form.on('submit(install-form)', function (data) {
+        form.on('submit(install)', function (data) {
             $.ajax({
-                url: '/install/submit',
+                url: '{:urls("install")}',
                 type: 'POST',
                 data: data.field,
                 success: function (response) {
@@ -142,16 +143,18 @@
             var dbName = $('#db_name').val();
             var dbUser = $('#db_user').val();
             var dbPass = $('#db_pass').val();
-
-            if (dbHost && dbName && dbUser && dbPass) {
+            var dbPre = $('#db_prefix').val();
+            console.log(dbHost, dbName, dbUser, dbPass);
+            if (dbHost && dbName && dbUser && dbPass && dbPre) {
                 $.ajax({
-                    url: '/install/check-db-connection',
+                    url: '{:urls("checkDbConnection")}',
                     type: 'POST',
                     data: {
                         db_host: dbHost,
                         db_name: dbName,
                         db_user: dbUser,
-                        db_pass: dbPass
+                        db_pass: dbPass,
+                        db_prefix: dbPre,
                     },
                     success: function (response) {
                         if (response.status === 'success') {
