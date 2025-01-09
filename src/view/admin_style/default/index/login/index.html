@@ -77,10 +77,10 @@
 <script>
     layui.use(['form', 'popup', 'jquery', 'encrypt', 'movBg'], function () {
         let form = layui.form;
-        let popup = layui.popup;
         let $ = layui.jquery;
         let encrypt = layui.encrypt;
         let movBg = layui.movBg;
+        let layer = layui.layer;
         // 小方块 渲染
         movBg.firefly("body", {
             num: 100,
@@ -98,11 +98,11 @@
                 dataType: "json",
                 success: function (data) {
                     if (data.code === 0) {
-                        popup.success("登录成功", function () {
+                        layer.msg("登录成功", function () {
                             location.href = data.url
                         });
                     } else {
-                        popup.error(data.msg)
+                        layer.msg(data.msg)
                     }
                 }
             })
