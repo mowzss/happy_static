@@ -1,0 +1,51 @@
+<script>
+    layui.use(['laytable'], function () {
+        let laytable = layui.laytable,
+            isPage = JSON.parse("{$is_page|json_encode}"),
+            order = JSON.parse('{$default_order|default=["id"=>"desc"]|raw|json_encode}'),
+            where = JSON.parse('{$where|default=[]|raw|json_encode}'),
+            opt = {
+                elem: '#{:get_lay_table_id()}',
+                headers: {out: 'json'},
+                cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
+                dataUrls: {
+                    add: "{:urls('add')}",
+                    edit: "{:urls('edit')}",
+                    del: "{:urls('delete')}",
+                    quick: "{:urls('quickEdit')}",
+                },
+                isTree: JSON.parse('{$is_tree|default=false|json_encode}'),
+                toolbar: false
+            }
+        // 初始化 opt.where 为一个空对象，以防后续需要添加内容
+        opt.where = opt.where || {};
+        // 如果 where 不为空，则将其内容合并到 opt.where 中
+        if (Object.keys(where).length > 0) {
+            Object.assign(opt.where, where);
+        }
+        // 获取 order 对象的所有键并设置排序条件
+        Object.keys(order).forEach(key => {
+            if (order[key]) {
+                // 合并排序条件到 where 中
+                Object.assign(opt.where, {
+                    _order: key,
+                    _by: order[key]
+                });
+            }
+        });
+        if (opt.isTree) {
+            opt.tree = {
+                customName: {
+                    name: 'title',
+                    pid: 'pid'
+                }
+            }
+        }
+        opt.page = isPage
+
+        // 渲染表格
+        laytable.render(opt);
+    });
+
+
+</script>

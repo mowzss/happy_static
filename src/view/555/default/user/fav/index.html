@@ -1,0 +1,36 @@
+{extend name="../common/layout" /} {block name="content"}<div class="layui-card box-shadow radius"><div class="layui-card-body"><div class="layui-tab layui-tab-brief"><ul class="layui-tab-title"> {foreach $module as $key=>$vo }<li class='{eq name="$key" value="$type"}layui-this{/eq}' data-open="{:url('index',['type'=>$key])}"> {$vo}</li> {/foreach}</ul><div class="layui-tab-content"><table id="myTable"></table></div></div></div></div> {/block} {block name='footer_js'}<script id="toptoolbar" type="text/html">
+    <div class="layui-btn-container">
+        <button data-action='{:url("del")}' data-table-id="myTable" data-rule="id#{id}"
+                data-confirm="确定要批量删除这些收藏内容吗？" class='layui-btn layui-btn-sm layui-btn-danger'>批量删除
+        </button>
+    </div>
+</script><script>
+    $(function () {
+        // 初始化表格组件
+        $('#myTable').layTable({
+            even: true, height: 'full', toolbar: '#toptoolbar', skin: 'line', url: '{:url()}',
+            sort: {field: 'id', type: 'desc'},
+            where: {type: '{$type|default="all"}'},
+            cols: [[
+                {checkbox: true, fixed: 'id'},
+                {field: 'id', title: 'ID', align: 'center', width: 80, sort: true},
+                {
+                    field: 'module', title: '模块', align: 'center', width: 100, sort: true, templet: function (d) {
+                        return layui.laytpl(' <a href="{{d.module_url}}" style="color: #0d65ff">{{d.module}}</a> ').render(d);
+                    }
+                },
+                {
+                    field: 'title', title: '内容标题', align: 'left', templet: function (d) {
+                        return layui.laytpl(' <a href="{{d.url}}" style="color: #0d65ff">{{d.title}}</a> ').render(d);
+                    }
+                },
+                {field: 'create_time', title: '收藏时间', align: 'center', width: 180, sort: true},
+                {toolbar: '#toolbar', title: '', align: 'center', width: 120, fixed: 'right'},
+            ]]
+        });
+    });
+
+</script><script id="toolbar" type="text/html">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" data-action="{:url('del')}" data-value="id#{{d.id}}"
+       data-confirm="确定要删除此收藏吗?">删 除</a>
+</script> {/block}

@@ -1,0 +1,48 @@
+<div class="layui-card">
+    <div class="layui-card-header">文章投稿</div>
+    <div class="layui-card-body">
+        <form action="{:sysuri()}" class="layui-card layui-form" data-auto="true" method="post">
+            <div class="layui-card-body">
+                {notempty name='$cates'}
+                <div class="layui-form-item block relative">
+                    <span class="help-label label-required-prev">选择分类</span>
+                    <select class="layui-select" lay-search name="cid"> {foreach $cates as $cate} {if isset($vo.cid) and
+                        $vo.cid
+                        eq $cate.id}
+                        <option selected value="{$cate.id}">{$cate.spl|raw} {$cate.id}-{$cate.title|default=''}</option>
+                        {else}
+                        <option value="{$cate.id}">{$cate.spl|raw} {$cate.id}-{$cate.title|default=''}</option>
+                        {/if} {/foreach}</select>
+                </div>
+                {/notempty}
+                <div class="layui-form-item label-required-prev"><span class="help-label">标题</span>
+                    <input class="layui-input" name="title" placeholder="请输入标题" required
+                           value='{$vo.title|default=""}'></div>
+                <div class="layui-form-item "><label class="layui-col-xs8 relative"><span class="help-label">简介</span>
+                    <textarea class="layui-textarea" name="description">{$vo.description|default=''}</textarea></label>
+                </div>
+                <div class="layui-form-item label-required-prev"><span class="help-label">内容</span>
+                    <div class="relative block">
+                        <textarea class="layui-hide" name="content"
+                                  placeholder="请输入内容">{$content|default=''}</textarea>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                {notempty name='vo.id'}<input name='id' type='hidden' value='{$vo.id}'>{/notempty}
+                <div class="layui-form-item text-center">
+                    <button class="layui-btn" type="submit">保存数据</button>
+                    <button class="layui-btn layui-btn-danger" data-confirm="确定要取消编辑吗？" data-history-back
+                            type='button'>
+                        取消编辑
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+<script>
+    require(['ckeditor'], function () {
+        window.createEditor('[name=content]', {height: 350})
+    });
+</script>

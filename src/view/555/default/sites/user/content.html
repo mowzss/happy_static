@@ -1,0 +1,92 @@
+{extend name="../common/layout" /}
+{block name="content"}
+<div class="layui-card izshi-shadow">
+    <div class="layui-card-header">
+        <span>网站列表</span>
+    </div>
+    <div class="layui-card-body">
+        <fieldset class="layui-elem-field">
+            <legend>温馨提示:</legend>
+            <div class="layui-field-box">
+                <p>
+                    1、本平台不接受中国禁止的各种网站，一旦发现即删除。
+                </p>
+                <p>
+                    2、网站域名提交后，不能修改，请仔细检查后提交。
+                </p>
+            </div>
+        </fieldset>
+        <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+            <ul class="layui-tab-title">
+                {foreach ['index'=>'我的网站','verify'=>'待审'] as $k=>$v}
+                {if isset($type) and $type eq $k}
+                <li class="layui-this" data-open="{:url('content')}?type={$k}">{$v}</li>
+                {else}
+                <li data-open="{:url('content')}?type={$k}">{$v}</li>
+                {/if}
+                {/foreach}
+                <li data-open="{:url('claim')}">认领网站</li>
+            </ul>
+            <div class="layui-tab-content">
+                <div class="layui-tab-content">
+                    <table id="myTable"></table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{/block}
+{block name="footer_js"}
+<script id="toptoolbar" type="text/html">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" data-open="{:url('add')}" type="button">添加网站</button>
+    </div>
+</script>
+<script>
+    $(function () {
+        // 初始化表格组件
+        $('#myTable').layTable({
+            even: true, height: 'full', skin: 'nob', toolbar: '#toptoolbar', url: '{:url()}',
+            sort: {field: 'id', type: 'desc'}, where: {type: '{$type|default="index"}'},
+            cols: [[
+                {field: 'title', title: '网站名称', align: 'left',},
+                {field: 'site_url', title: '网址', align: 'left', templet: '#urlTempler'},
+                {field: 'create_time', title: '添加时间', align: 'center', width: 110, templet: '#timeTempler'},
+                {field: 'status', title: '审核状态', align: 'center', width: 100, templet: '#statusTempler'},
+                {field: 'attestation', title: '认证状态', align: 'center', width: 160, templet: '#attestationTempler'},
+                {toolbar: '#toolbar', title: '', align: 'center', width: 140, fixed: 'right'},
+            ]]
+        });
+    });
+
+</script>
+<!-- 数据操作工具条模板 -->
+<script id="toolbar" type="text/html">
+    <a class="layui-btn layui-btn-xs" data-open="{:url('edit')}?id={{d.id}}">编 辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" data-action="{:url('remove')}" data-value="id#{{d.id}}"
+       data-confirm="确定要删除此收藏吗?">删 除</a>
+</script>
+<script id="urlTempler" type="text/html">
+    <a href="{{d.url}}" target="_blank" title="{{d.title}}">{{d.site_url}}</a>
+</script>
+<script id="statusTempler" type="text/html">
+    {{#  if(d.status){ }}
+    <b class="layui-font-green">√正常</b>
+    {{#  } else { }}
+    <b class="layui-font-red">×待审</b>
+    {{#  } }}
+</script>
+<script id="attestationTempler" type="text/html">
+    {{#  if(d.attestation){ }}
+    <b class="layui-font-green">√已认证</b>
+    {{#  } else { }}
+    <b class="layui-font-red">×未认证</b>
+    <a data-open="{:url('certifying')}?id={{d.id}}" class="layui-btn layui-btn-xs layui-bg-blue">认证网站</a>
+    {{#  } }}
+</script>
+<script id="timeTempler" type="text/html">
+    {{d._time}}
+</script>
+{/block}

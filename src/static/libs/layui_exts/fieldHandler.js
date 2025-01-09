@@ -11,14 +11,12 @@ layui.define([], function (exports) {
         if (!Array.isArray(settings.cols[0])) {
             settings.cols[0] = []; // 如果第一个子数组无效，提供默认的空列定义数组
         }
-
         // 自动添加 checkbox 列（如果不存在）
         if (!settings.cols[0].some(col => col && col.type === 'checkbox')) {
             settings.cols[0].unshift({type: 'checkbox', fixed: 'left',});
         }
-
         // 自动添加 操作 列（如果不存在）
-        if (!settings.cols[0].some(col => col && col.fixed === 'right' && col.title === '操作')) {
+        if (!settings.cols[0].some(col => col && col.fixed === 'right' && col.title === '操作' && settings.rightEdit === true)) {
             settings.cols[0].push({
                 title: '操作',
                 toolbar: settings.elem + 'Tool',

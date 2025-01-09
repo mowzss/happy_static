@@ -38,7 +38,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                     field: 'id', // 按 id 字段排序
                     type: 'desc' // 降序排序
                 },
-
+                rightEdit: true,//自动增加操作栏 false则不增加
             };
 
             // 合并用户提供的选项和默认选项

@@ -1,0 +1,29 @@
+{extend name="../common/main" /} {block name="body"}
+<div class="login-container">
+    <div class="layui-form">
+        <form autocomplete="off" method="post" onsubmit="return false" user-login><p>账号登录</p>
+            <div class="layui-input-block login"><i class="layui-icon layui-icon-username"></i> <label><input
+                    class="layui-input validate-error" name="username" pattern="^\S{5,}$" placeholder="请输入账号"
+                    required type="text"></label></div>
+            <div class="layui-input-block login"><i class="layui-icon layui-icon-password"></i> <label><input
+                    class="layui-input" name="password" pattern="^\S{5,}$" placeholder="请输入密码" required
+                    type="password" autocomplete="on"></label></div>
+            {notempty name=":session('LoginInputSessionError')"}
+            <div class="layui-input-block login verify"><i class="layui-icon layui-icon-picture-fine"></i> <input
+                    autocomplete="off" class="layui-input" maxlength="4" name="verify" pattern="^\S{4,}$"
+                    placeholder="验证码" required title="请输入验证码"> <img alt="captcha" class="captcha"
+                                                                             src="{:url('verify')}"/></div>
+            {/notempty}
+            <div class="login-other"><a href="{:url('reg/getPassword')}">找回密码</a><span
+                    class="other-divide-line"></span> <a href="{:url('reg/index')}">立即注册</a></div>
+            <button class="layui-btn layui-disabled full-width" data-form-loaded="立即登入" type="submit">正在载入
+            </button>
+        </form>
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>其它登录方式</legend>
+            <div class="layui-field-box"><a onclick='qqLogin("{:url(\"oauth/login\",[\"type\"=>\"qq\"])}")'><i
+                    class="layui-icon layui-icon-login-qq" style="font-size: 30px"></i></a></div>
+        </fieldset>
+    </div>
+</div> {/block} {block name="footer_js"}
+<script src="__STATIC__/user/js/pc_login.js?v={:static_version()}"></script> {/block}
