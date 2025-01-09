@@ -9,7 +9,8 @@
     }
   ],
   "require": {
-    "mowzs/lib": "dev-master"
+    "mowzs/lib": "dev-master",
+    "mowzs/system": "dev-master"
   },
   "extra": {
     "module": {
