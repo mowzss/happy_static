@@ -45,6 +45,7 @@
                     } else {
                         popup.error(data.msg);
                     }
+                    layer.closeAll();
                 },
                 error: function () {
                     popup.error("网络请求失败");
