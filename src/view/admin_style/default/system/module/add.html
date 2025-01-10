@@ -31,12 +31,13 @@
     layui.use(['jquery', 'popup'], function () {
         let $ = layui.jquery;
         let popup = layui.popup;
-        $('[data-module]').on('click', function () {
+        $('[data-module]').on('click', function (e) {
+            e.preventDefault();
             $.ajax({
                 url: "{:urls('add')}",
                 type: 'post',
                 data: {
-                    'module_name': $(this).data('module'),
+                    'module': $(this).data('module'),
                 },
                 success: function (data) {
                     if (data.code === 0) {
@@ -44,6 +45,9 @@
                     } else {
                         popup.error(data.msg);
                     }
+                },
+                error: function () {
+                    popup.error("网络请求失败");
                 }
 
             })
