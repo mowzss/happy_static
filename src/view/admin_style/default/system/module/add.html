@@ -1,0 +1,52 @@
+<div class="layui-panel layui-padding-3">{notempty name="$modules"}
+    <table class="layui-table">
+        <thead>
+        <tr>
+            <th>模块</th>
+            <th>介绍</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {volist name="$modules" id="vo"}
+        <tr>
+            <td>
+                {$vo.content.name}
+            </td>
+            <td>
+                {$vo.content.info}
+            </td>
+            <td>
+                <a href="javascript:" data-module="{$vo.content.keyword}" class="layui-btn layui-btn-xs">安装</a>
+            </td>
+        </tr>
+        {/volist}
+        </tbody>
+    </table>
+    {else/}
+    暂无可安装模块
+    {/notempty}
+</div>
+<script type="text/javascript">
+    layui.use(['jquery', 'popup'], function () {
+        let $ = layui.jquery;
+        let popup = layui.popup;
+        $('[data-module]').on('click', function () {
+            $.ajax({
+                url: "{:urls('add')}",
+                type: 'post',
+                data: {
+                    'module_name': $(this).data('module'),
+                },
+                success: function (data) {
+                    if (data.code === 0) {
+                        popup.success(data.msg);
+                    } else {
+                        popup.error(data.msg);
+                    }
+                }
+
+            })
+        })
+    })
+</script>
