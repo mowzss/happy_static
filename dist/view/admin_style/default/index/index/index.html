@@ -43,13 +43,13 @@
             </li>
             <li class="layui-nav-item layui-hide layui-show-sm-inline-block">
                 <a href="javascript:;">
-                    <img src="//unpkg.com/outeres@0.0.10/img/layui/icon-v2.png" class="layui-nav-img">
-                    管理员
+                    <img src="{$user.avatar}" class="layui-nav-img">
+                    {$user.nickname}
                 </a>
                 <dl class="layui-nav-child">
-                    <dd><a href="javascript:;">Your Profile</a></dd>
-                    <dd><a href="javascript:;">Settings</a></dd>
-                    <dd><a href="javascript:;">Sign out</a></dd>
+                    <dd><a href="javascript:;" data-open="{:urls('user/info/edit',['id'=>$user.id])}">修改资料</a></dd>
+                    <dd><a href="javascript:;" data-open="{:urls('user/info/password',['id'=>$user.id])}">修改密码</a></dd>
+                    <dd><a href="javascript:;" data-ajax="{:urls('logout')}">安全退出</a></dd>
                 </dl>
             </li>
             <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
