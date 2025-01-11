@@ -200,6 +200,31 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     change: true,
                 });
             })
+            $body.on('click', '[data-ajax]', function (e) {
+                let index = layer.load(1);
+                e.preventDefault();
+                let url = this.dataset.ajax;
+                let type = this.dataset.type || 'GET';
+                let value = this.dataset.value || {};
+                $.ajax({
+                    url: url,
+                    type: type,
+                    data: value,
+                    success: function (res) {
+                        layer.close(index); // 关闭 loading
+                     if (res.code ===0 ){
+                         layer.msg(res.msg);
+                     }else{
+                         layer.msg(res.msg);
+                     }
+                    },
+                    error: function () {
+                        layer.close(index); // 关闭 loading
+                        layer.msg('网络错误')
+                    }
+
+                })
+            })
         },
 
     }
