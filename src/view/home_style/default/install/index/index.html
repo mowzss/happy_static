@@ -21,7 +21,23 @@
 </head>
 <body>
 <div class="layui-container" style="margin-top: 50px;">
-    <div class="layui-row">
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md6 layui-col-md-offset3">
+            <div class="layui-card">
+                <div class="layui-card-header">环境检测</div>
+                <div class="layui-card-body">
+                    <table class="layui-table" id="environment-check">
+                        <!-- 动态填充的环境检测结果 -->
+                    </table>
+                </div>
+                <div class="layui-card-footer">
+                    <button type="button" class="layui-btn layui-btn-normal layui-btn-fluid"
+                            onclick="refreshEnvironmentStatus()">
+                        刷新检测结果
+                    </button>
+                </div>
+            </div>
+        </div>
         <div class="layui-col-md6 layui-col-md-offset3">
             <div class="layui-card">
                 <div class="layui-card-header">系统安装</div>
@@ -178,6 +194,42 @@
 
         // 初始化时检查数据库连接
         checkDbConnection();
+
+        function refreshEnvironmentStatus() {
+            // 调用显示环境状态的函数来刷新检测结果
+            displayEnvironmentStatus();
+        }
+
+        function displayEnvironmentStatus() {
+            $.ajax({
+                url: '{:urls("checkEnvironment")}', // 确保这里的URL指向正确的API
+                type: 'GET',
+                success: function (response) {
+                    if (response.status === 'success') {
+                        var envCheckTable = $('#environment-check');
+                        envCheckTable.empty(); // 清空之前的检测结果
+                        envCheckTable.append('<thead><tr><th>检查项</th><th>状态</th></tr></thead><tbody>');
+
+                        for (var requirement in response.requirements) {
+                            var statusClass = response.requirements[requirement] === '支持' ? 'layui-font-green' : 'layui-font-red';
+                            envCheckTable.append('<tr><td>' + requirement + '</td><td class="' + statusClass + '">' + response.requirements[requirement] + '</td></tr>');
+                        }
+
+                        envCheckTable.append('</tbody>');
+                    } else {
+                        layer.msg('环境检测失败，请稍后再试', {icon: 2});
+                    }
+                },
+                error: function () {
+                    layer.msg('请求失败，请重试', {icon: 2});
+                }
+            });
+        }
+
+// 页面加载完成后自动执行一次环境检测
+        $(document).ready(function () {
+            displayEnvironmentStatus();
+        });
     });
 </script>
 </body>
