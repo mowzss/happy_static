@@ -63,7 +63,8 @@ layui.define([], function (exports) {
                             let isChecked = currentValue === onValue;
 
                             return `<input type="checkbox" 
-                               name="status" 
+                               name="${col.field}" 
+                               lay-filter="form-switch-edit"
                                value="${currentValue}" 
                                lay-skin="switch" 
                                lay-text="${onText}|${offText}" 
@@ -72,7 +73,7 @@ layui.define([], function (exports) {
 
                     } else {
                         col.templet = function (d) {
-                            return `<input type="checkbox" name="status" value="${d[col.field]}" lay-skin="switch" lay-text="正常|隐藏" ${d[col.field] === 1 ? 'checked' : ''}>`;
+                            return `<input type="checkbox" name="status" value="${d[col.field]}" lay-filter="form-switch-edit" lay-skin="switch" lay-text="正常|隐藏" ${d[col.field] === 1 ? 'checked' : ''}>`;
                         };
                     }
                     if (!col.width) {

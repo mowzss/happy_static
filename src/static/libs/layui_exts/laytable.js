@@ -1,19 +1,20 @@
-layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'], function (exports) {
-    var $ = layui.jquery;
-    var table = layui.table;
-    var treeTable = layui.treeTable; // 初始化为 null，稍后根据需要动态加载
-    var layer = layui.layer;
-    var fieldHandler = layui.fieldHandler;
+layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHandler'], function (exports) {
+    let $ = layui.jquery;
+    let table = layui.table;
+    let treeTable = layui.treeTable; // 初始化为 null，稍后根据需要动态加载
+    let layer = layui.layer;
+    let fieldHandler = layui.fieldHandler;
+    let form = layui.form;
 
     // 定义 laytable 模块
-    var laytable = {
+    let laytable = {
         // 用于存储事件监听器的对象
         eventListeners: {},
         // 初始化表格
         render: function (options) {
-            var that = this;
+            let that = this;
             // 默认选项（仅包含 laytable 特定的扩展逻辑）
-            var defaults = {
+            let defaults = {
                 elem: '#happyTable',
                 where: {}, // 用户可以自定义 where 参数
                 on: {},   // 用户可以自定义事件监听器
@@ -42,7 +43,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
             };
 
             // 合并用户提供的选项和默认选项
-            var settings = $.extend(true, {}, defaults, options);
+            let settings = $.extend(true, {}, defaults, options);
 
             // 如果没有设置 toolbar，默认使用 elem + '-toolbarTop'
             if (!settings.toolbar) {
@@ -63,16 +64,16 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
             fieldHandler.init(settings);
 
             // 默认的工具栏事件处理程序
-            var defaultToolbarHandlers = {
+            let defaultToolbarHandlers = {
                 add: function (obj, callback, defaultHandler) {
                     that.defaultSaveHandler(this, settings.dataUrls.add, function () {
                         that.reload(obj.config.id); // 刷新表格
                     });
                 },
                 del: function (obj, callback, defaultHandler) {
-                    var checkStatus = table.checkStatus(obj.config.id); // 获取选中行的状态
-                    var data = checkStatus.data; // 获取选中的数据
-                    var ids = data.map(function (item) {
+                    let checkStatus = table.checkStatus(obj.config.id); // 获取选中行的状态
+                    let data = checkStatus.data; // 获取选中的数据
+                    let ids = data.map(function (item) {
                         return item.id;
                     }); // 提取选中的ID
                     that.defaultDeleteHandler(settings.dataUrls.del, ids, function () {
@@ -82,15 +83,15 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
             };
 
             // 默认的行内工具事件处理程序
-            var defaultToolHandlers = {
+            let defaultToolHandlers = {
                 del: function (obj, callback, defaultHandler) {
-                    var ids = obj.data.id; // 获得当前行数据
+                    let ids = obj.data.id; // 获得当前行数据
                     that.defaultDeleteHandler(settings.dataUrls.del, ids, function () {
                         that.reload(obj.config.id); // 刷新表格
                     });
                 },
                 edit: function (obj, callback, defaultHandler) {
-                    var url = updateUrlParams(settings.dataUrls.edit, {id: obj.data.id});
+                    let url = updateUrlParams(settings.dataUrls.edit, {id: obj.data.id});
                     that.defaultSaveHandler(this, url, function () {
                         that.reload(obj.config.id); // 刷新表格
                     });
@@ -115,7 +116,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                     }
 
                     // 动态调用用户提供的或默认的特定事件处理程序
-                    var eventHandler = defaultToolbarHandlers[obj.event];
+                    let eventHandler = defaultToolbarHandlers[obj.event];
                     if (typeof eventHandler === 'function') {
                         eventHandler.call(this, obj, function () {
                             that.reload(obj.config.id); // 刷新表格
@@ -132,7 +133,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                     }
 
                     // 动态调用用户提供的或默认的特定事件处理程序
-                    var eventHandler = defaultToolHandlers[obj.event];
+                    let eventHandler = defaultToolHandlers[obj.event];
                     if (typeof eventHandler === 'function') {
                         eventHandler.call(this, obj, function () {
                             that.reload(obj.config.id); // 刷新表格
@@ -147,8 +148,8 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                     if (obj.config.elem.selector !== settings.elem) { // 确保只处理对应表格的事件
                         return false;
                     }
-                    var field = obj.field;
-                    var type = obj.type;
+                    let field = obj.field;
+                    let type = obj.type;
                     that.reload(obj.config.id, {
                         initSort: obj, // 记录初始排序，以标记表头的排序状态
                         where: {
@@ -165,13 +166,13 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                     if (obj.config.elem.selector !== settings.elem) { // 确保只处理对应表格的事件
                         return false;
                     }
-                    var load = layer.load();
-                    var field = obj.field; // 得到修改的字段
-                    var value = obj.value; // 得到修改后的值
-                    var oldValue = obj.oldValue; // 得到修改前的值 -- v2.8.0 新增
-                    var data = obj.data; // 得到所在行所有键值
-                    var col = obj.getCol(); // 得到当前列的表头配置属性 -- v2.8.0 新增
-                    var url = updateUrlParams(settings.dataUrls.quick, {id: data.id});
+                    let load = layer.load();
+                    let field = obj.field; // 得到修改的字段
+                    let value = obj.value; // 得到修改后的值
+                    let oldValue = obj.oldValue; // 得到修改前的值 -- v2.8.0 新增
+                    let data = obj.data; // 得到所在行所有键值
+                    let col = obj.getCol(); // 得到当前列的表头配置属性 -- v2.8.0 新增
+                    let url = updateUrlParams(settings.dataUrls.quick, {id: data.id});
                     // 值的校验
                     if (value.replace(/\s/g, '') === '') {
                         layer.tips('值不能为空', this, {tips: 1});
@@ -210,7 +211,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                 // 初始化 treeTable
                 treeTable.render(settings);
                 // 注册事件监听器
-                for (var event in settings.on) {
+                for (let event in settings.on) {
                     if (settings.on.hasOwnProperty(event)) {
                         treeTable.on(event + '(' + settings.layFilters + ')', settings.on[event]);
                     }
@@ -219,13 +220,41 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                 // 初始化普通 table
                 table.render(settings);
                 // 注册事件监听器
-                for (var event in settings.on) {
+                for (let event in settings.on) {
                     if (settings.on.hasOwnProperty(event)) {
                         table.on(event + '(' + settings.layFilters + ')', settings.on[event]);
                     }
                 }
             }
-
+            // 监听行工具事件
+            form.on('switch(form-switch-edit)', function (obj) {
+                let field = obj.elem.name // 得到修改的字段
+                let data = table.getRowData(settings.layFilters, obj.elem) // 得到所在行所有键值
+                let value = obj.elem.checked ? 1 : 0 //
+                let url = updateUrlParams(settings.dataUrls.quick, {id: data.id});
+                // 发送AJAX请求更新后端数据
+                $.ajax({
+                    url: url, // 替换为你的实际API地址
+                    type: 'POST',
+                    data: {
+                        field: field,
+                        value: value
+                    },
+                    success: function (res) {
+                        if (res.code === 0) { // 假设返回码0表示成功
+                            layer.msg('更新成功');
+                        } else {
+                            layer.msg('更新失败：' + res.msg);
+                            // 更新失败时撤销用户操作
+                            layui.form.render('checkbox'); // 刷新表单元素，撤销用户的操作
+                        }
+                    },
+                    error: function () {
+                        layer.msg('请求失败，请稍后再试');
+                        layui.form.render('checkbox'); // 同样地，刷新表单元素以撤销用户的操作
+                    }
+                });
+            });
             // 返回渲染实例，以便后续操作
             return that;
         },
@@ -284,6 +313,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
             if (customWidth) {
                 modalWidth = customWidth;
             }
+
             $.ajax({
                 url: url,
                 method: 'GET',
@@ -303,6 +333,11 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'admin', 'fieldHandler'],
                     layer.msg('请求失败: ' + textStatus + ', ' + errorThrown, {icon: 5});
                 }
             });
+        },
+        // 获取当前行数据
+        getRowData: function (tableId, elem) {
+            let index = $(elem).closest('tr').data('index')
+            return table.cache[tableId][index] || {}
         }
     };
 
