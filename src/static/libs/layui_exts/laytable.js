@@ -229,7 +229,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
             // 监听行工具事件
             form.on('switch(form-switch-edit)', function (obj) {
                 let field = obj.elem.name // 得到修改的字段
-                let data = table.getRowData(settings.layFilters, obj.elem) // 得到所在行所有键值
+                let data = that.getRowData(settings.layFilters, obj.elem) // 得到所在行所有键值
                 let value = obj.elem.checked ? 1 : 0 //
                 let url = updateUrlParams(settings.dataUrls.quick, {id: data.id});
                 // 发送AJAX请求更新后端数据
