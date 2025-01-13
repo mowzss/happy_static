@@ -28,9 +28,9 @@
     {/notempty}
 </div>
 <script type="text/javascript">
-    layui.use(['jquery', 'popup'], function () {
+    layui.use(['jquery', 'layer'], function () {
         let $ = layui.jquery;
-        let popup = layui.popup;
+        let layer = layui.layer;
         $('[data-module]').on('click', function (e) {
             e.preventDefault();
             $.ajax({
@@ -41,14 +41,19 @@
                 },
                 success: function (data) {
                     if (data.code === 0) {
-                        popup.success(data.msg);
+                        layer.msg(data.msg);
+                        setTimeout(function () {
+                            layer.closeAll();
+                            window.location.reload();
+                        }, 2000)
                     } else {
-                        popup.error(data.msg);
+                        layer.alert(data.msg);
                     }
-                    layer.closeAll();
+
+
                 },
                 error: function () {
-                    popup.error("网络请求失败");
+                    layer.msg("网络请求失败");
                 }
 
             })

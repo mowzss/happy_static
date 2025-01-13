@@ -61,7 +61,7 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
             // 递归函数，用于处理多层嵌套的子菜单
             function processChildren(items, parentId) {
                 items.forEach(function (item) {
-                    if (item.type === 0) {  // 父级菜单
+                    if (item.isParent) {  // 父级菜单
                         if (item.pid === 0) {
                             // 顶级导航项
                             topNavItems.push(item);
@@ -77,7 +77,7 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
                         if (item.children && item.children.length > 0) {
                             processChildren(item.children, item.id);
                         }
-                    } else if (item.type === 1) {  // 叶子节点菜单
+                    } else {  // 叶子节点菜单
                         // 叶子节点菜单也按 pid 分组
                         if (!sideNavItems[item.pid]) {
                             sideNavItems[item.pid] = [];
@@ -147,9 +147,9 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
 
             // 遍历每个菜单项
             menuData.forEach(function (item) {
-                if (item.type === 0) { // 父级菜单
+                if (item.isParent) { // 父级菜单
                     html += '<li class="layui-nav-item layui-nav-itemed">';
-                    html += '<a>';
+                    html += '<a href="javascript:">';
                     html += '<i class="' + item.icon + '"></i><span class="happy-nav-title">' + item.title + '</span>';
                     html += '</a>';
 

@@ -336,42 +336,6 @@ layui.define(["element", 'util', "layer"], function (exports) {
             if (!activeId) return; // 如果没有激活的标签页，直接返回
 
             element.tabChange(that.config.tabFilter, activeId);
-            // let $activeTabTitle = $(this.config.tabsContent).find(`.layui-tab-title li[lay-id="${activeId}"]`);
-            // let url = $activeTabTitle.attr('lay-url');
-            //
-            // if (!url) {
-            //     layer.msg('该标签页没有关联的URL，无法刷新！');
-            //     return;
-            // }
-            // let $targetTabContent = $(this.config.tabsContent).find(`.layui-tab-item[lay-id="${activeId}"] .happy-tab-content`);
-            // let load = layer.load();
-            // $targetTabContent.empty();
-            // // 显示加载进度条
-            // this.showLoadingBar();
-            //
-            // // 发起 AJAX 请求，重新加载内容
-            // $.ajax({
-            //     url: url,
-            //     type: 'GET',
-            //     success: function (res) {
-            //         // 更新内容
-            //         $targetTabContent.html(res);
-            //         layer.close(load)
-            //         // 应用动画并显示内容
-            //         setTimeout(() => {
-            //             $targetTabContent
-            //                 .show()
-            //                 .addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
-            //         }, 100);
-            //
-            //         // 关闭加载进度条
-            //         that.hideLoadingBar();
-            //     },
-            //     error: function () {
-            //         layer.msg('刷新失败，请重试！');
-            //         that.hideLoadingBar();
-            //     }
-            // });
         },
 
         // 添加新标签页
@@ -515,6 +479,21 @@ layui.define(["element", 'util', "layer"], function (exports) {
                         dataType: 'html',
                         async: false,
                         success: function (res) {
+                            //检查返回如果是json数据则使用layer.msg提示
+                            if (res.startsWith('{') || res.startsWith('[')) {
+                                res = JSON.parse(res);
+                                if (res.info) {
+                                    layer.msg(res.info);
+                                }
+                                if (res.url) {
+                                    setTimeout(function () {
+
+                                        window.location.href = res.url;
+
+                                    }, 1500)
+                                }
+                                return;
+                            }
                             // 更新内容，并为 .happy-tab-content 添加 page-id 和 src 属性
                             $targetTabContent.html(`
                             <div class="happy-tab-content" 
