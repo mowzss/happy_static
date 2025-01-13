@@ -47,8 +47,9 @@
                     {$user.nickname}
                 </a>
                 <dl class="layui-nav-child">
-                    <dd><a href="javascript:;" data-open="{:urls('user/info/edit',['id'=>$user.id])}">修改资料</a></dd>
-                    <dd><a href="javascript:;" data-open="{:urls('user/info/password',['id'=>$user.id])}">修改密码</a></dd>
+                    <dd><a href="javascript:;" data-modal="{:urls('user/info/edit',['id'=>$user.id])}">修改资料</a></dd>
+                    <dd><a href="javascript:;" data-modal="{:urls('user/info/password',['id'=>$user.id])}">修改密码</a>
+                    </dd>
                     <dd><a href="javascript:;" data-ajax="{:urls('logout')}">安全退出</a></dd>
                 </dl>
             </li>
