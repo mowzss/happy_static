@@ -157,7 +157,6 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     let url = othis.data('href');
                     if (url) {
                         layer.confirm('确认退出系统？', function () {
-
                             $.ajax({
                                 url: url,
                                 type: 'GET',
