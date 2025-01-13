@@ -153,7 +153,28 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     let value = othis.data('value');
                     pageTab.moveTabs(value);
                 },
+                logout: function (othis) {
+                    let url = othis.data('href');
+                    if (url) {
+                        layer.confirm('确认退出系统？', function () {
 
+                            $.ajax({
+                                url: url,
+                                type: 'GET',
+                                success: function (res) {
+                                    layer.msg(res.msg);
+                                    if (res.code === 0) {
+                                        setTimeout(function () {
+                                            sessionStorage.clear();
+                                            localStorage.clear();
+                                            location.href = res.data.url;
+                                        }, 1000);
+                                    }
+                                }
+                            })
+                        })
+                    }
+                }
             });
             //lay-on 监听事件
             util.event('lay-on', {
@@ -212,11 +233,11 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     data: value,
                     success: function (res) {
                         layer.close(index); // 关闭 loading
-                     if (res.code ===0 ){
-                         layer.msg(res.msg);
-                     }else{
-                         layer.msg(res.msg);
-                     }
+                        if (res.code === 0) {
+                            layer.msg(res.msg);
+                        } else {
+                            layer.msg(res.msg);
+                        }
                     },
                     error: function () {
                         layer.close(index); // 关闭 loading
