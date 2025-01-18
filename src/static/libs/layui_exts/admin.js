@@ -219,6 +219,10 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     allowClose: true,
                     change: true,
                 });
+            });
+            $body.on('click', '[data-win-open]', function (e) {
+                let url = $(e.target).data('winOpen');
+                window.open(url, '_blank');
             })
             $body.on('click', '[data-ajax]', function (e) {
                 let index = layer.load(1);
