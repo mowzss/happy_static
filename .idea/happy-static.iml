@@ -9,6 +9,5 @@
     <orderEntry type="library" name="@types/jquery" level="application" />
     <orderEntry type="library" name="@types/layui-src" level="application" />
     <orderEntry type="library" name="@types/less" level="application" />
-    <orderEntry type="library" name="@types/requirejs" level="application" />
   </component>
 </module>
