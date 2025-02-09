@@ -10,9 +10,9 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
         // 加载所有菜单数据
         loadAllMenuData: function (url) {
             // 生成时间戳或随机数作为动态参数
-            var timestamp = Date.now(); // 使用时间戳
+            let timestamp = Date.now(); // 使用时间戳
             // 将时间戳作为查询参数附加到 URL 上
-            var fullUrl = url + (url.includes('?') ? '&' : '?') + 'ts=' + timestamp;
+            let fullUrl = url + (url.includes('?') ? '&' : '?') + 'ts=' + timestamp;
 
             // 发送 AJAX 请求获取所有菜单数据
             $.ajax({
@@ -23,13 +23,13 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
                         // 缓存所有菜单数据
                         menu.allMenuData = response;
                         // 分离顶级导航和子导航
-                        var separatedData = menu.separateMenuData(response);
+                        let separatedData = menu.separateMenuData(response);
                         menu.topNavItems = separatedData.topNavItems;
                         menu.sideNavItems = separatedData.sideNavItems;
                         // 初始化顶部导航
                         menu.initTopNav();
                         // 默认加载第一个顶级导航对应的左侧导航
-                        var defaultTopNav = $('#topNav .layui-nav-item:first-child a');
+                        let defaultTopNav = $('#topNav .layui-nav-item:first-child a');
                         defaultTopNav.trigger('click');
                         let defaultMenuItem = menu.findFirstLeafMenuItem(response);
                         let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
@@ -55,8 +55,8 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
 
         // 分离顶级导航和子导航
         separateMenuData: function (menuData) {
-            var topNavItems = [];
-            var sideNavItems = {};
+            let topNavItems = [];
+            let sideNavItems = {};
 
             // 递归函数，用于处理多层嵌套的子菜单
             function processChildren(items, parentId) {
@@ -99,7 +99,7 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
         // 初始化顶部导航
         initTopNav: function () {
             // 渲染顶部导航
-            var topNavHtml = menu.topNavItems.map(function (item) {
+            let topNavHtml = menu.topNavItems.map(function (item) {
                 return `<li class="layui-nav-item">
                             <a href="javascript:;" data-tab-id="${item.id}">
                               ${item.title}
@@ -109,8 +109,8 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
             $('#topNav').html(topNavHtml);
             // 绑定顶部导航点击事件
             $('#topNav .layui-nav-item a').on('click', function () {
-                var title = $(this).text();
-                var tabId = $(this).attr('data-tab-id');  // 顶级导航项的 ID
+                let title = $(this).text();
+                let tabId = $(this).attr('data-tab-id');  // 顶级导航项的 ID
                 // 切换顶部导航的激活状态
                 $(this).parent().addClass('layui-this').siblings().removeClass('layui-this');
                 // 动态加载左侧导航
@@ -119,9 +119,9 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
         },
         // 动态加载左侧导航
         loadSideNav: function (tabId) {
-            var sideNavData = menu.sideNavItems[tabId] || [];
+            let sideNavData = menu.sideNavItems[tabId] || [];
             // 生成左侧导航的 HTML
-            var sideNavHtml = menu.generateMenuHtml(sideNavData);
+            let sideNavHtml = menu.generateMenuHtml(sideNavData);
             // 将生成的 HTML 插入到 #menu-container 中
             $('#menu-container ul').html(sideNavHtml);
             // 初始化 Layui 的 element 模块，确保菜单可以正常使用
@@ -143,7 +143,7 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
 
         // 递归生成菜单 HTML 的函数
         generateMenuHtml: function (menuData) {
-            var html = '';
+            let html = '';
 
             // 遍历每个菜单项
             menuData.forEach(function (item) {
@@ -158,9 +158,8 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
                         html += menu.generateMenuHtml(item.children); // 递归生成子菜单
                         html += '</dl>';
                     }
-
                     html += '</li>';
-                } else if (item.type === 1) { // 叶子节点菜单
+                } else { // 叶子节点菜单
                     html += '<li class="layui-nav-item">';
                     html += '<a lay-url="' + item.href + '" lay-id="' + item.id + '">';
                     html += '<span class="happy-nav-title">' + item.title + '</span>';
@@ -172,7 +171,5 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
             return html;
         }
     };
-
-
     exports('menu', menu);
 });
