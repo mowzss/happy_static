@@ -147,7 +147,7 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
 
             // 遍历每个菜单项
             menuData.forEach(function (item) {
-                if (item.isParent) { // 父级菜单
+                if (item.type === 0) { // 父级菜单
                     html += '<li class="layui-nav-item layui-nav-itemed">';
                     html += '<a href="javascript:">';
                     html += '<i class="' + item.icon + '"></i><span class="happy-nav-title">' + item.title + '</span>';
@@ -158,8 +158,9 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
                         html += menu.generateMenuHtml(item.children); // 递归生成子菜单
                         html += '</dl>';
                     }
+
                     html += '</li>';
-                } else { // 叶子节点菜单
+                } else if (item.type === 1) { // 叶子节点菜单
                     html += '<li class="layui-nav-item">';
                     html += '<a lay-url="' + item.href + '" lay-id="' + item.id + '">';
                     html += '<span class="happy-nav-title">' + item.title + '</span>';
@@ -171,5 +172,7 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
             return html;
         }
     };
+
+
     exports('menu', menu);
 });

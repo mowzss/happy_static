@@ -166,7 +166,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                                         setTimeout(function () {
                                             sessionStorage.clear();
                                             localStorage.clear();
-                                            location.href = res.data.url;
+                                            location.href = res.url;
                                         }, 1000);
                                     }
                                 }
