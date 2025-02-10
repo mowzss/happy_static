@@ -105,18 +105,84 @@
                     </div>
                 </div>
                 <div class="layui-col-md12">
+                    {notempty name="$happy_modules"}
                     <div class="layui-card">
+                        <div class="layui-card-header">已安装模块包</div>
                         <div class="layui-card-body">
-                            <div class="layui-tab custom-tab layui-tab-brief" lay-filter="docDemoTabBrief">
-                                <div id="echarts-records-1" style="height:400px;"></div>
-                            </div>
+                            <table class="layui-table">
+                                <colgroup>
+                                    <col width="200"></col>
+                                    <col></col>
+                                    <col></col>
+                                </colgroup>
+                                <thead>
+                                <tr>
+                                    <th>名称</th>
+                                    <th>描述</th>
+                                    <th>版本</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {volist name="happy_modules" id="vo"}
+                                <tr>
+                                    <td>{$vo.name}</td>
+                                    <td>{$vo.description}</td>
+                                    <td>{$vo.version}</td>
+                                </tr>
+                                {/volist}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+                    {/notempty}
+                    {notempty name="$system_modules"}
                     <div class="layui-card">
-                        <div class="layui-card-body" style="padding-top: 15px; padding-bottom: 15px;">
-                            <table class="layui-hide" id="ID-table-demo-data"></table>
+                        <div class="layui-card-header">开源项目包</div>
+                        <div class="layui-card-body">
+                            <table class="layui-table">
+                                <colgroup>
+                                    <col width="200"></col>
+                                    <col></col>
+                                    <col></col>
+                                    <col></col>
+                                    <col></col>
+                                </colgroup>
+                                <thead>
+                                <tr>
+                                    <th>名称</th>
+                                    <th>类型</th>
+                                    <th>描述</th>
+                                    <th>开源协议</th>
+                                    <th>版本</th>
+                                    <th>项目主页</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {volist name="system_modules" id="vo"}
+                                <tr>
+                                    <td>{$vo.name}</td>
+                                    <td>{$vo.type}</td>
+                                    <td>{$vo.description}</td>
+                                    <td>
+                                        {if is_array($vo.license)}
+                                        {volist name="$vo.license" id="vs"}
+                                        <span>
+                                        {$vs}
+                                        </span>
+                                        {/volist}
+                                        {else}
+                                        {$vo.license}
+                                        {/if}
+                                    </td>
+                                    <td>{$vo.version}</td>
+                                    <td>{$vo.homepage}</td>
+                                </tr>
+                                {/volist}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+                    {/notempty}
                 </div>
             </div>
         </div>
