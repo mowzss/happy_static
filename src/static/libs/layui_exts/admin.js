@@ -173,6 +173,19 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                             })
                         })
                     }
+                },
+                //右栏菜单
+                menuRight: function (othis) {
+                    layer.open({
+                        type: 1,
+                        title: '系统信息',
+                        area: ['300px', '100%'],
+                        offset: "r",
+                        anim: 'slideLeft',
+                        closeBtn: 0,
+                        shadeClose: true,
+                        content: ""
+                    })
                 }
             });
             //lay-on 监听事件

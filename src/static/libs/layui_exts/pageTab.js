@@ -6,11 +6,11 @@ layui.define(["element", 'util', "layer"], function (exports) {
 
 
     // 定义 rightMenu 类
-    var RightMenu = function (config) {
+    let RightMenu = function (config) {
         // 默认配置
         const defaultConfig = {
             filter: pageTab.config.tabFilter,  // 必须指定
-            navArr: [      // 默认菜单项
+            naletr: [      // 默认菜单项
                 {eventName: "closeThis", title: "关闭", icon: "iconfont icon-cuowuguanbiquxiao"},
                 {eventName: "refreshThis", title: "刷新标签", icon: "iconfont icon-shuaxin"},
                 {eventName: "toggleFullScreen", title: "全屏显示", icon: "layui-icon layui-icon-screen-full"},  // 合并为一个事件
@@ -38,7 +38,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
             return;
         }
         this.filter = config.filter;
-        this.navArr = config.navArr;
+        this.naletr = config.naletr;
 
         // 判断是否处于全屏模式
         if (document.fullscreenElement === this.fullScreenTarget) {
@@ -83,7 +83,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
 // 渲染菜单项
     RightMenu.prototype.renderMenuItems = function () {
         this.menuElement.empty();  // 清空之前的菜单项
-        this.navArr.forEach(item => {
+        this.naletr.forEach(item => {
             if (item.eventName === "line") {
                 $("<hr>").appendTo(this.menuElement);
             } else {
@@ -116,7 +116,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
 
     // 绑定事件
     RightMenu.prototype.bindEvents = function () {
-        var self = this;
+        let self = this;
 
         // 右键点击事件
         $("#happy-content .layui-body-tabs").on("contextmenu", ".layui-tab-title > li", (e) => {
@@ -150,15 +150,15 @@ layui.define(["element", 'util', "layer"], function (exports) {
         }
 
         this.currentActiveTabID = tabId;
-        var menu = this.menuElement;
+        let menu = this.menuElement;
 
         // 计算菜单的偏移量
-        var offset = $(document).width() - e.clientX < menu.width() ? e.clientX - menu.width() : e.clientX;
-        var topOffset = $(document).height() - e.clientY < menu.height() ? e.clientY - menu.height() : e.clientY;
+        let offset = $(document).width() - e.clientX < menu.width() ? e.clientX - menu.width() : e.clientX;
+        let topOffset = $(document).height() - e.clientY < menu.height() ? e.clientY - menu.height() : e.clientY;
 
         // 如果处于全屏模式，确保菜单的定位是相对于全屏目标元素
         if (document.fullscreenElement === this.fullScreenTarget) {
-            var targetOffset = $(this.fullScreenTarget).offset();
+            let targetOffset = $(this.fullScreenTarget).offset();
             offset -= targetOffset.left;
             topOffset -= targetOffset.top;
         }
@@ -176,14 +176,14 @@ layui.define(["element", 'util', "layer"], function (exports) {
         if (!event) {
             return;
         }
-
-        var tabs = $(".layui-tab[lay-filter='" + this.filter + "'] li");
+        pageTab.onTab();
+        let tabs = $(".layui-tab[lay-filter='" + this.filter + "'] li");
         let foundCurrent = false;
 
         switch (event) {
             case "refreshThis":
                 // 刷新当前标签页
-                var currentTab = $(`.layui-tab-item[lay-id="${this.currentActiveTabID}"]`);
+                let currentTab = $(`.layui-tab-item[lay-id="${this.currentActiveTabID}"]`);
                 if (currentTab.length) {
                     $('[lay-header-event="refreshTab"]').trigger('click');
                 }
@@ -192,7 +192,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
             case "closeThis":
 
                 element.tabDelete(this.filter, this.currentActiveTabID);
-                var nextTab = tabs.not(`[lay-id="${this.currentActiveTabID}"]`).first();
+                let nextTab = tabs.not(`[lay-id="${this.currentActiveTabID}"]`).first();
                 if (nextTab.length) {
                     element.tabChange(this.filter, nextTab.attr("lay-id"));
                 }
@@ -203,21 +203,21 @@ layui.define(["element", 'util', "layer"], function (exports) {
                 break;
             case "closeAll":
                 $.each(tabs, (index, tab) => {
-                    var id = $(tab).attr("lay-id");
+                    let id = $(tab).attr("lay-id");
                     element.tabDelete(this.filter, id);
                 });
                 break;
 
             case "closeOther":
                 $.each(tabs, (index, tab) => {
-                    var id = $(tab).attr("lay-id");
+                    let id = $(tab).attr("lay-id");
                     element.tabDelete(this.filter, id);
                 });
                 break;
 
             case "closeLeft":
                 $.each(tabs, (index, tab) => {
-                    var id = $(tab).attr("lay-id");
+                    let id = $(tab).attr("lay-id");
                     if (id === this.currentActiveTabID) {
                         foundCurrent = true;
                         return;
@@ -233,7 +233,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
             case "closeRight":
                 foundCurrent = false;
                 $.each(tabs, (index, tab) => {
-                    var id = $(tab).attr("lay-id");
+                    let id = $(tab).attr("lay-id");
                     if (id === this.currentActiveTabID) {
                         foundCurrent = true;
                         return;
@@ -290,9 +290,9 @@ layui.define(["element", 'util', "layer"], function (exports) {
 
     // 自动滚动到激活的tab
     function autoScrollToActiveTab($container, $activeTab) {
-        var containerScrollLeft = $container.scrollLeft();
-        var activeTabOffsetLeft = $activeTab.offset().left - $container.offset().left + $container.scrollLeft();
-        var activeTabWidth = $activeTab.outerWidth();
+        let containerScrollLeft = $container.scrollLeft();
+        let activeTabOffsetLeft = $activeTab.offset().left - $container.offset().left + $container.scrollLeft();
+        let activeTabWidth = $activeTab.outerWidth();
 
         $container.animate({
             scrollLeft: activeTabOffsetLeft - ($container.width() - activeTabWidth) / 2
@@ -438,15 +438,12 @@ layui.define(["element", 'util', "layer"], function (exports) {
                 }
             });
         },
-        getProhibitTabListID: function () {
-            return JSON.parse(localStorage.getItem('prohibitListID')) || [];
-        },
         // 监听标签页切换事件
         onTab: function () {
             let that = this;
             element.on('tab(' + this.config.tabFilter + ')', function (data) {
-                var $this = $(data.elem);
-                var $activeTab = $this.find('.layui-this');
+                let $this = $(data.elem);
+                let $activeTab = $this.find('.layui-this');
                 autoScrollToActiveTab($this, $activeTab);
                 let newId = data.id;
 
@@ -524,10 +521,11 @@ layui.define(["element", 'util', "layer"], function (exports) {
                 pageTab.clearOtherTabsContent(newId);
             });
             element.on('tabBeforeDelete(' + this.config.tabFilter + ')', function (data) {
-                let title = $(`.layui-tab-title li[lay-id="${data.id}"]`).text();
-                let getProhibitTabListID = that.getProhibitTabListID();
+                let $this = $(`.layui-tab-title li[lay-id="${data.id}"]`);
+                let title = $this.text();
+                let delStatus = $this.attr('lay-allowclose');
                 // 检查是否禁止删除
-                if (getProhibitTabListID.includes(data.id)) {
+                if (delStatus === 'false') {
                     layer.msg(title + ' 标签禁止删除');
                     return false; // 确保函数提前返回
                 } else {
@@ -540,11 +538,11 @@ layui.define(["element", 'util', "layer"], function (exports) {
         },
 
         moveTabs: function (direction) {
-            var $container = $(this.config.tabsContent).find('.layui-tab-title');
-            var $activeTab = $container.find('.layui-this');
-            var $tabs = $container.children('li');
-            var currentIndex = $tabs.index($activeTab);
-            var newIndex;
+            let $container = $(this.config.tabsContent).find('.layui-tab-title');
+            let $activeTab = $container.find('.layui-this');
+            let $tabs = $container.children('li');
+            let currentIndex = $tabs.index($activeTab);
+            let newIndex;
 
             if (direction === 'prev' && currentIndex > 0) {
                 newIndex = currentIndex - 1;
@@ -553,7 +551,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
             }
 
             if (typeof newIndex !== 'undefined') {
-                var $newActiveTab = $tabs.eq(newIndex);
+                let $newActiveTab = $tabs.eq(newIndex);
                 $newActiveTab.trigger('click'); // 模拟点击以激活新tab
                 autoScrollToActiveTab($container, $newActiveTab);
             }

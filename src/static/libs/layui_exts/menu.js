@@ -31,14 +31,14 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
                         // 默认加载第一个顶级导航对应的左侧导航
                         let defaultTopNav = $('#topNav .layui-nav-item:first-child a');
                         defaultTopNav.trigger('click');
-                        let defaultMenuItem = menu.findFirstLeafMenuItem(response);
                         let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
                         let opt = {
-                            id: String(defaultMenuItem.id),
-                            title: defaultMenuItem.title,
-                            url: defaultMenuItem.href,
+                            id: "home",
+                            title: "首页",
+                            url: getBaseURL() + '/index/index/main',
                             allowClose: false
                         }
+
                         if (tabs.length === 0) {
                             opt.change = true
                         }
@@ -173,6 +173,20 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
         }
     };
 
+    function getBaseURL() {
+        // 获取当前页面完整的URL
+        let fullURL = window.location.href;
+
+        // 使用正则表达式匹配需要的部分
+        let matches = fullURL.match(/(https?:\/\/[^\/]+\/[^\/?#]+)/);
+
+        if (matches && matches[1]) {
+            return matches[1];
+        } else {
+            console.error("未能正确解析URL");
+            return null;
+        }
+    }
 
     exports('menu', menu);
 });
