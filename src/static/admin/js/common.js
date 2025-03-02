@@ -4,7 +4,7 @@ window.baseRoot = srcs.slice(0, -2).join('/') + '/';
 window.$ = window.jQuery = window.jQuery || window.jQuery || layui.$ || layui.jquery;
 layui.config({
     base: "/static/libs/layui_exts/",
-    version: "4.0.3"
+    version: "20250303"
 }).extend({
     admin: "admin",
     pageTab: "pageTab",
