@@ -4,10 +4,11 @@
             isPage = JSON.parse("{$is_page|json_encode}"),
             order = JSON.parse('{$default_order|default=["id"=>"desc"]|raw|json_encode}'),
             where = JSON.parse('{$where|default=[]|raw|json_encode}'),
+            cols = JSON.parse('{$tables.fields|raw|json_encode}'),
             opt = {
                 elem: '#{:get_lay_table_id()}',
                 headers: {out: 'json'},
-                cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
+                cols: [cols],
                 dataUrls: {
                     add: "{:urls('add')}",
                     edit: "{:urls('edit')}",

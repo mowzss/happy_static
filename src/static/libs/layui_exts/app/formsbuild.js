@@ -1,29 +1,30 @@
 // formsbuild.js
-
 layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (exports) {
     "use strict";
 
-    var form = layui.form,
+    let form = layui.form,
         layer = layui.layer,
         element = layui.element,
+        laytable = layui.laytable,
         $ = layui.jquery;
 
+
     // 定义 formsbuild 模块
-    var formsbuild = {
+    let formsbuild = {
         render: function (options) {
             options = options || {};
-            var $form = $(options.formSelector || '#form'); // 默认表单选择器
-            var triggers = options.triggers || []; // 默认为空数组
+            let $form = $(options.formSelector || '#form'); // 默认表单选择器
+            let triggers = options.triggers || []; // 默认为空数组
 
             this.form(options);
             //图标选择
             this.icon();
             // 图片上传
             $('[data-file]').each(function () {
-                var that = this, up = {};
+                let that = this, up = {};
                 layui.use(['uploads'], function () {
-                    var uploads = layui.uploads;
-                    var multiple = that.dataset.multiple === "true",
+                    let uploads = layui.uploads;
+                    let multiple = that.dataset.multiple === "true",
                         type = that.dataset.file, id = $(that).attr('id');
                     new uploads({
                         elem: "#" + id,
@@ -51,8 +52,8 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
             form.render();
             // 提交事件
             form.on('submit(' + (options.layFilter || '') + ')', function (data) {
-                var field = data.field;
-                var url = data.form.action;
+                let field = data.field;
+                let url = data.form.action;
                 $.ajax({
                     type: "POST",
                     url: url,
@@ -62,15 +63,18 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                         if (response.code === 0) {
                             layer.msg(response.msg, function () {
                                 layer.closeAll();
+                                //页面存在table 则不删除 仅刷新表格
                                 let $pageTable = $('.page-Table');
                                 if ($pageTable.length > 0) {
-                                    layui.laytable.reload($pageTable.attr('id'));
+                                    laytable.reload($pageTable.attr('id'));
                                 } else {
-                                    let $tabsElem = $("#happy-content").find('.layui-body-tabs'),
-                                        action = $(data.elem.form).attr('action'),
-                                        layid = $tabsElem.find('[data-src="' + action + '"]').data('pageId'),
-                                        filter = $tabsElem.attr('lay-filter');
-                                    element.tabDelete(filter, layid);
+                                    let isDelTab = $(".happy-container").find(".layui-setting-box");
+                                    if (isDelTab.length === 0) {
+                                        let $tabsElem = $("#happy-content").find('.layui-body-tabs'),
+                                            layid = $tabsElem.find('.happy-tab-content').data('pageId'),
+                                            filter = $tabsElem.attr('lay-filter');
+                                        element.tabDelete(filter, layid);
+                                    }
                                 }
                             });
                         } else {
@@ -140,7 +144,7 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
          */
         inputDate: function () {
             $('[data-input-date]').each(function () {
-                var that = this, type = this.dataset.inputDate || 'date', range = this.dataset.range || '';
+                let that = this, type = this.dataset.inputDate || 'date', range = this.dataset.range || '';
                 layui.use(['laydate'], function () {
                     let laydate = layui.laydate,
                         options = {
@@ -164,7 +168,7 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                     $thisInput = $('[name=' + name + ']'),
                     value = $thisInput.val() || '#1c97f5';
                 layui.use(['colorpicker'], function () {
-                    var colorpicker = layui.colorpicker;
+                    let colorpicker = layui.colorpicker;
                     colorpicker.render({
                         elem: this,
                         color: value,
@@ -200,14 +204,14 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
          */
         editor: function () {
             $('[data-input-editor]').each(function () {
-                var that = this,
+                let that = this,
                     type = this.dataset.type,
                     name = this.dataset.inputEditor,
                     id = $(this).attr('id');
                 switch (type) {
                     case 'tinymce':
                         layui.use(['tiny'], function () {
-                            var tiny = layui.tiny;
+                            let tiny = layui.tiny;
                             tiny.render({
                                 selector: "#" + id
                             });
@@ -215,7 +219,7 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                         break;
                     case 'wangeditor':
                         layui.use(['wangEdit'], function () {
-                            var wangEdit = layui.wangEdit;
+                            let wangEdit = layui.wangEdit;
                             wangEdit.render({
                                 elem: "#" + id
                             });
@@ -223,7 +227,7 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                         break;
                     case 'ueditor':
                         layui.use(['ueditor'], function () {
-                            var ueditor = layui.ueditor;
+                            let ueditor = layui.ueditor;
                             ueditor.render("#" + id);
                         });
                         break;
@@ -271,8 +275,8 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                     });
                     // 遍历所有依赖字段并隐藏它们
                     allDependentFields.forEach(function (field) {
-                        var escapedField = escapeSelector(field);
-                        var dependentItem = $form.find('#item-' + escapedField);
+                        let escapedField = escapeSelector(field);
+                        let dependentItem = $form.find('#item-' + escapedField);
                         dependentItem.hide(); // 先隐藏所有依赖字段
                     });
 
@@ -285,8 +289,8 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                             if (Array.isArray(valueConfig.field)) { // 确保 field 是一个数组
                                 valueConfig.field.forEach(function (field) {
                                     // 转义 field 以确保选择器有效
-                                    var escapedField = escapeSelector(field);
-                                    var dependentItem = $form.find('#item-' + escapedField);
+                                    let escapedField = escapeSelector(field);
+                                    let dependentItem = $form.find('#item-' + escapedField);
                                     dependentItem.show(); // 显示符合条件的依赖字段
                                 });
                             }
@@ -320,9 +324,9 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                 // 根据当前字段的值来处理依赖字段
                 $.each(triggers, function (index, trigger) {
                     // 转义 trigger.name 以确保选择器有效
-                    var escapedTriggerName = escapeSelector(trigger.name);
-                    var triggerField = $('[name="' + escapedTriggerName + '"]');
-                    var currentValue = getFieldValue(triggerField);
+                    let escapedTriggerName = escapeSelector(trigger.name);
+                    let triggerField = $('[name="' + escapedTriggerName + '"]');
+                    let currentValue = getFieldValue(triggerField);
 
                     // 处理依赖字段
                     handleDependentFields(trigger, {elem: null, value: currentValue});
@@ -331,7 +335,7 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
 
             if (Array.isArray(triggers) && triggers.length > 0) {
                 $form.find('input').on('change', function () {
-                    var data = {elem: this, value: $(this).val()};
+                    let data = {elem: this, value: $(this).val()};
                     handleFormChange(data);
                 });
                 form.on('radio', function (data) {

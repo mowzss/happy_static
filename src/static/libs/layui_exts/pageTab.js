@@ -211,12 +211,16 @@ layui.define(["element", 'util', "layer"], function (exports) {
             case "closeOther":
                 $.each(tabs, (index, tab) => {
                     let id = $(tab).attr("lay-id");
+                    if (id === this.currentActiveTabID) {
+                        return;
+                    }
                     element.tabDelete(this.filter, id);
                 });
                 break;
 
             case "closeLeft":
                 $.each(tabs, (index, tab) => {
+
                     let id = $(tab).attr("lay-id");
                     if (id === this.currentActiveTabID) {
                         foundCurrent = true;
