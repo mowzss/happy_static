@@ -205,7 +205,6 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
                     })
                 };
             }
-
             // 如果是 treeTable 模式，动态加载 treeTable 模块
             if (settings.isTree) {
                 // 初始化 treeTable
@@ -217,6 +216,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
                     }
                 }
             } else {
+
                 // 初始化普通 table
                 table.render(settings);
                 // 注册事件监听器

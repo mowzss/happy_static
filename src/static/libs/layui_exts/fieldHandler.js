@@ -22,8 +22,8 @@ layui.define([], function (exports) {
                 toolbar: settings.elem + 'Tool',
                 fixed: 'right',
                 align: 'left',
-                minWidth: 160,
-                maxWidth: 260
+                maxWidth: 320,
+                minWidth: 120
             });
         }
 
