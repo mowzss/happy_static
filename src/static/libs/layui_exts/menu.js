@@ -26,23 +26,32 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
                         let separatedData = menu.separateMenuData(response);
                         menu.topNavItems = separatedData.topNavItems;
                         menu.sideNavItems = separatedData.sideNavItems;
-                        // 初始化顶部导航
+
+                        // 初始化顶部导航和左侧菜单
                         menu.initTopNav();
+                        menu.renderAllSideNavs();
+
                         // 默认加载第一个顶级导航对应的左侧导航
                         let defaultTopNav = $('#topNav .layui-nav-item:first-child a');
                         defaultTopNav.trigger('click');
+
                         let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
                         let opt = {
                             id: "home",
                             title: "首页",
                             url: getBaseURL() + '/index/index/main',
                             allowClose: false
-                        }
+                        };
 
                         if (tabs.length === 0) {
-                            opt.change = true
+                            opt.change = true;
                         }
-                        pageTab.addTab(opt)
+                        pageTab.addTab(opt);
+                        //菜单加载后 激活tab 关联的菜单
+                        let activeId = String(sessionStorage.getItem('tabsActiveId'));
+                        if (activeId) {
+                            pageTab.activeTabMenu(activeId);
+                        }
                     } else {
                         console.error('菜单数据为空');
                     }
@@ -100,30 +109,45 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
         initTopNav: function () {
             // 渲染顶部导航
             let topNavHtml = menu.topNavItems.map(function (item) {
-                return `<li class="layui-nav-item">
-                            <a href="javascript:;" data-tab-id="${item.id}">
+                return `<li class="layui-nav-item" data-tab-id="${item.id}">
+                            <a href="javascript:;">
                               ${item.title}
                             </a>
                         </li>`;
             }).join('');
             $('#topNav').html(topNavHtml);
+
             // 绑定顶部导航点击事件
             $('#topNav .layui-nav-item a').on('click', function () {
-                let title = $(this).text();
-                let tabId = $(this).attr('data-tab-id');  // 顶级导航项的 ID
+                let tabId = $(this).parent().attr('data-tab-id'); // 获取顶级导航项的 ID
+
                 // 切换顶部导航的激活状态
                 $(this).parent().addClass('layui-this').siblings().removeClass('layui-this');
-                // 动态加载左侧导航
-                menu.loadSideNav(tabId);
+
+                // 切换左侧菜单的显示
+                $('.side-menu-container[data-tab-id]').hide(); // 隐藏其他菜单
+                $(`.side-menu-container[data-tab-id="${tabId}"]`).show(); // 显示当前菜单
             });
         },
-        // 动态加载左侧导航
-        loadSideNav: function (tabId) {
-            let sideNavData = menu.sideNavItems[tabId] || [];
-            // 生成左侧导航的 HTML
-            let sideNavHtml = menu.generateMenuHtml(sideNavData);
-            // 将生成的 HTML 插入到 #menu-container 中
-            $('#menu-container ul').html(sideNavHtml);
+
+        // 一次性渲染所有左侧菜单
+        renderAllSideNavs: function () {
+            let menuContainer = $('#menu-container ul');
+
+            // 遍历每个顶级导航项
+            menu.topNavItems.forEach(function (item) {
+                let sideNavData = menu.sideNavItems[item.id] || [];
+                let sideNavHtml = menu.generateMenuHtml(sideNavData);
+
+                // 创建一个容器来保存该顶级导航对应的左侧菜单
+                let sideMenuContainer = `
+                    <div class="side-menu-container" data-tab-id="${item.id}" style="display:none;">
+                        ${sideNavHtml}
+                    </div>
+                `;
+                menuContainer.append(sideMenuContainer);
+            });
+
             // 初始化 Layui 的 element 模块，确保菜单可以正常使用
             layui.element.init();
         },

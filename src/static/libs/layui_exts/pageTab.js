@@ -445,6 +445,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
         // 监听标签页切换事件
         onTab: function () {
             let that = this;
+            //切换标签页时，自动滚动到当前标签页
             element.on('tab(' + this.config.tabFilter + ')', function (data) {
                 let $this = $(data.elem);
                 let $activeTab = $this.find('.layui-this');
@@ -467,8 +468,6 @@ layui.define(["element", 'util', "layer"], function (exports) {
                     url: url,
                     allowClose: allowClose
                 });
-
-
                 // 如果未加载过或内容不可见，则根据 lay-url 重新加载内容
                 if (url) {
                     // 显示加载进度条
@@ -511,7 +510,6 @@ layui.define(["element", 'util', "layer"], function (exports) {
                                     .show()
                                     .addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
                             }, 100);
-
                             // 关闭加载进度条
                             pageTab.hideLoadingBar();
                         },
@@ -523,6 +521,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
                 }
                 // 确保在切换标签页后，其他标签页的内容被清空
                 pageTab.clearOtherTabsContent(newId);
+                that.activeTabMenu(data.id)
             });
             element.on('tabBeforeDelete(' + this.config.tabFilter + ')', function (data) {
                 let $this = $(`.layui-tab-title li[lay-id="${data.id}"]`);
@@ -560,7 +559,27 @@ layui.define(["element", 'util', "layer"], function (exports) {
                 autoScrollToActiveTab($container, $newActiveTab);
             }
         },
-
+        activeTabMenu: function (tabId) {
+            //为当前id选中菜单
+            let $menuContainer = $('#menu-container'),
+                $menuItem = $menuContainer.find('[lay-id=' + tabId + ']');
+            $menuContainer.find('.layui-nav-item').removeClass('layui-this');
+            if ($menuItem.length > 0) {
+                $menuContainer.find('.side-menu-container').hide();
+                let pid = $menuItem.parents('.side-menu-container').show().attr('data-tab-id');
+                $menuItem.parent('.layui-nav-item').addClass('layui-this');
+               
+                let pItem = $menuItem.parents('.side-menu-container > .layui-nav-item')
+                if (!pItem.hasClass('layui-nav-itemed')) {
+                    pItem.addClass('layui-nav-itemed');
+                }
+                if (pid) {
+                    let topNav = $('#topNav');
+                    topNav.find('.layui-nav-item').removeClass('layui-this');
+                    topNav.find('.layui-nav-item[data-tab-id="' + pid + '"]').addClass('layui-this');
+                }
+            }
+        },
         requestFullscreen: function (element) {
             return new Promise((resolve, reject) => {
                 if (element.requestFullscreen) {

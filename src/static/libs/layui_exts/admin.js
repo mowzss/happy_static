@@ -23,6 +23,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
             this.initTabs();//渲染tab记录
             pageTab.rightMenu({filter: this.config.tabFilter}); // 渲染右键菜单
             this.closeLoading()
+          
         },
         //初始化记录的标签
         initTabs: function () {
