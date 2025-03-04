@@ -83,10 +83,9 @@
 
         .layui-nav-item.layui-this {
           background: #f6f6f6;
-          border-top: 2px solid #16b777;
 
           a {
-            color: #16b777 !important;
+            font-weight: bolder;
           }
         }
       }
@@ -172,29 +171,73 @@
       .layui-body-tabs {
         width: 100%;
         height: 100%;
-        line-height: 40px;
         background: #fff;
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .1);
         margin: 0;
 
         > .layui-tab-title {
+          padding: 6px 88px;
+          height: 32px;
+          line-height: 32px;
           border-bottom-width: 0;
-          padding-left: 80px;
-          padding-right: 80px;
-          overflow: hidden;
+          overflow-x: auto !important; /* 强制横向滚动 */
+          overflow-y: hidden; /* 隐藏纵向滚动 */
+          white-space: nowrap;
 
-          li + li {
-            border-left: #f6f6f6 1px solid;
+          /* 隐藏原生滚动条（可选） */
+          scrollbar-width: none; /* Firefox */
+
+          &::-webkit-scrollbar {
+            display: none;
           }
 
-          > .layui-this {
+          li {
+            line-height: 32px;
+            height: 32px;
+            margin: 0 2px;
+            position: relative;
+
+            &:hover {
+              background: #f6f6f6;
+              border-radius: 8px;
+            }
+
+            & .layui-tab-close:hover {
+              border-radius: 50%;
+            }
+          }
+
+          //li + li {
+          //  border-left: #f6f6f6 1px solid;
+          //}
+
+          > .layui-this, li:hover.layui-this {
             height: 38px;
             line-height: 38px;
-            background: #f6f6f6;
-            border-top: #16b777 2px solid;
+            background: rgba(22, 183, 119, 0.05);
+            border-radius: 8px 8px 0 0;
+            color: #16b777;
 
             &::after {
-              display: none;
+              content: '';
+              position: absolute;
+              left: -8px;
+              top: 30px;
+              width: 8px;
+              height: 8px;
+              background-image: radial-gradient(circle 8px at 0 0%, transparent 8px, rgba(22, 183, 119, 0.1) 50%);
+
+              border: none;
+            }
+
+            &::before {
+              content: '';
+              position: absolute;
+              right: -8px;
+              bottom: 0;
+              width: 8px;
+              height: 8px;
+              background-image: radial-gradient(circle 8px at 100% 0%, transparent 8px, rgba(22, 183, 119, 0.1) 50%);
             }
           }
         }
@@ -223,8 +266,8 @@
             top: 0;
             left: 0;
             width: 40px;
-            height: 40px;
-            line-height: 40px;
+            height: 44px;
+            line-height: 44px;
             text-align: center;
           }
 

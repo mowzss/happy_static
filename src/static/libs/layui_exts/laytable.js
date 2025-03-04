@@ -44,7 +44,6 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
                 //     $("table").css("width", "100%");
                 //     $("tbody").css("width", "100%");
                 // },
-                width: 'full'
             };
 
             // 合并用户提供的选项和默认选项
@@ -63,9 +62,6 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
             }
             if (!settings.page) {
                 settings.limit = '300'
-            }
-            if (settings.width === 'full') {
-                settings.width = ($(settings.elem).parents('#happy-content').width()) - 66
             }
             // 处理表头字段
             fieldHandler.init(settings);

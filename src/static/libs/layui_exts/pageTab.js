@@ -477,7 +477,7 @@ layui.define(["element", 'util', "layer"], function (exports) {
                         url: url,
                         type: 'GET',
                         dataType: 'html',
-                        async: false,
+                        // async: false,
                         success: function (res) {
                             //检查返回如果是json数据则使用layer.msg提示
                             if (res.startsWith('{') || res.startsWith('[')) {
@@ -487,29 +487,24 @@ layui.define(["element", 'util', "layer"], function (exports) {
                                 }
                                 if (res.url) {
                                     setTimeout(function () {
-
                                         window.location.href = res.url;
-
                                     }, 1500)
                                 }
                                 return;
                             }
+                            let contentWidth = $targetTabContent.width();
                             // 更新内容，并为 .happy-tab-content 添加 page-id 和 src 属性
-                            $targetTabContent.html(`
-                            <div class="happy-tab-content" 
-                                 style="display:none;" 
+                            $targetTabContent.html(`<div class="happy-tab-content" 
+                                 style="display:block; width: ${contentWidth}" 
                                  data-page-id="${newId}" 
                                  data-src="${url}">
                                 ${res}
-                            </div>
-                        `);
+                            </div>`);
                             element.init();
                             // 应用动画并显示内容
                             setTimeout(() => {
-                                $targetTabContent.find('.happy-tab-content')
-                                    .show()
-                                    .addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
-                            }, 100);
+                                $targetTabContent.find('.happy-tab-content').addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
+                            }, 200);
                             // 关闭加载进度条
                             pageTab.hideLoadingBar();
                         },
@@ -521,7 +516,10 @@ layui.define(["element", 'util', "layer"], function (exports) {
                 }
                 // 确保在切换标签页后，其他标签页的内容被清空
                 pageTab.clearOtherTabsContent(newId);
+                // 激活菜单 选中效果
                 that.activeTabMenu(data.id)
+                //滚动到激活的标签页并居中显示
+                that.autoScrollToActiveTab($this, $activeTab);
             });
             element.on('tabBeforeDelete(' + this.config.tabFilter + ')', function (data) {
                 let $this = $(`.layui-tab-title li[lay-id="${data.id}"]`);
@@ -539,7 +537,28 @@ layui.define(["element", 'util', "layer"], function (exports) {
         rightMenu: function (config) {
             return new RightMenu(config);
         },
+        // 辅助函数：滚动到激活的标签页并居中显示
+        autoScrollToActiveTab: function ($tabContainer, $activeTab) {
+            var $tabTitle = $tabContainer.find('.layui-tab-title');
 
+            if ($activeTab.length) {
+                // 计算容器实际可用宽度（需减去左右 margin）
+                var containerWidth = $tabTitle.width() - 160; // 80px * 2
+
+                // 获取标签左侧到滚动容器边缘的距离
+                var tabOffset = $activeTab[0].offsetLeft - $tabTitle[0].scrollLeft;
+
+                // 计算目标滚动位置（考虑 margin 的影响）
+                var scrollTo = $activeTab[0].offsetLeft - (containerWidth / 2) + ($activeTab.outerWidth() / 2);
+
+                // 限制滚动范围
+                var maxScroll = $tabTitle[0].scrollWidth - containerWidth - 160;
+                scrollTo = Math.max(0, Math.min(scrollTo, maxScroll));
+
+                // 执行滚动
+                $tabTitle.stop().animate({scrollLeft: scrollTo}, 200);
+            }
+        },
         moveTabs: function (direction) {
             let $container = $(this.config.tabsContent).find('.layui-tab-title');
             let $activeTab = $container.find('.layui-this');
@@ -560,16 +579,22 @@ layui.define(["element", 'util', "layer"], function (exports) {
             }
         },
         activeTabMenu: function (tabId) {
-            //为当前id选中菜单
-            let $menuContainer = $('#menu-container'),
-                $menuItem = $menuContainer.find('[lay-id=' + tabId + ']');
+            // 为当前id选中菜单
+            let $menuContainer = $('#menu-container');
+
+            // 使用 filter 方法查找匹配的元素
+            let $menuItem = $menuContainer.find('[lay-id]').filter(function () {
+                return $(this).attr('lay-id') === tabId;
+            });
+
             $menuContainer.find('.layui-nav-item').removeClass('layui-this');
+
             if ($menuItem.length > 0) {
                 $menuContainer.find('.side-menu-container').hide();
                 let pid = $menuItem.parents('.side-menu-container').show().attr('data-tab-id');
                 $menuItem.parent('.layui-nav-item').addClass('layui-this');
-               
-                let pItem = $menuItem.parents('.side-menu-container > .layui-nav-item')
+
+                let pItem = $menuItem.parents('.side-menu-container > .layui-nav-item');
                 if (!pItem.hasClass('layui-nav-itemed')) {
                     pItem.addClass('layui-nav-itemed');
                 }
