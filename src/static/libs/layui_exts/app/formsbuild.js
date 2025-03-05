@@ -44,6 +44,8 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
             this.editor();
             //xmSelect
             this.xmSelect()
+            //Cron
+            this.cron()
             // 返回 formsbuild 实例
             return formsbuild;
         },
@@ -136,6 +138,18 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                     }
                     xmS[name] = xmSelect.render(options)
                     // xmS[name]
+                })
+            })
+        },
+        cron: function () {
+            $('[data-input-cron]').each(function () {
+                let that = this, elemId = '#' + $(this).attr('id'), cronTestUrl = this.dataset.inputCron;
+                layui.use(['cron'], function () {
+                    let cron = layui.cron;
+                    cron.render({
+                        elem: elemId, // 绑定元素
+                        run: cronTestUrl, // 获取最近运行时间的接口
+                    });
                 })
             })
         },

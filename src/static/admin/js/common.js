@@ -21,6 +21,7 @@ layui.config({
     laytable: "laytable",
     fieldHandler: "fieldHandler",
 
+    cron: "cron/cron",
     xmSelect: "xm-select",
     popup: "extends/popup",
     count: "extends/count",

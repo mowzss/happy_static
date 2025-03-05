@@ -1,0 +1,200 @@
+<div class="layui-container">
+    <form class="layui-form" action="">
+        <!-- 时间单位选择 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">时间单位：</label>
+            <div class="layui-input-block">
+                <select id="time-unit" lay-verify="required">
+                    {volist name="$times" id="unit"}
+                    <option value="{$key}">{$unit}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+
+        <!-- 动态选项区域 -->
+        <div id="dynamic-options" style="display: none;">
+            <!-- 每天 -->
+            <div id="daily-options" style="display: none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">具体时间：</label>
+                    <div class="layui-input-inline">
+                        <select id="daily-hour">
+                            {volist name=":range(0,23)" id="hour"}
+                            <option value="{$hour|str_pad=2,'0',0}">{$hour|str_pad=2,'0',0}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <select id="daily-minute">
+                            {volist name=":range(0,59)" id="minute"}
+                            <option value="{$minute|str_pad=2,'0',0}">{$minute|str_pad=2,'0',0}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 每 N 天 -->
+            <div id="everyNDays-options" style="display: none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">间隔天数：</label>
+                    <div class="layui-input-inline">
+                        <input type="number" id="everyNDays-value" placeholder="输入天数" class="layui-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 每小时 -->
+            <div id="hourly-options" style="display: none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">具体分钟：</label>
+                    <div class="layui-input-inline">
+                        <select id="hourly-minute">
+                            {volist name=":range(0,59)" id="minute"}
+                            <option value="{$minute|str_pad=2,'0',0}">{$minute|str_pad=2,'0',0}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 每 N 小时 -->
+            <div id="everyNHours-options" style="display: none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">间隔小时数：</label>
+                    <div class="layui-input-inline">
+                        <input type="number" id="everyNHours-value" placeholder="输入小时数"
+                               class="layui-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 每 N 分钟 -->
+            <div id="everyNMinutes-options" style="display: none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">间隔分钟数：</label>
+                    <div class="layui-input-inline">
+                        <input type="number" id="everyNMinutes-value" placeholder="输入分钟数"
+                               class="layui-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 每周 -->
+            <div id="weekly-options" style="display: none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">具体星期：</label>
+                    <div class="layui-input-inline">
+                        <select id="weekly-day">
+                            {volist name=":range(0,6)" id="week"}
+                            <option value="{$week}">星期{if condition="$week eq 0"}日{else /}{$week}{/if}
+                            </option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 每月 -->
+            <div id="monthly-options" style="display: none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">具体日期：</label>
+                    <div class="layui-input-inline">
+                        <select id="monthly-day">
+                            {volist name=":range(1,31)" id="day"}
+                            <option value="{$day|str_pad=2,'0',0}">{$day|str_pad=2,'0',0}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 自定义 -->
+            <div id="custom-options" style="display: none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">Cron 表达式：</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="custom-cron" placeholder="输入自定义表达式" class="layui-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生成按钮 -->
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" type="button" onclick="generateCron()">生成 Cron 表达式</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- 显示 Cron 表达式 -->
+    <div class="layui-form-item">
+        <label class="layui-form-label">最终表达式：</label>
+        <div class="layui-input-block">
+            <input type="text" id="final-cron-expression" class="layui-input" readonly>
+        </div>
+    </div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form;
+
+        // 初始化表单渲染
+        form.render();
+
+        // 监听时间单位选择变化
+        $('#time-unit').on('change', function () {
+            var unit = $(this).val();
+            $('#dynamic-options > div').hide(); // 隐藏所有选项
+            $('#' + unit + '-options').show(); // 显示对应选项
+        });
+
+        // 默认显示第一个选项
+        $('#time-unit').trigger('change');
+    });
+
+    function generateCron() {
+        var unit = $('#time-unit').val();
+        var cronExpression = '';
+
+        switch (unit) {
+            case 'daily':
+                var hour = $('#daily-hour').val();
+                var minute = $('#daily-minute').val();
+                cronExpression = `${minute} ${hour} * * *`;
+                break;
+            case 'everyNDays':
+                var days = $('#everyNDays-value').val();
+                cronExpression = `0 0 */${days} * *`;
+                break;
+            case 'hourly':
+                var minute = $('#hourly-minute').val();
+                cronExpression = `${minute} * * * *`;
+                break;
+            case 'everyNHours':
+                var hours = $('#everyNHours-value').val();
+                cronExpression = `0 */${hours} * * *`;
+                break;
+            case 'everyNMinutes':
+                var minutes = $('#everyNMinutes-value').val();
+                cronExpression = `*/${minutes} * * * *`;
+                break;
+            case 'weekly':
+                var dayOfWeek = $('#weekly-day').val();
+                cronExpression = `0 0 * * ${dayOfWeek}`;
+                break;
+            case 'monthly':
+                var dayOfMonth = $('#monthly-day').val();
+                cronExpression = `0 0 ${dayOfMonth} * *`;
+                break;
+            case 'custom':
+                cronExpression = $('#custom-cron').val();
+                break;
+        }
+
+        // 显示最终表达式
+        $('#final-cron-expression').val(cronExpression);
+    }
+</script>
