@@ -1,13 +1,4 @@
-<!doctype html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>图标选择</title>
-    {volist name="list" id="vo"}
-    <link rel="stylesheet" href="{$vo.url}">
-    {/volist}
-    <style>
+<!doctype html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>图标选择</title> {volist name="list" id="vo"}<link rel="stylesheet" href="{$vo.url}"> {/volist}<style>
         .icons-wrap {
             width: calc(100% - 1px);
             display: flex;
@@ -50,49 +41,7 @@
             top: 0;
             left: 0;
         }
-    </style>
-</head>
-<body>
-<div class="layui-tab layui-tab-brief">
-    <ul class="layui-tab-title">
-        {volist name="list" id="vo"}
-        {eq name="$i" value="1"}
-        <li class="layui-this">{$vo.name}</li>
-        {else/}
-        <li>{$vo.name}</li>
-        {/eq}
-        {/volist}
-    </ul>
-    <div class="layui-tab-content">
-        {volist name="list" id="vo"}
-        {eq name="$i" value="1"}
-        <div class="layui-tab-item layui-show">
-            <div class="icons-wrap">
-                {volist name="$vo.css_class" id="rs"}
-                <a class="icons-wrap-item" href="javascript:">
-                    <em class="{$vo.name} {$rs}"></em>
-                    <span>{$rs}</span>
-                </a>
-                {/volist}
-            </div>
-        </div>
-        {else/}
-        <div class="layui-tab-item">
-            <div class="icons-wrap">
-                {volist name="$vo.css_class" id="rs"}
-                <a class="icons-wrap-item" href="javascript:">
-                    <em class="{$vo.name} {$rs}"></em>
-                    <span>{$rs}</span>
-                </a>
-                {/volist}
-            </div>
-        </div>
-        {/eq}
-        {/volist}
-    </div>
-</div>
-<script src="__STATIC__/libs/layui/layui.js"></script>
-<script>
+    </style></head><body><div class="layui-tab layui-tab-brief"><ul class="layui-tab-title"> {volist name="list" id="vo"} {eq name="$i" value="1"}<li class="layui-this">{$vo.name}</li> {else/}<li>{$vo.name}</li> {/eq} {/volist}</ul><div class="layui-tab-content"> {volist name="list" id="vo"} {eq name="$i" value="1"}<div class="layui-tab-item layui-show"><div class="icons-wrap"> {volist name="$vo.css_class" id="rs"}<a class="icons-wrap-item" href="javascript:"><em class="{$vo.name} {$rs}"></em> <span>{$rs}</span></a> {/volist}</div></div> {else/}<div class="layui-tab-item"><div class="icons-wrap"> {volist name="$vo.css_class" id="rs"}<a class="icons-wrap-item" href="javascript:"><em class="{$vo.name} {$rs}"></em> <span>{$rs}</span></a> {/volist}</div></div> {/eq} {/volist}</div></div><script src="__STATIC__/libs/layui/layui.js"></script><script>
     layui.use(['jquery'], function () {
         var $ = layui.jquery;
         $('.icons-wrap-item').on('click', function (className) {
@@ -102,6 +51,4 @@
             }
         });
     })
-</script>
-</body>
-</html>
+</script></body></html>

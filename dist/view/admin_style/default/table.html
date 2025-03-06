@@ -1,12 +1,1 @@
-<div class="happy-container">
-    {notempty name="$tables.tips"}
-
-    <blockquote class="layui-elem-quote">
-        {$tables.tips|raw}
-    </blockquote>
-
-    {/notempty}
-    {block name="content"}{/block}
-</div>
-{block name="js"}
-{/block}
+<div class="happy-container"> {notempty name="$tables.tips"}<blockquote class="layui-elem-quote"> {$tables.tips|raw}</blockquote> {/notempty} {block name="content"}{/block}</div> {block name="js"} {/block}

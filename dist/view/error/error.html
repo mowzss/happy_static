@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <title>操作失败 - 正在跳转...</title>
-    <meta http-equiv="refresh" content="<?php echo($wait);?>;url=<?php echo($url);?>">
-    <style>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>操作失败 - 正在跳转...</title><meta http-equiv="refresh" content="<?php echo($wait);?>;url=<?php echo($url);?>"><style>
         body, html {
             height: 100%;
             margin: 0;
@@ -79,8 +73,7 @@
             font-size: 1.5rem;
             margin-top: 10px;
         }
-    </style>
-    <script>
+    </style><script>
 
         const timerElement = document.querySelector('.timer');
         let timeLeft = timerElement.dataset.time;
@@ -92,17 +85,4 @@
                 clearInterval(this);
             }
         }, 1000);
-    </script>
-</head>
-<body>
-
-<div class="container">
-    <div class="error-icon">❌</div>
-    <h1>操作失败</h1>
-    <p><?php echo(strip_tags($msg));?></p>
-    <p class="timer" data-time="<?php echo($wait);?>"></p>
-    <a href="<?php echo($url);?>">跳转</a>
-</div>
-
-</body>
-</html>
+    </script></head><body><div class="container"><div class="error-icon">❌</div><h1>操作失败</h1><p><?php echo(strip_tags($msg));?></p><p class="timer" data-time="<?php echo($wait);?>"></p> <a href="<?php echo($url);?>">跳转</a></div></body></html>

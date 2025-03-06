@@ -1,9 +1,4 @@
-{extend name="../layout" /}
-{block name="content"}
-{include file="../common/table_body" /}
-{/block}
-{block name="js"}
-<script>
+{extend name="../layout" /} {block name="content"} {include file="../common/table_body" /} {/block} {block name="js"}<script>
     layui.use(['laytable', 'uploads', 'popup'], function () {
         let popup = layui.popup, laytable = layui.laytable, uploads = layui.uploads, opt = {
             elem: '#{:get_lay_table_id()}',
@@ -35,5 +30,4 @@
 
     });
 
-</script>
-{/block}
+</script> {/block}

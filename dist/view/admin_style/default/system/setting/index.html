@@ -1,6 +1,4 @@
-{extend name="../layout" /}
-{block name="css"}
-<style>
+{extend name="../layout" /} {block name="css"}<style>
     .layui-setting-box .layui-tab-content {
         background: #fff;
         min-height: 40vh;
@@ -11,26 +9,7 @@
         border: none;
         box-shadow: none;
     }
-</style>
-{/block}
-{block name="content"}
-<div class="layui-setting-box layui-tab layui-tab-card" id="{$layui_id|default='setting-box'}">
-    <ul class="layui-tab-title">
-        {volist name="list" id="vo"}
-        {eq name="$key" value="0"}
-        <li data-group-id="{$vo.id}" class="layui-this">{$vo.title}</li>
-        {else/}
-        <li data-group-id="{$vo.id}">{$vo.title}</li>
-        {/eq}
-        {/volist}
-    </ul>
-    <div class="layui-tab-content">
-        <div class="layui-tab-item layui-show"></div>
-    </div>
-</div>
-{/block}
-{block name="js"}
-<script>
+</style> {/block} {block name="content"}<div class="layui-setting-box layui-tab layui-tab-card" id="{$layui_id|default='setting-box'}"><ul class="layui-tab-title"> {volist name="list" id="vo"} {eq name="$key" value="0"}<li data-group-id="{$vo.id}" class="layui-this">{$vo.title}</li> {else/}<li data-group-id="{$vo.id}">{$vo.title}</li> {/eq} {/volist}</ul><div class="layui-tab-content"><div class="layui-tab-item layui-show"></div></div></div> {/block} {block name="js"}<script>
     layui.use(['jquery'], function () {
         var $ = layui.jquery, $this = $('#{$layui_id|default="setting-box"}');
         // 确保在文档准备就绪后触发 click 事件
@@ -58,5 +37,4 @@
             })
         })
     })
-</script>
-{/block}
+</script> {/block}
