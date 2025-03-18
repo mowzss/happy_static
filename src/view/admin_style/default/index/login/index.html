@@ -10,6 +10,8 @@
         top.location.reload();
     }</script>
     <style>
+
+
         body {
             width: 100vw;
             height: 100vh;
@@ -18,6 +20,25 @@
             flex-wrap: nowrap;
             justify-content: center;
             align-items: center;
+            /* 动态渐变背景 */
+            background: linear-gradient(270deg, #16b777, #4a90e2, #f5a623, #7ed321);
+            background-size: 800% 800%;
+
+            /* 使用关键帧动画让背景颜色循环变换 */
+            animation: GradientBackground 15s ease infinite;
+
+        }
+
+        @keyframes GradientBackground {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .title {
@@ -30,7 +51,17 @@
 
         .login-container {
             width: 320px;
-            margin: 21px auto 0;
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .login-container .title {
+            line-height: 30px;
+            height: 30px;
+            font-size: 18px;
+            font-weight: bolder;
+            margin-bottom: 15px;
         }
 
         .login-other .layui-icon {
@@ -43,31 +74,29 @@
     </style>
 </head>
 <body>
-<div class="layui-panel layui-padding-3">
-    <div class="title">管理登录</div>
+<div class="login-container">
+    <div class="title">登录</div>
     <form class="layui-form">
-        <div class="login-container">
-            <div class="layui-form-item">
-                <div class="layui-input-wrap">
-                    <div class="layui-input-prefix">
-                        <i class="layui-icon layui-icon-username"></i>
-                    </div>
-                    <input type="text" name="username" value="" lay-verify="required" placeholder="用户名"
-                           lay-reqtext="请填写用户名" autocomplete="off" class="layui-input" lay-affix="clear">
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-username"></i>
                 </div>
+                <input type="text" name="username" value="" lay-verify="required" placeholder="用户名"
+                       lay-reqtext="请填写用户名" autocomplete="off" class="layui-input" lay-affix="clear">
             </div>
-            <div class="layui-form-item">
-                <div class="layui-input-wrap">
-                    <div class="layui-input-prefix">
-                        <i class="layui-icon layui-icon-password"></i>
-                    </div>
-                    <input type="password" name="password" value="" lay-verify="required" placeholder="密   码"
-                           lay-reqtext="请填写密码" autocomplete="off" class="layui-input" lay-affix="eye">
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-wrap">
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-password"></i>
                 </div>
+                <input type="password" name="password" value="" lay-verify="required" placeholder="密   码"
+                       lay-reqtext="请填写密码" autocomplete="off" class="layui-input" lay-affix="eye">
             </div>
-            <div class="layui-form-item">
-                <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="login">登录</button>
-            </div>
+        </div>
+        <div class="layui-form-item">
+            <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="login">登录</button>
         </div>
     </form>
 </div>
@@ -80,13 +109,7 @@
         let form = layui.form;
         let $ = layui.jquery;
         let encrypt = layui.encrypt;
-        let movBg = layui.movBg;
         let layer = layui.layer;
-        // 小方块 渲染
-        movBg.firefly("body", {
-            num: 100,
-            background: "#11263e",
-        })
         // 登 录 提 交
         form.on('submit(login)', function (data) {
             $.ajax({
