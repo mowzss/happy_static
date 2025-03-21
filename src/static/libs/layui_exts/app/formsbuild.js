@@ -1,11 +1,11 @@
 // formsbuild.js
-layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (exports) {
+layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports) {
     "use strict";
 
     let form = layui.form,
         layer = layui.layer,
-        element = layui.element,
-        laytable = layui.laytable,
+        tabs = layui.element,
+        layTable = layui.layTable,
         $ = layui.jquery;
 
 
@@ -68,14 +68,14 @@ layui.define(['form', 'layer', 'jquery', 'laytable', 'element'], function (expor
                                 //页面存在table 则不删除 仅刷新表格
                                 let $pageTable = $('.page-Table');
                                 if ($pageTable.length > 0) {
-                                    laytable.reload($pageTable.attr('id'));
+                                    layTable.reload($pageTable.attr('id'));
                                 } else {
                                     let isDelTab = $(".happy-container").find(".layui-setting-box");
                                     if (isDelTab.length === 0) {
                                         let $tabsElem = $("#happy-content").find('.layui-body-tabs'),
                                             layid = $tabsElem.find('.happy-tab-content').data('pageId'),
-                                            filter = $tabsElem.attr('lay-filter');
-                                        element.tabDelete(filter, layid);
+                                            filter = $tabsElem.attr('id');
+                                        tabs.close(filter, layid);
                                     }
                                 }
                             });

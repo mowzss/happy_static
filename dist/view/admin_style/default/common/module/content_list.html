@@ -6,8 +6,8 @@
 </script><script type="text/html" id="{:get_lay_table_id()}Tool">
     {$right_button|default=""|raw}
 </script><script>
-    layui.use(['laytable', 'dropdown', 'layer', 'jquery'], function () {
-        let laytable = layui.laytable,
+    layui.use(['layTable', 'dropdown', 'layer', 'jquery'], function () {
+        let layTable = layui.layTable,
             layer = layui.layer,
             $ = layui.jquery,
             order = JSON.parse('{$default_order|default=["id"=>"desc"]|raw|json_encode}'),
@@ -41,7 +41,7 @@
             }
         });
         // 渲染表格
-        laytable.render(opt);
+        layTable.render(opt);
         $('#module_content_list').on('click', '[lay-ajax]', function () {
             var $this = $(this);
             $.ajax({

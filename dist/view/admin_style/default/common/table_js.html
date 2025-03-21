@@ -1,6 +1,6 @@
 <script>
-    layui.use(['laytable'], function () {
-        let laytable = layui.laytable,
+    layui.use(['layTable'], function () {
+        let layTable = layui.layTable,
             isPage = JSON.parse("{$is_page|json_encode}"),
             order = JSON.parse('{$default_order|default=["id"=>"desc"]|raw|json_encode}'),
             where = JSON.parse('{$where|default=[]|raw|json_encode}'),
@@ -43,7 +43,7 @@
         }
         opt.page = isPage
         // 渲染表格
-        laytable.render(opt);
+        layTable.render(opt);
     });
 
 

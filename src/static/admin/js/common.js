@@ -6,9 +6,14 @@ layui.config({
     base: "/static/libs/layui_exts/",
     version: "2.10.0"
 }).extend({
-    admin: "admin",
-    pageTab: "pageTab",
-    menu: "menu",
+    //新
+    layAdmin: "admin/layAdmin",
+    layTabs: "admin/layTabs",
+    layTable: "admin/layTable",
+    fieldHandler: "admin/fieldHandler",
+    layMenu: "admin/layMenu",
+    fullscreen: "admin/fullscreen",
+    
     //编辑器
     tiny: "tinymce/tiny",//配置
     tinymce: "tinymce/tinymce.min",//
@@ -17,9 +22,6 @@ layui.config({
     ueditor: "ueditor/ueditor",//配置
     UE: "ueditor/ueditor.all.min",
     UECONFING: "ueditor/ueditor.config",
-
-    laytable: "laytable",
-    fieldHandler: "fieldHandler",
 
     cron: "cron/cron",
     xmSelect: "xm-select",

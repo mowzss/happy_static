@@ -1,9 +1,10 @@
-layui.define(['jquery', 'element', 'pageTab'], function (exports) {
+layui.define(['jquery', 'element', 'layTabs'], function (exports) {
+    const MODULE_NAME = 'layMenu';
     let $ = layui.jquery,
-        pageTab = layui.pageTab,
+        layTabs = layui.layTabs,
         element = layui.element;
 
-    let menu = {
+    let layMenu = {
         render: function (url) {
             this.loadAllMenuData(url);
         },
@@ -21,36 +22,34 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
                 success: function (response) {
                     if (response && response.length > 0) {
                         // 缓存所有菜单数据
-                        menu.allMenuData = response;
+                        layMenu.allMenuData = response;
                         // 分离顶级导航和子导航
-                        let separatedData = menu.separateMenuData(response);
-                        menu.topNavItems = separatedData.topNavItems;
-                        menu.sideNavItems = separatedData.sideNavItems;
+                        let separatedData = layMenu.separateMenuData(response);
+                        layMenu.topNavItems = separatedData.topNavItems;
+                        layMenu.sideNavItems = separatedData.sideNavItems;
 
                         // 初始化顶部导航和左侧菜单
-                        menu.initTopNav();
-                        menu.renderAllSideNavs();
+                        layMenu.initTopNav();
+                        layMenu.renderAllSideNavs();
 
                         // 默认加载第一个顶级导航对应的左侧导航
                         let defaultTopNav = $('#topNav .layui-nav-item:first-child a');
                         defaultTopNav.trigger('click');
 
-                        let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
-                        let opt = {
-                            id: "home",
-                            title: "首页",
-                            url: getBaseURL() + '/index/index/main',
-                            allowClose: false
-                        };
-
-                        if (tabs.length === 0) {
-                            opt.change = true;
+                        let sessionTabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
+                        if (sessionTabs.length === 0) {
+                            let opt = {
+                                id: "home",
+                                url: getBaseURL() + '/index/index/main',
+                                title: "首页",
+                                closable: false,
+                            };
+                            layTabs.add(opt);
                         }
-                        pageTab.addTab(opt);
                         //菜单加载后 激活tab 关联的菜单
                         let activeId = String(sessionStorage.getItem('tabsActiveId'));
                         if (activeId) {
-                            pageTab.activeTabMenu(activeId);
+                            layTabs.activeTabMenu(activeId);
                         }
                     } else {
                         console.error('菜单数据为空');
@@ -108,7 +107,7 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
         // 初始化顶部导航
         initTopNav: function () {
             // 渲染顶部导航
-            let topNavHtml = menu.topNavItems.map(function (item) {
+            let topNavHtml = layMenu.topNavItems.map(function (item) {
                 return `<li class="layui-nav-item" data-tab-id="${item.id}">
                             <a href="javascript:;">
                               ${item.title}
@@ -135,9 +134,9 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
             let menuContainer = $('#menu-container ul');
 
             // 遍历每个顶级导航项
-            menu.topNavItems.forEach(function (item) {
-                let sideNavData = menu.sideNavItems[item.id] || [];
-                let sideNavHtml = menu.generateMenuHtml(sideNavData);
+            layMenu.topNavItems.forEach(function (item) {
+                let sideNavData = layMenu.sideNavItems[item.id] || [];
+                let sideNavHtml = layMenu.generateMenuHtml(sideNavData);
 
                 // 创建一个容器来保存该顶级导航对应的左侧菜单
                 let sideMenuContainer = `
@@ -158,7 +157,7 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
                 if (item.type === 1) { // 叶子节点菜单
                     return item;
                 } else if (item.children && item.children.length > 0) {
-                    let result = menu.findFirstLeafMenuItem(item.children);
+                    let result = layMenu.findFirstLeafMenuItem(item.children);
                     if (result) return result; // 如果找到就立即返回
                 }
             }
@@ -179,7 +178,7 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
 
                     if (item.children && item.children.length > 0) {
                         html += '<dl class="layui-nav-child">';
-                        html += menu.generateMenuHtml(item.children); // 递归生成子菜单
+                        html += layMenu.generateMenuHtml(item.children); // 递归生成子菜单
                         html += '</dl>';
                     }
 
@@ -212,5 +211,5 @@ layui.define(['jquery', 'element', 'pageTab'], function (exports) {
         }
     }
 
-    exports('menu', menu);
+    exports(MODULE_NAME, layMenu);
 });

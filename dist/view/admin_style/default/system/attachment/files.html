@@ -11,8 +11,8 @@
 </script><script type="text/html" id="{:get_lay_table_id()}-tool">
     {$right_button|default=""|raw}
 </script> {/block} {block name="js"}<script>
-    layui.use(['laytable'], function () {
-        let laytable = layui.laytable, opt = {
+    layui.use(['layTable'], function () {
+        let layTable = layui.layTable, opt = {
             elem: '#{:get_lay_table_id()}',
             headers: {out: 'json'},
             cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
@@ -35,6 +35,6 @@
             }
         }
         // 渲染表格
-        laytable.render(opt);
+        layTable.render(opt);
     });
 </script> {/block}

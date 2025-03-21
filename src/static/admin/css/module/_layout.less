@@ -164,128 +164,84 @@
     height: calc(100% - 105px);
     overflow-y: auto;
 
-    > div {
+    #happy-content {
       height: 100%;
       position: relative;
 
-      .layui-body-tabs {
+
+      .layui-body-tabs#layTabs {
         width: 100%;
         height: 100%;
         background: #fff;
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .1);
         margin: 0;
 
-        > .layui-tab-title {
-          padding: 6px 88px;
-          height: 32px;
-          line-height: 32px;
-          border-bottom-width: 0;
-          overflow-x: auto !important; /* 强制横向滚动 */
-          overflow-y: hidden; /* 隐藏纵向滚动 */
-          white-space: nowrap;
+        > .layui-tabs-scroll {
 
-          /* 隐藏原生滚动条（可选） */
-          scrollbar-width: none; /* Firefox */
+          .layui-tabs-header {
+            padding: 0 8px 0 !important;
+            border-bottom-width: 0;
+            height: 40px;
 
-          &::-webkit-scrollbar {
-            display: none;
-          }
 
-          li {
-            line-height: 32px;
-            height: 32px;
-            margin: 0 2px;
-            position: relative;
+            li {
+              position: relative;
 
-            &:hover {
-              background: #f6f6f6;
-              border-radius: 8px;
+              &:hover {
+                background: #f6f6f6;
+              }
+
+              & .layui-tab-close:hover {
+                border-radius: 50%;
+              }
             }
 
-            & .layui-tab-close:hover {
-              border-radius: 50%;
-            }
-          }
-
-          //li + li {
-          //  border-left: #f6f6f6 1px solid;
-          //}
-
-          > .layui-this, li:hover.layui-this {
-            height: 38px;
-            line-height: 38px;
-            background: rgba(22, 183, 119, 0.05);
-            border-radius: 8px 8px 0 0;
-            color: #16b777;
-
-            &::after {
-              content: '';
-              position: absolute;
-              left: -8px;
-              top: 30px;
-              width: 8px;
-              height: 8px;
-              background-image: radial-gradient(circle 8px at 0 0%, transparent 8px, rgba(22, 183, 119, 0.05) 50%);
-
-              border: none;
+            li + li {
+              border-left: 1px solid #eee;
             }
 
-            &::before {
-              content: '';
-              position: absolute;
-              right: -8px;
-              bottom: 0;
-              width: 8px;
-              height: 8px;
-              background-image: radial-gradient(circle 8px at 100% 0%, transparent 8px, rgba(22, 183, 119, 0.05) 50%);
+            > .layui-this, li:hover.layui-this {
+              background: rgba(22, 183, 119, 0.05);
+              border-radius: 8px 8px 0 0;
+              color: #16b777;
+              box-shadow: 1px 1px 0 0 rgba(22, 183, 119, 0.05);
+
+              &::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                z-index: 1;
+                width: 100%;
+                height: 100%;
+                border-bottom: none !important;
+                border-top: 3px solid #16baaa;
+                box-sizing: border-box;
+                pointer-events: none;
+              }
+
+              //
+              //&::before {
+              //  content: '';
+              //  position: absolute;
+              //  right: -8px;
+              //  bottom: 0;
+              //  width: 8px;
+              //  height: 8px;
+              //  background-image: radial-gradient(circle 8px at 100% 0%, transparent 8px, rgba(22, 183, 119, 0.05) 50%);
+              //}
             }
           }
         }
 
-        .layui-tab-content {
-          height: calc(100% - 42px) !important;
+        > .layui-tabs-body {
+          height: calc(100% - 40px) !important;
           padding: 0;
 
-          .layui-tab-item {
+          .layui-tabs-item {
             overflow-y: auto;
             height: 100%;
-
-
-            .happy-tab-content {
-              background: #f3f3f3;
-
-            }
-          }
-        }
-
-        .layui-tab-subsidiary {
-          &-refresh, &-next, &-prev, &-screen-full {
-            background: #fff;
-            border-right: #eee 1px solid;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 40px;
-            height: 44px;
-            line-height: 44px;
-            text-align: center;
-          }
-
-          &-prev {
-            border-left: none;
-            border-right: #eee 1px solid;
-            left: 41px;
-          }
-
-          &-screen-full {
-            right: 0;
-            left: unset;
-          }
-
-          &-next {
-            border-left: #eee 1px solid;
-            right: 41px;
-            left: unset;
+            background: #f3f3f3;
           }
         }
 

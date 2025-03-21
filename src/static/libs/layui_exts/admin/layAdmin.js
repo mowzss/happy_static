@@ -1,80 +1,67 @@
 // admin.js
-layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function (exports) {
+layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], function (exports) {
     "use strict";
     let util = layui.util,
         layer = layui.layer,
         $ = layui.jquery,
-        pageTab = layui.pageTab,
-        menu = layui.menu,
+        tabs = layui.tabs,
+        layTabs = layui.layTabs,
+        layMenu = layui.layMenu,
         element = layui.element;
-
+    const MODULE_NAME = 'layAdmin';
     let admin = {
         config: {
-            tabFilter: 'layout-filter-tab',//tab选择器
-            tabsContent: '#happy-content > .layui-body-tabs',
             menuUrl: '',
         },
         // 初始化
         render: function (options) {
             this.config = $.extend({}, this.config, options);
             this.renderTabs();//渲染tab容器
-            menu.render(this.config.menuUrl);
+            layMenu.render(this.config.menuUrl);
             this.events();//全部监听
             this.initTabs();//渲染tab记录
-            pageTab.rightMenu({filter: this.config.tabFilter}); // 渲染右键菜单
             this.closeLoading()
-          
+
         },
         //初始化记录的标签
         initTabs: function () {
-            let that = this;
-            let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
+            let tabsList = JSON.parse(sessionStorage.getItem('tabsList')) || [];
             let activeId = String(sessionStorage.getItem('tabsActiveId'));
 
             // 重新添加所有保存的Tab
-            tabs.forEach((tab) => {
-                pageTab.addTab(tab);
+            tabsList.forEach((tab) => {
+                layTabs.add(tab);
             });
             // 设置激活的Tab
-            if (activeId && tabs.some(tab => tab.id === activeId)) {
-                element.tabChange(that.config.tabFilter, activeId);
-            } else if (tabs.length > 0) {
+            if (activeId && tabsList.some(tab => tab.id === activeId)) {
+                tabs.change(layTabs.config.elem, activeId);
+            } else if (tabsList.length > 0) {
                 // 如果没有保存的激活Tab，选择第一个Tab作为默认激活
-                element.tabChange(that.config.tabFilter, tabs[0].id);
+                tabs.change(layTabs.config.elem, tabsList[0].id);
             }
-            element.init();
         },
         // 动态渲染layui-body-tabs
         renderTabs: function () {
             let tabsHtml = `
-        <div class="layui-body-tabs layui-tab-rollTool layui-tab" lay-allowclose="true" lay-unauto lay-filter="${admin.config.tabFilter}">
-            <ul class="layui-tab-title"></ul>
-            <div class="layui-tab-content"></div>
-            <div class="layui-tab-subsidiary">
-                <span class="layui-tab-subsidiary-refresh" lay-header-event="refreshTab">
-                    <em class="layui-icon layui-icon-refresh"></em>
-                </span>
-                <span class="layui-tab-subsidiary-screen-full" lay-header-event="tabFullScreen">
-                    <em class="layui-icon layui-icon-screen-full"></em>
-                </span>
-                <span class="layui-tab-subsidiary-prev" lay-header-event="moveTabs" data-value="prev"><em class="layui-icon layui-icon-prev"></em></span>
-                <span class="layui-tab-subsidiary-next" lay-header-event="moveTabs" data-value="next"><em class="layui-icon layui-icon-next"></em></span>
-                 
-            </div>
+        <div class="layui-body-tabs layui-tab-rollTool layui-tabs layui-hide-v" id="${layTabs.config.elem}" lay-options="{headerMode:'scroll',closable:true}">
+            <ul class="layui-tabs-header"></ul>
+            <div class="layui-tabs-body"></div>        
         </div>
     `;
             // 插入到#happy-content中
             $("#happy-content").html(tabsHtml);
-            // 初始化element模块，确保新添加的元素可以正常工作
-            element.render('tab', admin.config.tabFilter);
+            tabs.render();
         },
         //关闭遮罩层
         closeLoading: function () {
             $('.loading-mask').addClass('hidden');
         },
+        showLoading: function () {
+            $('.loading-mask').removeClass('hidden');
+        },
         // 事件监听
         events: function () {
-            pageTab.onTab(); // 监听标签页切换事件
+            layTabs.on(); // 监听标签页切换事件
             util.event('lay-header-event', {
                 //清理缓存
                 cleanCache: function (othis) {
@@ -102,7 +89,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     if (!document.fullscreenElement) {
                         // 请求全屏
                         try {
-                            pageTab.requestFullscreen(document.documentElement).then(() => {
+                            layTabs.requestFullscreen(document.documentElement).then(() => {
                                 // 更新图标为退出全屏图标
                                 iconElement.removeClass('layui-icon-screen-full').addClass('layui-icon-screen-restore');
                                 othis.attr('title', "退出全屏");
@@ -115,7 +102,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     } else {
                         // 退出全屏
                         try {
-                            pageTab.exitFullscreen().then(() => {
+                            layTabs.exitFullscreen().then(() => {
                                 // 更新图标为进入全屏图标
                                 iconElement.removeClass('layui-icon-screen-restore').addClass('layui-icon-screen-full');
                                 othis.attr('title', "全屏");
@@ -126,33 +113,6 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                             layer.msg("无法退出全屏模式,请手动操作");
                         }
                     }
-                },
-                //tab全屏
-                tabFullScreen: function (othis) {
-                    $('.right-menu').find('[data-event="toggleFullScreen"]').trigger('click');
-                },
-                //菜单切换
-                menuSwitch: function (othis) { // 左侧菜单事件
-                    var elem = $(".happy-admin-layout").find('.layui-layout-admin');
-                    var flag = elem.hasClass("mini-nav");
-                    if (flag) {
-                        $(".layui-nav-item i").css("left", 25);
-                        elem.removeClass("mini-nav");
-                        localStorage.setItem('mimiMenu', 'false');
-                    } else {
-                        $(".layui-nav-item i").css("left", 20);
-                        elem.addClass("mini-nav");
-                        localStorage.setItem('mimiMenu', 'true');
-                    }
-                },
-                //刷新tab
-                refreshTab: function () {
-                    pageTab.refreshTab();
-                },
-                //移动标签
-                moveTabs: function (othis) {
-                    let value = othis.data('value');
-                    pageTab.moveTabs(value);
                 },
                 logout: function (othis) {
                     let url = othis.data('href');
@@ -175,19 +135,6 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                         })
                     }
                 },
-                //右栏菜单
-                menuRight: function (othis) {
-                    layer.open({
-                        type: 1,
-                        title: '系统信息',
-                        area: ['300px', '100%'],
-                        offset: "r",
-                        anim: 'slideLeft',
-                        closeBtn: 0,
-                        shadeClose: true,
-                        content: ""
-                    })
-                }
             });
             //lay-on 监听事件
             util.event('lay-on', {
@@ -207,11 +154,11 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     var id = obj.attr("lay-id");
                     var url = obj.attr("lay-url");
                     // 添加新标签页
-                    pageTab.addTab({
+                    layTabs.add({
                         id: id,
                         title: title,
                         url: url,
-                        change: true,
+                        closable: true,
                     });
                 }
             });
@@ -226,11 +173,11 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
                     id = url.split('?')[0],
                     title = $(e.target).text();
                 // 添加新标签页
-                pageTab.addTab({
+                layTabs.add({
                     id: id,
                     title: title,
                     url: url,
-                    allowClose: true,
+                    closable: true,
                     change: true,
                 });
             });
@@ -268,5 +215,5 @@ layui.define(['util', 'element', 'layer', 'jquery', 'pageTab', 'menu'], function
     }
 
 
-    exports('admin', admin);
+    exports(MODULE_NAME, admin);
 });

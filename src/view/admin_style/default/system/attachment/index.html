@@ -4,8 +4,8 @@
 {/block}
 {block name="js"}
 <script>
-    layui.use(['laytable', 'uploads', 'popup'], function () {
-        let popup = layui.popup, laytable = layui.laytable, uploads = layui.uploads, opt = {
+    layui.use(['layTable', 'uploads', 'popup'], function () {
+        let popup = layui.popup, layTable = layui.layTable, uploads = layui.uploads, opt = {
             elem: '#{:get_lay_table_id()}',
             headers: {out: 'json'},
             cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
@@ -25,13 +25,13 @@
                         url: url,
                         success: function (res) {
                             popup.success(res.msg);
-                            laytable.reload(obj.config.id); // 重新加载表格
+                            layTable.reload(obj.config.id); // 重新加载表格
                         }
                     });
                 }
             }
         }
-        laytable.render(opt);
+        layTable.render(opt);
 
     });
 

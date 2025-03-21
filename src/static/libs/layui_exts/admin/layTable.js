@@ -1,19 +1,19 @@
-layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHandler'], function (exports) {
+layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], function (exports) {
     let $ = layui.jquery;
     let table = layui.table;
     let treeTable = layui.treeTable; // 初始化为 null，稍后根据需要动态加载
     let layer = layui.layer;
     let fieldHandler = layui.fieldHandler;
     let form = layui.form;
-
-    // 定义 laytable 模块
-    let laytable = {
+    const MODUME_NAME = 'layTable';
+    // 定义 layTable 模块
+    let layTable = {
         // 用于存储事件监听器的对象
         eventListeners: {},
         // 初始化表格
         render: function (options) {
             let that = this;
-            // 默认选项（仅包含 laytable 特定的扩展逻辑）
+            // 默认选项（仅包含 layTable 特定的扩展逻辑）
             let defaults = {
                 elem: '#happyTable',
                 where: {}, // 用户可以自定义 where 参数
@@ -68,6 +68,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
 
             // 默认的工具栏事件处理程序
             let defaultToolbarHandlers = {
+
                 add: function (obj, callback, defaultHandler) {
                     that.defaultSaveHandler(this, settings.dataUrls.add, function () {
                         that.reload(obj.config.id); // 刷新表格
@@ -114,7 +115,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
             // 工具栏事件处理
             if (!settings.on.toolbar) {
                 settings.on.toolbar = function (obj) {
-                    if (obj.config.elem.selector !== settings.elem) { // 确保只处理对应表格的事件
+                    if (obj.config.layFilters !== settings.layFilters) { // 确保只处理对应表格的事件
                         return false;
                     }
 
@@ -131,7 +132,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
             // 行内工具事件处理
             if (!settings.on.tool) {
                 settings.on.tool = function (obj) {
-                    if (obj.config.elem.selector !== settings.elem) { // 确保只处理对应表格的事件
+                    if (obj.config.layFilters !== settings.layFilters) { // 确保只处理对应表格的事件
                         return false;
                     }
 
@@ -148,7 +149,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
             // 添加排序事件监听
             if (!settings.on.sort) {
                 settings.on.sort = function (obj) {
-                    if (obj.config.elem.selector !== settings.elem) { // 确保只处理对应表格的事件
+                    if (obj.config.layFilters !== settings.layFilters) { // 确保只处理对应表格的事件
                         return false;
                     }
                     let field = obj.field;
@@ -166,7 +167,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
             // 单元格编辑事件
             if (!settings.on.edit) {
                 settings.on.edit = function (obj) {
-                    if (obj.config.elem.selector !== settings.elem) { // 确保只处理对应表格的事件
+                    if (obj.config.layFilters !== settings.layFilters) { // 确保只处理对应表格的事件
                         return false;
                     }
                     let load = layer.load();
@@ -265,8 +266,8 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
         reload: function (elem, options) {
             if (elem === null || elem === undefined) {
                 let $content = $('#happy-content'), $elem;
-                $elem = $content.find('.layui-body-tabs ');
-                $elem = $elem.find('.layui-tab-item .layui-show .page-Table');
+                $elem = $content.find('.layui-tabs-body');
+                $elem = $elem.find('.layui-tabs-item .layui-show');
                 if ($elem.length === 0) return;
                 elem = $elem.attr('id');
             }
@@ -400,6 +401,5 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'admin', 'fieldHa
         return url;
     }
 
-    // 导出 laytable 模块
-    exports('laytable', laytable);
+    exports(MODUME_NAME, layTable);
 });
