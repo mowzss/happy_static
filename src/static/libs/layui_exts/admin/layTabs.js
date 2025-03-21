@@ -10,9 +10,6 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
         config: {
             elem: "layTabs",
         },
-        render: function () {
-
-        },
         rightMenu: function (opt) {
             let that = this;
             // 为标签头添加上下文菜单
@@ -63,7 +60,7 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                         }
                     }
                 }, templet: function (d) {
-                    return '<i class="' + d.icon + '"></> ' + d.title;
+                    return '<i class="' + d.icon + '" style="font-size: 14px"></> ' + d.title;
                 }
             });
         },
