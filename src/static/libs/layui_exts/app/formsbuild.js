@@ -104,7 +104,6 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                         toolbar: {show: true},
                         filterable: true,
                         empty: '输入内容搜一下吧！',
-                        max: '{$max}',
                         paging: true,
                         pageRemote: true,
                         prop: {

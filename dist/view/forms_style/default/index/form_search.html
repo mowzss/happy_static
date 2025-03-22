@@ -33,7 +33,7 @@
                 prefixIcon: "layui-icon",
                 toggleIcon: ['layui-icon-down', 'layui-icon-up'],
                 toggleText: ['展开', '折叠'],
-                min: 3, // 设置最小显示数，默认显示一行
+                min: 5, // 设置最小显示数，默认显示一行
             };
             // 合并用户传入的选项和默认配置
             const settings = {...defaults, ...options};
@@ -47,7 +47,11 @@
             // 初始化按钮文本和图标
             function initToggleButton() {
                 const [iconClass, text] = settings.isExpand ? [settings.toggleIcon[1], settings.toggleText[1]] : [settings.toggleIcon[0], settings.toggleText[0]];
-                $expandButton.html(`<span>${text}</span><i class="${settings.prefixIcon} ${iconClass}"></i>`);
+                let $formItems = $("#{$lay_filter}").find('.layui-inline')
+                console.log($formItems)
+                if ($formItems.length > settings.min + 1) {
+                    $expandButton.html(`<span>${text}</span><i class="${settings.prefixIcon} ${iconClass}"></i>`);
+                }
             }
 
             // 更新显示/隐藏表单项
@@ -71,7 +75,6 @@
                 initToggleButton();
                 updateVisibility(settings.isExpand);
                 $expandButton.on('click', toggleForm);
-                $()
             })();
         }
 
