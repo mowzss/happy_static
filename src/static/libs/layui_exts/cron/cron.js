@@ -95,9 +95,9 @@ layui.define(['lay', 'element', 'form'], function (exports) { //假如该组件�
                 unspecified: "不指定",
                 period: "周期",
                 periodFrom: "从",
-                rate: "按照",
-                rateBegin: "从",
-                rateMid: "开始，每",
+                rate: "间隔",
+                rateBegin: "每隔",
+                rateMid: "每",
                 rateEnd: "执行一次",
                 weekday: "工作日",
                 weekdayPrefix: "每月",
@@ -279,9 +279,11 @@ layui.define(['lay', 'element', 'form'], function (exports) { //假如该组件�
                 if (cron[tabItemKey].indexOf('/') != -1) {
                     // 频率数据
                     var arr = cron[tabItemKey].split('/');
+                    // 对于分钟以外的字段，如果开始值为'0'，则转换为'*'
+                    var adjustedBegin = (arr[0] === '0') ? '*' : arr[0];
                     return {
                         type: 'rate',
-                        begin: arr[0],
+                        begin: adjustedBegin,
                         rate: arr[1]
                     };
                 }
@@ -467,35 +469,38 @@ layui.define(['lay', 'element', 'form'], function (exports) { //假如该组件�
             }(), function () {
                 var elem = lay.elem('input', {
                     'class': 'cron-input',
-                    'type': 'number',
+                    'type': 'hidden',
                     'name': 'begin',
-                    'value': data.begin || ''
+                    // 默认值设置为 '*', 除了分钟字段外
+                    'value': data.begin === '*' && tabItemKey !== 'minutes' ? '*' : data.begin || '*'
                 });
                 return elem;
-            }(), function () {
-                var elem = lay.elem('div', {
-                    'class': 'cron-input-mid'
-                });
-                elem.innerHTML = tabItemLang.rateMid || (tabItemLang.title + lang.rateMid);
-                return elem;
-            }(), function () {
-                var elem = lay.elem('input', {
-                    'class': 'cron-input',
-                    'type': 'number',
-                    'name': 'rate',
-                    'value': data.rate || ''
-                });
-                return elem;
-            }(), function () {
-                var elem = lay.elem('div', {
-                    'class': 'cron-input-mid'
-                });
-                elem.innerHTML = undefined != tabItemLang.rateEnd ? tabItemLang.rateEnd : (tabItemLang.title + lang.rateEnd);
-                if (undefined != tabItemLang.rateEnd && tabItemLang.rateEnd === '') {
-                    lay(elem).addClass(HIDE);
-                }
-                return elem;
-            }()]
+            }(),
+                //     function () {
+                //     var elem = lay.elem('div', {
+                //         'class': 'cron-input-mid'
+                //     });
+                //     elem.innerHTML = tabItemLang.rateMid || (tabItemLang.title + lang.rateMid);
+                //     return elem;
+                // }(),
+                function () {
+                    var elem = lay.elem('input', {
+                        'class': 'cron-input',
+                        'type': 'number',
+                        'name': 'rate',
+                        'value': data.rate || ''
+                    });
+                    return elem;
+                }(), function () {
+                    var elem = lay.elem('div', {
+                        'class': 'cron-input-mid'
+                    });
+                    elem.innerHTML = undefined != tabItemLang.rateEnd ? tabItemLang.rateEnd : (tabItemLang.title + lang.rateEnd);
+                    if (undefined != tabItemLang.rateEnd && tabItemLang.rateEnd === '') {
+                        lay(elem).addClass(HIDE);
+                    }
+                    return elem;
+                }()]
                 , rateDiv = lay.elem('div', {
                 'class': 'cron-row'
             });
