@@ -1,7 +1,6 @@
-layui.define(['jquery', 'tinymce', 'admin'], function (exports) {
+layui.define(['jquery', 'tinymce',], function (exports) {
     var $ = layui.$;
     var tinymce = layui.tinymce;
-    var admin = layui.admin || {}
     // 图片上传接口
     var images_upload_url = '/index.php?s=/index/Upload/save';
 
