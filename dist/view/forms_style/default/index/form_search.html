@@ -48,7 +48,6 @@
             function initToggleButton() {
                 const [iconClass, text] = settings.isExpand ? [settings.toggleIcon[1], settings.toggleText[1]] : [settings.toggleIcon[0], settings.toggleText[0]];
                 let $formItems = $("#{$lay_filter}").find('.layui-inline')
-                console.log($formItems)
                 if ($formItems.length > settings.min + 1) {
                     $expandButton.html(`<span>${text}</span><i class="${settings.prefixIcon} ${iconClass}"></i>`);
                 }

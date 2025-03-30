@@ -4,7 +4,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
 
     let form = layui.form,
         layer = layui.layer,
-        tabs = layui.element,
+        tabs = layui.tabs,
         layTable = layui.layTable,
         $ = layui.jquery;
 
@@ -89,12 +89,14 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
         },
         xmSelect: function () {
             $('[data-xm-select]').each(function () {
+
                 let xmS = [],
                     that = this, $that = $(this),
                     name = $that.data('name'),
                     elemId = '#' + $that.attr('id'),
-                    data = JSON.parse($('[xm-select-value="' + name + '"]').text() || '[]'),
-                    options = JSON.parse($('[xm-select="' + name + '"]').text() || '{}');
+                    data = JSON.parse($('[xm-select-value="' + name + '"]').text()),
+                    options = JSON.parse($('[xm-select="' + name + '"]').text());
+
                 layui.use(['xmSelect'], function (xmSelect) {
                     options = Object.assign({}, options, {
                         el: elemId,
