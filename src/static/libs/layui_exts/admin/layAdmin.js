@@ -63,6 +63,9 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
         events: function () {
             layTabs.on(); // 监听标签页切换事件
             util.event('lay-header-event', {
+                home: function () {
+                    tabs.change(layTabs.config.elem, 'home');
+                },
                 //清理缓存
                 cleanCache: function (othis) {
                     let url = othis.data('url')
@@ -135,12 +138,20 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
                         })
                     }
                 },
-            });
-            //lay-on 监听事件
-            util.event('lay-on', {
-                open: function () {
-
-                }
+                //菜单切换
+                menuSwitch: function (othis) { // 左侧菜单事件
+                    var elem = $(".happy-admin-layout").find('.layui-layout-admin');
+                    var flag = elem.hasClass("mini-nav");
+                    if (flag) {
+                        $(".layui-nav-item i").css("left", 25);
+                        elem.removeClass("mini-nav");
+                        localStorage.setItem('mimiMenu', 'false');
+                    } else {
+                        $(".layui-nav-item i").css("left", 20);
+                        elem.addClass("mini-nav");
+                        localStorage.setItem('mimiMenu', 'true');
+                    }
+                },
             });
             //导航事件
             element.on('nav(lay-nav)', function (elem) {
