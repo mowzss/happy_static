@@ -1,0 +1,54 @@
+{extend name="../table" /}
+{block name="content"}
+{notempty name="$search_code"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        {$search_code|raw}
+    </div>
+</div>
+{/notempty}
+<div class="layui-tab layui-tab-card layui-card">
+    <ul class="layui-tab-title" id="module_content_list">
+        {empty name="$request->param('dir')"}
+        <li lay-ajax="{:urls('index')}" class="layui-this">全部内容</li>
+        {else}
+        <li lay-ajax="{:urls('index')}">全部内容</li>
+        {/empty}
+        {foreach $dirs as $key=>$name }
+        {if $request->param('dir')== $key }
+        <li lay-ajax="{:urls('index',['dir'=>$key])}" class="layui-this">{$name}</li>
+        {else/}
+        <li lay-ajax="{:urls('index',['dir'=>$key])}">{$name}</li>
+        {/if}
+        {/foreach}
+    </ul>
+    <div class="layui-card-body">
+        <table class="layui-hide page-Table" id="{:get_lay_table_id()}" lay-filter="{:get_lay_table_id()}"
+               data-url="{:urls('index')}"></table>
+    </div>
+</div>
+<script type="text/html" id="{:get_lay_table_id()}ToolbarTop">
+    <div class="layui-btn-container">
+        {$top_button|default=""|raw}
+    </div>
+</script>
+<script type="text/html" id="{:get_lay_table_id()}Tool">
+    {$right_button|default=""|raw}
+</script>
+
+{/block}
+{block name="js"}
+{include file="../common/table_js" /}
+<script>
+    $('#module_content_list').on('click', '[lay-ajax]', function () {
+        var $this = $(this);
+        $.ajax({
+            url: $this.attr('lay-ajax'),
+            type: 'post',
+            success: function (res) {
+                $this.parents('.happy-tab-content ').html(res)
+            }
+        })
+    })
+</script>
+{/block}
