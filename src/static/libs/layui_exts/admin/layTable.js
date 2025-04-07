@@ -311,8 +311,9 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                 customWidth = '800px', // 使用 || 提供默认值或保持为 undefined
                 customHeight = 'auto', // 同上
                 screenWidth = $(window).width(),
+                screenHeight = $(window).height(),
+                modalHeight = screenHeight - 200,
                 modalWidth = screenWidth >= 1400 ? '800px' : '80%'; // 默认宽度
-
             // 如果有自定义宽度，则使用它；否则使用默认宽度
             if (customWidth) {
                 modalWidth = customWidth;
@@ -329,7 +330,8 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                         type: 1,
                         title: title,
                         content: response,
-                        area: [modalWidth, customHeight], // 使用自定义高度或自动调整
+                        area: modalWidth, // 使用自定义高度或自动调整
+                        maxHeight: modalHeight
                     });
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
