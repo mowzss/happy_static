@@ -18,7 +18,7 @@
                 cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
                 page: true,
                 dataUrls: {
-                    add: "{:urls('add')}",
+                    add: "{:urls('add',['mid'=>$request->param('mid',0)])}",
                     edit: "{:urls('edit')}",
                     del: "{:urls('delete')}",
                     quick: "{:urls('quickEdit')}",
