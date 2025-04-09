@@ -1,10 +1,56 @@
-{extend name="../table" /} {block name="content"} {notempty name="$search_code"}<div class="layui-card"><div class="layui-card-body"> {$search_code|raw}</div></div> {/notempty}<div class="layui-tab layui-tab-card layui-card"><ul class="layui-tab-title" id="module_content_list"> {empty name="$request->param('dir')"}<li lay-ajax="{:urls('index')}" class="layui-this">全部菜单</li> {else}<li lay-ajax="{:urls('index')}">全部菜单</li> {/empty} {foreach $dirs as $key=>$name } {if $request->param('dir')== $key }<li lay-ajax="{:urls('index',['dir'=>$key])}" class="layui-this">{$name}</li> {else/}<li lay-ajax="{:urls('index',['dir'=>$key])}">{$name}</li> {/if} {/foreach}</ul><div class="layui-card-body"><table class="layui-hide page-Table" id="{:get_lay_table_id()}" lay-filter="{:get_lay_table_id()}" data-url="{:urls('index')}"></table></div></div><script type="text/html" id="{:get_lay_table_id()}ToolbarTop">
+{extend name="../table" /} {block name="content"} {notempty name="$search_code"}<div class="layui-card"><div class="layui-card-body"> {$search_code|raw}</div></div> {/notempty}<div class="layui-tab layui-tab-card layui-card"><ul class="layui-tab-title" id="module_content_list"> {foreach $dirs as $key=>$name } {if $request->param('dir','pc')== $key }<li lay-ajax="{:urls('index',['dir'=>$key])}" class="layui-this">{$name}</li> {else/}<li lay-ajax="{:urls('index',['dir'=>$key])}">{$name}</li> {/if} {/foreach}</ul><div class="layui-card-body"><table class="layui-hide page-Table" id="{:get_lay_table_id()}" lay-filter="{:get_lay_table_id()}" data-url="{:urls('index')}"></table></div></div><script type="text/html" id="{:get_lay_table_id()}ToolbarTop">
     <div class="layui-btn-container">
         {$top_button|default=""|raw}
     </div>
 </script><script type="text/html" id="{:get_lay_table_id()}Tool">
     {$right_button|default=""|raw}
-</script> {/block} {block name="js"} {include file="../common/table_js" /}<script>
+</script> {/block} {block name="js"}<script>
+    layui.use(['layTable'], function () {
+        let layTable = layui.layTable,
+            isPage = JSON.parse("{$is_page|json_encode}"),
+            order = JSON.parse('{$default_order|default=["id"=>"desc"]|raw|json_encode}'),
+            where = JSON.parse('{$where|default=[]|raw|json_encode}'),
+            cols = JSON.parse('{$tables.fields|raw|json_encode}'),
+            opt = {
+                elem: '#{:get_lay_table_id()}',
+                headers: {out: 'json'},
+                cols: [cols],
+                dataUrls: {
+                    add: "{:urls('add',['dir'=>$request->param('dir','pc')])}",
+                    edit: "{:urls('edit')}",
+                    del: "{:urls('delete')}",
+                    quick: "{:urls('quickEdit')}",
+                },
+                isTree: JSON.parse('{$is_tree|default=false|json_encode}'),
+            }
+        // 初始化 opt.where 为一个空对象，以防后续需要添加内容
+        opt.where = opt.where || {};
+        // 如果 where 不为空，则将其内容合并到 opt.where 中
+        if (Object.keys(where).length > 0) {
+            Object.assign(opt.where, where);
+        }
+        // 获取 order 对象的所有键并设置排序条件
+        Object.keys(order).forEach(key => {
+            if (order[key]) {
+                // 合并排序条件到 where 中
+                Object.assign(opt.where, {
+                    _order: key,
+                    _by: order[key]
+                });
+            }
+        });
+        if (opt.isTree) {
+            opt.tree = {
+                customName: {
+                    name: 'title',
+                    pid: 'pid'
+                }
+            }
+        }
+        opt.page = isPage
+        // 渲染表格
+        layTable.render(opt);
+    });
     $('#module_content_list').on('click', '[lay-ajax]', function () {
         var $this = $(this);
         $.ajax({
