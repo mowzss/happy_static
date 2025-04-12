@@ -30,7 +30,8 @@
 </div>
 <script type="text/html" id="{:get_lay_table_id()}ToolbarTop">
     <div class="layui-btn-container">
-        <button class="layui-btn layui-btn-sm " data-open="{:urls('add')}">添加</button>
+        <button class="layui-btn layui-btn-sm " data-open="{:urls('add',['mid'=>$request->param('mid',0)])}">添加
+        </button>
         {$top_button|default=""|raw}
     </div>
 </script>
