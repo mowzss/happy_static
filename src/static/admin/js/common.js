@@ -29,7 +29,7 @@ layui.config({
     yaml: "extends/yaml",
 
     //外部模块
-    sortable: {src: layuiExts + "sortable/Sortable.min", api: "Sortable"},
+    sortable: {src: layuiExts + "sortable/Sortable", api: "Sortable"},
     tinymce: {src: layuiExts + "tinymce/tinymce.min", api: "tinymce"},//tinymce
     wangEditor: {src: layuiExts + "wangEditor/index", api: "wangEditor"},//wangEditor
     UE: {src: layuiExts + "layui_exts/ueditor/ueditor.all.min", api: "UE"},
