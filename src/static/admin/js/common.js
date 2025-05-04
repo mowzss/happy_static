@@ -32,8 +32,8 @@ layui.config({
     sortable: {src: layuiExts + "sortable/Sortable.min", api: "Sortable"},
     tinymce: {src: layuiExts + "tinymce/tinymce.min", api: "tinymce"},//tinymce
     wangEditor: {src: layuiExts + "wangEditor/index", api: "wangEditor"},//wangEditor
-    UE: {src: layuiExts + "ueditor/ueditor.all.min", api: "UE"},
-    UECONFING: {src: layuiExts + "ueditor/ueditor.config", api: "UE"},
+    UE: {src: layuiExts + "layui_exts/ueditor/ueditor.all.min", api: "UE"},
+    UECONFING: {src: layuiExts + "layui_exts/ueditor/ueditor.config", api: "UE"},
 
     //编辑器配置信息
     tiny: "tinymce/tiny",//tinymce配置
