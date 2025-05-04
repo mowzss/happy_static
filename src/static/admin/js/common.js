@@ -2,9 +2,9 @@ let srcs = document.scripts[document.scripts.length - 1].src.split('/');
 window.appRoot = srcs.slice(0, -3).join('/') + '/';
 window.baseRoot = srcs.slice(0, -2).join('/') + '/';
 window.$ = window.jQuery = window.jQuery || window.jQuery || layui.$ || layui.jquery;
-let layuiExts = "/static/libs/layui_exts/";
+let layuiExts = "/static/libs/";//项目公用扩展目录
 layui.config({
-    base: layuiExts,
+    base: layuiExts + "layui_exts",
     version: "2.10.1"
 }).extend({
 
@@ -19,13 +19,13 @@ layui.config({
     fullscreen: "admin/fullscreen",
 
     //编辑器
-    tiny: "tinymce/tiny",//配置
-    tinymce: "tinymce/tinymce.min",//
-    wangEdit: "wangEditor/wangEdit",//配置
-    wangEditor: {src: layuiExts + "wangEditor/index", api: "wangEditor"},
+    tiny: "tinymce/tiny",//tinymce配置
+    tinymce: {src: layuiExts + "tinymce/tinymce.min", api: "tinymce"},//tinymce
+    wangEdit: "wangEditor/wangEdit",//wangEditor配置
+    wangEditor: {src: layuiExts + "wangEditor/index", api: "wangEditor"},//wangEditor
     ueditor: "ueditor/ueditor",//配置
-    UE: "ueditor/ueditor.all.min",
-    UECONFING: "ueditor/ueditor.config",
+    UE: {src: layuiExts + "ueditor/ueditor.all.min", api: "UE"},
+    UECONFING: {src: layuiExts + "ueditor/ueditor.config", api: "UE"},
 
     cron: "cron/cron",
     xmSelect: "xm-select",
