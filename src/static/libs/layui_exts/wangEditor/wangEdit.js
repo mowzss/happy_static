@@ -1,5 +1,8 @@
 layui.define(['jquery', 'toast', 'wangEditor'], function (exports) {
     "use strict";
+    //引入css样式
+    layui.link(layui.cache.base + "wangEditor/wangEditor.css", 'wangEditorCss')
+
     var wangEditor = layui.wangEditor;
     var $ = layui.jquery;
     var toast = layui.toast;
@@ -72,6 +75,7 @@ layui.define(['jquery', 'toast', 'wangEditor'], function (exports) {
             return initEditor(options);
         }
     };
+
     // 输出模块
     exports('wangEdit', wangEdit);
 });

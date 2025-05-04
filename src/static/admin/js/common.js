@@ -2,10 +2,14 @@ let srcs = document.scripts[document.scripts.length - 1].src.split('/');
 window.appRoot = srcs.slice(0, -3).join('/') + '/';
 window.baseRoot = srcs.slice(0, -2).join('/') + '/';
 window.$ = window.jQuery = window.jQuery || window.jQuery || layui.$ || layui.jquery;
+let layuiExts = "/static/libs/layui_exts/";
 layui.config({
-    base: "/static/libs/layui_exts/",
+    base: layuiExts,
     version: "2.10.1"
 }).extend({
+
+    formsbuild: "app/formsbuild",
+    app: 'app/app',
     //新
     layAdmin: "admin/layAdmin",
     layTabs: "admin/layTabs",
@@ -18,7 +22,7 @@ layui.config({
     tiny: "tinymce/tiny",//配置
     tinymce: "tinymce/tinymce.min",//
     wangEdit: "wangEditor/wangEdit",//配置
-    wangEditor: "wangEditor/index",
+    wangEditor: {src: layuiExts + "wangEditor/index", api: "wangEditor"},
     ueditor: "ueditor/ueditor",//配置
     UE: "ueditor/ueditor.all.min",
     UECONFING: "ueditor/ueditor.config",
@@ -32,11 +36,7 @@ layui.config({
     echarts: "extends/echarts.min",
     echartsTheme: "extends/echartsTheme",
     yaml: "extends/yaml",
-    uploads: '{/}//' + window.location.hostname + '/index/upload/index?',
-    //app
-    formsbuild: "app/formsbuild",
-    app: 'app/app'
-
+    uploads: '{/}' + window.location.origin + '/index/upload/index?',
 }).use(['layer', 'jquery', 'popup', 'util'], function () {
     let layer = layui.layer,
         $ = layui.jquery,
