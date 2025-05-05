@@ -85,8 +85,9 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
             })
             //tabs切换后
             tabs.on('afterChange(' + that.config.elem + ')', function (data) {
-                let url = $(data.thisHeaderItem).attr('lay-url');
-                let id = $(data.thisHeaderItem).attr('lay-id');
+                let $thisHeaderItem = $(data.thisHeaderItem);
+                let url = $thisHeaderItem.attr('lay-url');
+                let id = $thisHeaderItem.attr('lay-id');
                 if (url) {
                     $.ajax({
                         url: url,
@@ -125,11 +126,28 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 sessionStorage.setItem('tabsActiveId', id);
                 that.activeTabMenu(id);
             });
-            // tabs 关闭后的事件
+            // tabs 关闭前的事件
             tabs.on('beforeClose(' + that.config.elem + ')', function (data) {
                 let index = data.index;
                 let id = $(data.container.header.items).eq(index).attr('lay-id');
                 that.delSessionTabs(id)
+            });
+            // tabs 关闭后的事件
+            tabs.on('afterClose(' + that.config.elem + ')', function (data) {
+                that.delSessionTabsAll();
+                let items = data.container.header.items;
+                if (items.length > 0) {
+                    layui.each(items, function (i, item) {
+                        let $item = $(item);
+                        let opt = {
+                            id: $item.attr('lay-id'),
+                            title: $item.text(),
+                            url: $item.attr('lay-url'),
+                            closable: $item.attr('lay-closable')
+                        }
+                        that.updataSessionTabs(opt.id, opt);
+                    })
+                }
             });
         },
         add: function (opt) {
@@ -213,6 +231,9 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 // 更新 sessionStorage
                 sessionStorage.setItem('tabsList', JSON.stringify(tabs));
             }
+        },
+        delSessionTabsAll: function () {
+            sessionStorage.removeItem('tabsList');
         },
         /**
          * 进入全屏

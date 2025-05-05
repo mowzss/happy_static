@@ -30,6 +30,9 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
 
             // 重新添加所有保存的Tab
             tabsList.forEach((tab) => {
+                if (tab.id !== activeId) {
+                    tab.active = false;
+                }
                 layTabs.add(tab);
             });
             // 设置激活的Tab
