@@ -73,7 +73,7 @@ layui.define([], function (exports) {
 
                     } else {
                         col.templet = function (d) {
-                            return `<input type="checkbox" name="status" value="${d[col.field]}" lay-filter="form-switch-edit" lay-skin="switch" lay-text="正常|隐藏" ${d[col.field] === 1 ? 'checked' : ''}>`;
+                            return `<input type="checkbox" name="${col.field}" value="${d[col.field]}" lay-filter="form-switch-edit" lay-skin="switch" lay-text="正常|隐藏" ${d[col.field] === 1 ? 'checked' : ''}>`;
                         };
                     }
                     if (!col.width) {
