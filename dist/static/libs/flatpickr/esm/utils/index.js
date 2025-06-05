@@ -1,0 +1,1 @@
+var pad=function(n,r){return("000"+n).slice(-1*(r=void 0===r?2:r))},int=function(n){return!0===n?1:0};function debounce(t,e){var i;return function(){var n=this,r=arguments;clearTimeout(i),i=setTimeout(function(){return t.apply(n,r)},e)}}var arrayify=function(n){return n instanceof Array?n:[n]};export{pad,int,debounce,arrayify};
