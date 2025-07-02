@@ -1,0 +1,103 @@
+{extend name="../layout" /} {block name="css"}<style>
+</style> {/block} {block name="content"}<div class="layui-row layui-col-space15"><div class="layui-col-md6"><div class="layui-card"><div class="layui-card-header">今日蜘蛛爬取数据占比</div><div class="layui-card-body"><div id="pieChart" style="height:400px;"></div></div></div></div><div class="layui-col-md6"><div class="layui-card"><div class="layui-card-header">昨日与今日各蜘蛛爬取对比</div><div class="layui-card-body"><div id="barChart" style="height:400px;"></div></div></div></div></div><div class="layui-row layui-col-space15"><div class="layui-col-md12"><div class="layui-card"><div class="layui-card-header">最近七天趋势</div><div class="layui-card-body"><div id="lineChart" style="height:400px;"></div></div></div></div></div><div id="chartData" class="layui-hide">{$chartData|raw}</div> {/block} {block name="js"}<script type="text/javascript">
+    layui.use(['echarts', 'jquery'], function () {
+        var $ = layui.jquery;
+        var chartData = JSON.parse($('#chartData').text());
+
+        // 使用ECharts绘制饼图
+        var pieChart = echarts.init(document.getElementById('pieChart'));
+        pieChart.setOption({
+            title: {
+                text: '今日蜘蛛爬取数据占比',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'item'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left'
+            },
+            series: [
+                {
+                    name: '访问量',
+                    type: 'pie',
+                    radius: '50%',
+                    data: chartData.today_pie_chart,
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        });
+
+        // 使用ECharts绘制柱状图
+        var barChart = echarts.init(document.getElementById('barChart'));
+        var series = [];
+        chartData.yesterday_today_compare.forEach(function (item) {
+            series.push({
+                name: item.name,
+                type: 'bar',
+                data: [item.yesterday, item.today]
+            });
+        });
+        barChart.setOption({
+            title: {
+                text: '昨日与今日各蜘蛛爬取对比',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                data: Object.keys(chartData.yesterday_today_compare).map(function (key) {
+                    return chartData.yesterday_today_compare[key].name
+                })
+            },
+            xAxis: {
+                type: 'category',
+                data: ['昨日', '今日']
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: series
+        });
+
+        // 使用ECharts绘制折线图
+        var lineChart = echarts.init(document.getElementById('lineChart'));
+        var seriesLine = [];
+        for (var name in chartData.seven_days_trend.data) {
+            seriesLine.push({
+                name: name,
+                type: 'line',
+                data: chartData.seven_days_trend.data[name]
+            });
+        }
+        lineChart.setOption({
+            title: {
+                text: '最近七天趋势',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                data: Object.keys(chartData.seven_days_trend.data)
+            },
+            xAxis: {
+                type: 'category',
+                data: chartData.seven_days_trend.dates
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: seriesLine
+        });
+    })
+
+</script> {/block}
