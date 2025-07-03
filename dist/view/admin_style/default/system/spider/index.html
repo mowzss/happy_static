@@ -7,10 +7,6 @@
         // 使用ECharts绘制饼图（保持不变）
         var pieChart = echarts.init(document.getElementById('pieChart'));
         pieChart.setOption({
-            title: {
-                text: '今日蜘蛛爬取数据占比',
-                left: 'center'
-            },
             tooltip: {
                 trigger: 'item'
             },
@@ -50,10 +46,6 @@
         });
 
         barChart.setOption({
-            title: {
-                text: '昨日与今日各蜘蛛爬取对比',
-                left: 'center'
-            },
             tooltip: {
                 trigger: 'axis'
             },
@@ -92,10 +84,6 @@
             });
         }
         lineChart.setOption({
-            title: {
-                text: '最近七天趋势',
-                left: 'center'
-            },
             tooltip: {
                 trigger: 'axis'
             },
