@@ -4,7 +4,7 @@
         var $ = layui.jquery;
         var chartData = JSON.parse($('#chartData').text());
 
-        // 使用ECharts绘制饼图
+        // 使用ECharts绘制饼图（保持不变）
         var pieChart = echarts.init(document.getElementById('pieChart'));
         pieChart.setOption({
             title: {
@@ -35,16 +35,20 @@
             ]
         });
 
-        // 使用ECharts绘制柱状图
+        // 使用ECharts绘制柱状图：蜘蛛为X轴，每组显示今日/昨日柱子
         var barChart = echarts.init(document.getElementById('barChart'));
-        var series = [];
+
+        // 准备数据
+        let xAxisData = [];
+        let todayData = [];
+        let yesterdayData = [];
+
         chartData.yesterday_today_compare.forEach(function (item) {
-            series.push({
-                name: item.name,
-                type: 'bar',
-                data: [item.yesterday, item.today]
-            });
+            xAxisData.push(item.name);
+            yesterdayData.push(item.yesterday);
+            todayData.push(item.today);
         });
+
         barChart.setOption({
             title: {
                 text: '昨日与今日各蜘蛛爬取对比',
@@ -54,21 +58,30 @@
                 trigger: 'axis'
             },
             legend: {
-                data: Object.keys(chartData.yesterday_today_compare).map(function (key) {
-                    return chartData.yesterday_today_compare[key].name
-                })
+                data: ['昨日', '今日']
             },
             xAxis: {
                 type: 'category',
-                data: ['昨日', '今日']
+                data: xAxisData
             },
             yAxis: {
                 type: 'value'
             },
-            series: series
+            series: [
+                {
+                    name: '昨日',
+                    type: 'bar',
+                    data: yesterdayData
+                },
+                {
+                    name: '今日',
+                    type: 'bar',
+                    data: todayData
+                }
+            ]
         });
 
-        // 使用ECharts绘制折线图
+        // 使用ECharts绘制折线图（保持不变）
         var lineChart = echarts.init(document.getElementById('lineChart'));
         var seriesLine = [];
         for (var name in chartData.seven_days_trend.data) {
@@ -98,6 +111,5 @@
             },
             series: seriesLine
         });
-    })
-
+    });
 </script> {/block}
