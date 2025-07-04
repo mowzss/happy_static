@@ -4,7 +4,7 @@
         var $ = layui.jquery;
         var chartData = JSON.parse($('#chartData').text());
 
-        // 使用ECharts绘制饼图（保持不变）
+        // 使用ECharts绘制饼图（修改版 - 显示扇区间隙）
         var pieChart = echarts.init(document.getElementById('pieChart'));
         pieChart.setOption({
             tooltip: {
@@ -18,7 +18,12 @@
                 {
                     name: '访问量',
                     type: 'pie',
-                    radius: '50%',
+                    radius: ['40%', '70%'], // 设置内外圆半径比例，形成空心效果
+                    itemStyle: {
+                        borderRadius: 5,     // 扇区圆角（可选）
+                        borderColor: '#fff', // 设置扇区间隔的颜色（模拟间隙）
+                        borderWidth: 2       // 设置边框宽度，越大间隙越明显
+                    },
                     data: chartData.today_pie_chart,
                     emphasis: {
                         itemStyle: {
