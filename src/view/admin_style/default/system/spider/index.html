@@ -25,7 +25,17 @@
         </div>
     </div>
 </div>
-
+<!-- 每小时趋势对比 -->
+<div class="layui-row layui-col-space15" style="margin-top: 20px;">
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            <div class="layui-card-header">分时数据</div>
+            <div class="layui-card-body">
+                <div id="hourlyChart" style="height:400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- 折线图 -->
 <div class="layui-row layui-col-space15">
     <div class="layui-col-md12">
@@ -145,6 +155,48 @@
             },
             series: seriesLine
         });
+        // 使用ECharts绘制每小时趋势对比图
+        var hourlyChart = echarts.init(document.getElementById('hourlyChart'));
+
+        var hours = chartData.hourly_trend.hours;
+        var hourstodayData = chartData.hourly_trend.today;
+        var hoursyesterdayData = chartData.hourly_trend.yesterday;
+
+        hourlyChart.setOption({
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                data: ['今日', '昨日']
+            },
+            xAxis: {
+                type: 'category',
+                data: hours
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    name: '今日',
+                    type: 'line',
+                    data: hourstodayData,
+                    smooth: true,
+                    itemStyle: {color: '#409EFF'}
+                },
+                {
+                    name: '昨日',
+                    type: 'line',
+                    data: hoursyesterdayData,
+                    smooth: true,
+                    itemStyle: {color: '#999'}
+                }
+            ],
+            grid: {
+                bottom: 60
+            }
+        });
     });
+
 </script>
 {/block}
