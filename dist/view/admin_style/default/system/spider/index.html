@@ -1,5 +1,5 @@
 {extend name="../layout" /} {block name="css"}<style>
-</style> {/block} {block name="content"}<div class="layui-row layui-col-space15"><div class="layui-col-md6"><div class="layui-card"><div class="layui-card-header">今日蜘蛛爬取数据占比</div><div class="layui-card-body"><div id="pieChart" style="height:400px;"></div></div></div></div><div class="layui-col-md6"><div class="layui-card"><div class="layui-card-header">昨日与今日各蜘蛛爬取对比</div><div class="layui-card-body"><div id="barChart" style="height:400px;"></div></div></div></div></div><div class="layui-row layui-col-space15" style="margin-top: 20px;"><div class="layui-col-md12"><div class="layui-card"><div class="layui-card-header">分时数据</div><div class="layui-card-body"><div id="hourlyChart" style="height:400px;"></div></div></div></div></div><div class="layui-row layui-col-space15"><div class="layui-col-md12"><div class="layui-card"><div class="layui-card-header">最近七天趋势</div><div class="layui-card-body"><div id="lineChart" style="height:400px;"></div></div></div></div></div><div id="chartData" class="layui-hide">{$chartData|raw}</div> {/block} {block name="js"}<script type="text/javascript">
+</style> {/block} {block name="content"}<div class="layui-row layui-col-space15"><div class="layui-col-md6"><div class="layui-card"><div class="layui-card-header">今日蜘蛛爬取数据占比</div><div class="layui-card-body"><div id="pieChart" style="height:400px;"></div></div></div></div><div class="layui-col-md6"><div class="layui-card"><div class="layui-card-header">昨日与今日各蜘蛛爬取对比</div><div class="layui-card-body"><div id="barChart" style="height:400px;"></div></div></div></div></div><div class="layui-row layui-col-space15"><div class="layui-col-md12"><div class="layui-card"><div class="layui-card-header">分时数据</div><div class="layui-card-body"><div class="layui-form" style="margin:10px;"> <label class="layui-form-label">选择蜘蛛</label><div class="layui-input-inline"> <select id="spiderSelector" lay-filter="spiderSelector"></select></div></div><div id="hourlyChart" style="height:400px;"></div></div></div></div></div><div class="layui-row layui-col-space15"><div class="layui-col-md12"><div class="layui-card"><div class="layui-card-header">最近七天趋势</div><div class="layui-card-body"><div id="lineChart" style="height:400px;"></div></div></div></div></div><div id="chartData" class="layui-hide">{$chartData|raw}</div> {/block} {block name="js"}<script type="text/javascript">
     layui.use(['echarts', 'jquery'], function () {
         var $ = layui.jquery;
         var chartData = JSON.parse($('#chartData').text());
@@ -104,52 +104,82 @@
             },
             series: seriesLine
         });
-// 使用ECharts绘制每小时趋势对比图（按蜘蛛分组）
+// 初始化图表
         var hourlyChart = echarts.init(document.getElementById('hourlyChart'));
 
-        var hours = chartData.hourly_trend_by_spider.hours;
-        var spiderData = chartData.hourly_trend_by_spider.spiderData;
+// 渲染指定蜘蛛的数据（折线图）
+        function renderHourlyChart(spiderName) {
+            var spiderItem = chartData.hourly_trend_by_spider.spiderData.find(s => s.name === spiderName);
+            if (!spiderItem) return;
 
-        var series = [];
+            var option = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['今日', '昨日']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: chartData.hourly_trend_by_spider.hours,
+                    axisLabel: {
+                        rotate: 45 // 避免标签重叠
+                    }
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        name: '今日',
+                        type: 'line',
+                        data: spiderItem.today,
+                        smooth: true, // 平滑曲线
+                        itemStyle: {color: '#409EFF'}, // 深蓝色
+                        lineStyle: {width: 2}
+                    },
+                    {
+                        name: '昨日',
+                        type: 'line',
+                        data: spiderItem.yesterday,
+                        smooth: true,
+                        itemStyle: {color: '#aaa'}, // 浅灰色
+                        lineStyle: {width: 1.5}
+                    }
+                ],
+                grid: {
+                    bottom: 80
+                }
+            };
 
-        spiderData.forEach(function (spider) {
-            // 今日数据
-            series.push({
-                name: spider.name + '（今日）',
-                type: 'line',
-                data: spider.today,
-                smooth: true
+            hourlyChart.setOption(option, true);
+        }
+
+// 初始化下拉菜单
+        function initSpiderSelector() {
+            var selector = $('#spiderSelector');
+            var spiderList = chartData.hourly_trend_by_spider.spiderData;
+
+            spiderList.forEach(function (spider) {
+                selector.append(`<option value="${spider.name}">${spider.name}</option>`);
             });
 
-            // 昨日数据
-            series.push({
-                name: spider.name + '（昨日）',
-                type: 'line',
-                data: spider.yesterday,
-                lineStyle: {type: 'dashed'},
-                smooth: true
-            });
+            // 默认渲染第一个蜘蛛
+            if (spiderList.length > 0) {
+                renderHourlyChart(spiderList[0].name);
+            }
+
+            layui.form.render('select'); // 刷新下拉菜单样式
+        }
+
+// 监听下拉框变化
+        layui.form.on('select(spiderSelector)', function (obj) {
+            renderHourlyChart(obj.value);
         });
 
-        hourlyChart.setOption({
-            tooltip: {
-                trigger: 'axis'
-            },
-            legend: {
-                data: series.map(s => s.name),
-                bottom: 10
-            },
-            xAxis: {
-                type: 'category',
-                data: hours
-            },
-            yAxis: {
-                type: 'value'
-            },
-            series: series,
-            grid: {
-                bottom: 80
-            }
+// 页面加载时初始化
+        $(document).ready(function () {
+            initSpiderSelector();
         });
     });
 
