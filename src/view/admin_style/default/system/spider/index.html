@@ -25,6 +25,44 @@
         </div>
     </div>
 </div>
+<div class="layui-row layui-col-space15">
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header"><a style="color: #0b5ed7;">最近爬取数据</a>
+            </div>
+            <div class="layui-card-body">
+                <table class="layui-table layui-table-sm">
+                    <thead>
+                    <tr>
+                        <th>蜘蛛名称</th>
+                        <th>IP地址</th>
+                        <th>归属地</th>
+                        <th>时间</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {volist name="logs_list" id="log"}
+                    <tr>
+                        <td>{$log.name}</td>
+                        <td>{$log.ip}</td>
+                        <td>{$log.isp|default='未知'}</td>
+                        <td>{$log.create_time}</td>
+                    </tr>
+                    {/volist}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header">最近七天趋势</div>
+            <div class="layui-card-body">
+                <div id="lineChart" style="height:440px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- 每小时趋势对比 -->
 <div class="layui-row layui-col-space15">
     <div class="layui-col-md12">
@@ -45,17 +83,7 @@
         </div>
     </div>
 </div>
-<!-- 折线图 -->
-<div class="layui-row layui-col-space15">
-    <div class="layui-col-md12">
-        <div class="layui-card">
-            <div class="layui-card-header">最近七天趋势</div>
-            <div class="layui-card-body">
-                <div id="lineChart" style="height:400px;"></div>
-            </div>
-        </div>
-    </div>
-</div>
+
 <div id="chartData" class="layui-hide">{$chartData|raw}</div>
 {/block}
 {block name="js"}
