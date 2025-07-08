@@ -46,7 +46,7 @@
                 cols: [cols],
                 dataUrls: {
                     add: "{:urls('add',['dir'=>$request->param('dir','pc')])}",
-                    edit: "{:urls('edit')}",
+                    edit: "{:urls('edit',['dir'=>$request->param('dir','pc')])}",
                     del: "{:urls('delete')}",
                     quick: "{:urls('quickEdit')}",
                 },
