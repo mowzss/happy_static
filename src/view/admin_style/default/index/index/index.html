@@ -48,7 +48,7 @@
             <li class="layui-nav-item layui-hide layui-show-sm-inline-block">
                 <a href="javascript:;">
                     <img src="{$user.avatar|default='/static/admin/images/avatar.png'}" class="layui-nav-img">
-                    {$user.nickname}
+                    {$user.nickname|default='未命名'}
                 </a>
                 <dl class="layui-nav-child">
                     <dd><a href="javascript:;" data-modal="{:urls('user/info/edit',['id'=>$user.id])}">修改资料</a></dd>
