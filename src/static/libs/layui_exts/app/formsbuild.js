@@ -113,6 +113,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                             value: 'id'
                         },
                         data: data,
+                        radio: options.radio || false,
                     });
                     if (options.remoteSearch && options.searchUrl) { //开启远程搜索
                         options.remoteMethod = function (val, cb, show, pageIndex) {
