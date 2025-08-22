@@ -81,13 +81,14 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
             let that = this;
             //tabs切换前
             tabs.on('beforeChange(' + that.config.elem + ')', function (data) {
+                console.log('tabs切换前');
                 $('#' + that.config.elem).find('.layui-tabs-body > .layui-tabs-item').empty();
             })
-            //tabs切换后
+            // tabs切换后
             tabs.on('afterChange(' + that.config.elem + ')', function (data) {
                 let $thisHeaderItem = $(data.thisHeaderItem);
-                let url = $thisHeaderItem.attr('lay-url');
                 let id = $thisHeaderItem.attr('lay-id');
+                let url = $thisHeaderItem.attr('lay-url');
                 if (url) {
                     $.ajax({
                         url: url,
@@ -109,10 +110,10 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                                 return;
                             }
                             $(data.thisBodyItem).html(`<div class="happy-tab-content" style="display: block"
-                                 data-page-id="${id}" 
-                                 data-src="${url}">
-                                ${res}
-                            </div>`);
+                                        data-page-id="${id}"
+                                        data-src="${url}">
+                                       ${res}
+                                   </div>`);
                             // 应用动画并显示内容
                             setTimeout(() => {
                                 $(data.thisBodyItem).find('.happy-tab-content').addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
@@ -132,39 +133,59 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 let id = $(data.container.header.items).eq(index).attr('lay-id');
                 that.delSessionTabs(id)
             });
-            // tabs 关闭后的事件
-            tabs.on('afterClose(' + that.config.elem + ')', function (data) {
-                that.delSessionTabsAll();
-                let items = data.container.header.items;
-                if (items.length > 0) {
-                    layui.each(items, function (i, item) {
-                        let $item = $(item);
-                        let opt = {
-                            id: $item.attr('lay-id'),
-                            title: $item.text(),
-                            url: $item.attr('lay-url'),
-                            closable: $item.attr('lay-closable')
-                        }
-                        that.updataSessionTabs(opt.id, opt);
-                    })
-                }
-            });
         },
         add: function (opt) {
             let that = this,
                 id = String(opt.id),
                 config = $.extend({
                     id: String(opt.id),
-                    done: function () {
+                    done: function (data) {
                         that.rightMenu();
+                        data.headerItem.attr('lay-url', opt.url);
                     }
-                }, opt);
+                }, opt), PageUrl = config.url;
+
             that.showLoadingBar();
             if (!that.tabIsExist(id)) { // 检查是否存在 tab
-                tabs.add(that.config.elem, config);
+                if (PageUrl) {
+                    $.ajax({
+                        url: PageUrl,
+                        type: 'GET',
+                        dataType: 'html',
+                        success: function (res) {
+                            //检查返回如果是json数据则使用layer.msg提示
+                            if (res.startsWith('{') || res.startsWith('[')) {
+                                res = JSON.parse(res);
+                                if (res.info) {
+                                    layer.msg(res.info);
+                                }
+                                if (res.url) {
+                                    setTimeout(function () {
+                                        window.location.href = res.url;
+                                    }, 1500)
+                                }
+                                return;
+                            }
+                            config = $.extend(config, {
+                                content: `<div class="happy-tab-content" style="display: block"
+                                    data-page-id="${id}"
+                                    data-src="${PageUrl}">
+                                   ${res}
+                               </div>`,
+                                // content: PageUrl
+                            })
+                            tabs.add(that.config.elem, config)
+                        },
+                        error: function () {
+                            layer.msg('加载失败，请重试！');
+                        }
+                    })
+                }
+                // tabs.add(that.config.elem, config);
             } else {
                 tabs.change(that.config.elem, id)
             }
+
             that.updataSessionTabs(id, config);
             that.hideLoadingBar();
         },
