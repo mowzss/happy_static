@@ -112,9 +112,11 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                             name: 'title',
                             value: 'id'
                         },
-                        data: data,
                         radio: options.radio || false,
                     });
+                    if (!options.initData) {
+                        options.data = data;
+                    }
                     if (options.remoteSearch && options.searchUrl) { //开启远程搜索
                         options.remoteMethod = function (val, cb, show, pageIndex) {
                             if (!val) {
@@ -139,6 +141,25 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                         }
                     }
                     xmS[name] = xmSelect.render(options)
+                    if (options.initData) {
+                        $.ajax({
+                            type: "POST",
+                            url: options.initData,
+                            data: {
+                                id: data
+                            },
+                            success: function (res) {
+                                xmS[name].update({
+                                    data: res.data,
+                                    autoRow: true,
+                                })
+                            },
+                            error: function () {
+                                layer.msg('搜索异常')
+                            }
+
+                        })
+                    }
                     // xmS[name]
                 })
             })
