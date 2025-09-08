@@ -113,10 +113,8 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                             value: 'id'
                         },
                         radio: options.radio || false,
+                        data: options.dataInit ?? data,
                     });
-                    if (!options.initData) {
-                        options.data = data;
-                    }
                     if (options.remoteSearch && options.searchUrl) { //开启远程搜索
                         options.remoteMethod = function (val, cb, show, pageIndex) {
                             if (!val) {
@@ -141,10 +139,10 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                         }
                     }
                     xmS[name] = xmSelect.render(options)
-                    if (options.initData) {
+                    if (options.dataInit) {
                         $.ajax({
                             type: "POST",
-                            url: options.initData,
+                            url: options.dataInit,
                             data: {
                                 id: data
                             },
