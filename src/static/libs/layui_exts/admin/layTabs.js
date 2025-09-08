@@ -81,7 +81,6 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
             let that = this;
             //tabs切换前
             tabs.on('beforeChange(' + that.config.elem + ')', function (data) {
-                console.log('tabs切换前');
                 $('#' + that.config.elem).find('.layui-tabs-body > .layui-tabs-item').empty();
             })
             // tabs切换后
