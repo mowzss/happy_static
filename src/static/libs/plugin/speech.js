@@ -1,10 +1,8 @@
 /**
- * Web Speech 朗读插件 - 最终优化版
- * 特性：
- * - 支持 AMD / CommonJS / 全局环境
- * - 支持 data-speech 自动绑定 和 new TextToSpeech('#btn', options) 手动初始化
- * - 修复页面跳转后语音残留导致无法朗读的问题
- *
+ * TextToSpeech v1.1.0 - Web Speech 朗读插件
+ * 支持任意 CSS 选择器（#id, .class, [attr] 等）
+ * 优先使用 layer 提示，无 layer 时降级为 alert
+ * 兼容 AMD / CommonJS / 全局环境
  */
 (function (global, factory) {
     if (typeof define === 'function' && define.amd) {
@@ -26,137 +24,182 @@
 
     /**
      * 语音朗读类
-     * @param {String|HTMLElement} buttonSelector - 按钮选择器或元素（可选）
-     * @param {Object} options - 配置项（可选）
      */
-    function TextToSpeech(buttonSelector, options) {
+    function TextToSpeech(options) {
         this.isSpeaking = false;
+        this.utterance = null;
+        this.currentButton = null;
+        this.options = Object.assign({
+            playText: '朗读',
+            stopText: '停止',
+            selector: '[data-speech]',
+            silent: false // 是否静默模式（不弹提示）
+        }, options || {});
 
-        if (buttonSelector) {
-            // 手动初始化模式
-            this.initWithConfig(buttonSelector, options || {});
-        } else {
-            // 自动初始化模式：绑定所有 [data-speech]
-            this.initAuto();
-        }
+        this.init();
     }
 
-    TextToSpeech.prototype.initAuto = function () {
+    /**
+     * 初始化：绑定所有 data-speech 按钮
+     */
+    TextToSpeech.prototype.init = function () {
         var self = this;
-        var buttons = document.querySelectorAll('[data-speech]');
-        Array.prototype.forEach.call(buttons, function (btn) {
-            var targetId = btn.getAttribute('data-speech');
-            var element = document.querySelector(targetId); // 支持 #id 或 .class 或 其他选择器
-            if (!element) {
-                console.warn('未找到目标元素:', targetId);
-                return;
-            }
+        var buttons = document.querySelectorAll(this.options.selector);
 
-            self.bindButton(btn, function () {
-                return self.getTextContent(element);
-            }, btn);
+        Array.prototype.forEach.call(buttons, function (btn) {
+            self.setDefaultButtonText(btn);
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                self.handleSpeechClick(btn);
+            });
         });
     };
 
-    TextToSpeech.prototype.initWithConfig = function (buttonSelector, options) {
-        var self = this;
-
-        var btn = typeof buttonSelector === 'string' ? document.querySelector(buttonSelector) : buttonSelector;
-        if (!btn) {
-            console.error('未找到按钮元素:', buttonSelector);
+    /**
+     * 处理点击事件
+     */
+    TextToSpeech.prototype.handleSpeechClick = function (btn) {
+        var selector = btn.getAttribute('data-speech');
+        if (!selector || typeof selector !== 'string') {
+            this.showMessage('缺少 data-speech 属性', 'error');
             return;
         }
 
-        var targetSelector = options.target || btn.getAttribute('data-speech');
-        var targetElement = typeof targetSelector === 'string' ? document.querySelector(targetSelector) : targetSelector;
-        if (!targetElement) {
-            console.error('未找到目标元素:', targetSelector);
+        var element = document.querySelector(selector);
+        if (!element) {
+            this.showMessage('未找到元素: ' + selector, 'error');
             return;
         }
 
-        var getText = function () {
-            return self.getTextContent(targetElement);
-        };
+        var text = this.extractText(element);
+        if (!text) {
+            this.showMessage('没有可朗读的文本内容。', 'warning');
+            return;
+        }
 
-        this.bindButton(btn, getText, btn, options);
+        this.isSpeaking ? this.stopSpeech() : this.speak(text, btn);
     };
 
-    TextToSpeech.prototype.getTextContent = function (element) {
+    /**
+     * 提取文本内容
+     */
+    TextToSpeech.prototype.extractText = function (element) {
         var tagName = element.tagName;
-        if (tagName === 'TEXTAREA' || (tagName === 'INPUT' && ['text', 'search', 'email', 'url', 'tel'].includes(element.type))) {
+        if (tagName === 'TEXTAREA' ||
+            (tagName === 'INPUT' && ['text', 'search', 'email', 'url', 'tel'].includes(element.type))) {
             return element.value.trim();
         }
-        return element.innerText.trim();
+        return (element.innerText || element.textContent).trim();
     };
 
-    TextToSpeech.prototype.bindButton = function (btn, getTextFunc, stateButton, options) {
+    /**
+     * 开始朗读
+     */
+    TextToSpeech.prototype.speak = function (text, button) {
         var self = this;
+        var rate = parseFloat(button.getAttribute('data-rate')) || 1.0;
+        var pitch = parseFloat(button.getAttribute('data-pitch')) || 1.0;
+        var volume = parseFloat(button.getAttribute('data-volume')) || 1.0;
+        var lang = button.getAttribute('data-lang') || 'zh-CN';
 
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
+        this.utterance = new SpeechSynthesisUtterance(text);
+        this.utterance.lang = lang;
+        this.utterance.rate = rate;
+        this.utterance.pitch = pitch;
+        this.utterance.volume = volume;
 
-            var text = getTextFunc();
-            if (!text) {
-                alert('没有可朗读的文本内容。');
+        this.utterance.onstart = function () {
+            self.isSpeaking = true;
+            self.currentButton = button;
+            self.updateButtonState(button, 'stop');
+        };
+
+        this.utterance.onend = function () {
+            self.isSpeaking = false;
+            self.currentButton = null;
+            self.updateButtonState(button, 'play');
+            self.showMessage('朗读完成', 'success');
+        };
+
+        this.utterance.onerror = function (event) {
+            self.isSpeaking = false;
+            self.currentButton = null;
+            self.updateButtonState(button, 'play');
+
+            // 静默处理中断类错误
+            if (['interrupted', 'cancelled'].includes(event.error)) {
                 return;
             }
-
-            var config = self.mergeConfig(btn, options);
-
-            if (self.isSpeaking) {
-                window.speechSynthesis.cancel();
-                self.isSpeaking = false;
-                self.updateButtonState(stateButton, 'play', config);
-            } else {
-                // === 关键：开始前先 cancel，防止残留任务或冲突 ===
-                window.speechSynthesis.cancel();
-
-                var utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = config.lang;
-                utterance.rate = config.rate;
-                utterance.pitch = config.pitch;
-                utterance.volume = config.volume;
-
-                utterance.onstart = function () {
-                    self.isSpeaking = true;
-                    self.updateButtonState(stateButton, 'stop', config);
-                };
-
-                utterance.onend = function () {
-                    self.isSpeaking = false;
-                    self.updateButtonState(stateButton, 'play', config);
-                };
-
-                utterance.onerror = function (event) {
-                    self.isSpeaking = false;
-                    self.updateButtonState(stateButton, 'play', config);
-                    console.error('语音朗读出错:', event.error || 'Unknown error');
-                    window.speechSynthesis.cancel();
-                };
-
-                window.speechSynthesis.speak(utterance);
-            }
-        });
-    };
-
-    TextToSpeech.prototype.mergeConfig = function (btn, options) {
-        return {
-            lang: options.lang || btn.getAttribute('data-lang') || 'zh-CN',
-            rate: parseFloat(options.rate) || parseFloat(btn.getAttribute('data-rate')) || 1.0,
-            pitch: parseFloat(options.pitch) || parseFloat(btn.getAttribute('data-pitch')) || 1.0,
-            volume: parseFloat(options.volume) || parseFloat(btn.getAttribute('data-volume')) || 1.0,
-            playText: options.playText || btn.getAttribute('data-play-text') || '朗读',
-            stopText: options.stopText || btn.getAttribute('data-stop-text') || '停止'
+            self.showMessage('语音朗读失败: ' + event.error, 'error');
         };
+
+        window.speechSynthesis.speak(this.utterance);
     };
 
-    TextToSpeech.prototype.updateButtonState = function (button, state, config) {
-        button.textContent = state === 'play' ? config.playText : config.stopText;
+    /**
+     * 停止朗读
+     */
+    TextToSpeech.prototype.stopSpeech = function () {
+        if (this.isSpeaking) {
+            window.speechSynthesis.cancel();
+            this.isSpeaking = false;
+            if (this.currentButton) {
+                this.updateButtonState(this.currentButton, 'play');
+            }
+            this.currentButton = null;
+        }
     };
 
-    // ========================
-    // 自动初始化（非 AMD 环境）
-    // ========================
+    /**
+     * 更新按钮状态
+     */
+    TextToSpeech.prototype.updateButtonState = function (button, state) {
+        var text = state === 'play'
+            ? button.getAttribute('data-play-text') || this.options.playText
+            : button.getAttribute('data-stop-text') || this.options.stopText;
+        button.textContent = text;
+    };
+
+    /**
+     * 设置默认按钮文本
+     */
+    TextToSpeech.prototype.setDefaultButtonText = function (button) {
+        if (!button.textContent.trim()) {
+            button.textContent = button.getAttribute('data-play-text') || this.options.playText;
+        }
+    };
+
+    /**
+     * 显示消息（优先 layer，否则 alert）
+     */
+    TextToSpeech.prototype.showMessage = function (message, type) {
+        if (this.options.silent) return;
+
+        // Layer 配置映射
+        var layerStyleMap = {
+            success: {icon: 1, time: 2000},
+            error: {icon: 2, time: 3000},
+            warning: {icon: 0, time: 2500},
+            info: {icon: -1, time: 2000}
+        };
+
+        // 优先使用 layer
+        if (typeof layer !== 'undefined' && typeof layer.msg === 'function') {
+            var config = layerStyleMap[type] || layerStyleMap.info;
+            layer.msg(message, config);
+            return;
+        }
+
+        // 降级为 alert + 控制台
+        var prefix = {success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️'}[type] || 'ℹ️';
+        console[type === 'error' ? 'error' : type === 'warning' ? 'warn' : 'log']('[语音]', message);
+
+        if (typeof alert !== 'undefined') {
+            alert(prefix + ' ' + message);
+        }
+    };
+
+    // ========== 自动初始化 ==========
     if (typeof define !== 'function' || !define.amd) {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function () {
@@ -167,21 +210,14 @@
         }
     }
 
-    // ========================
-    // 🔥 关键修复：防止页面跳转后语音残留
-    // ========================
-    var cleanup = function () {
-        if (window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-        }
-    };
+    // ========== 页面卸载前清理语音 ==========
+    ['beforeunload', 'pagehide'].forEach(function (event) {
+        window.addEventListener(event, function () {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        });
+    });
 
-    // 标准事件
-    window.addEventListener('beforeunload', cleanup);
-    // 更强兼容（尤其 Safari）
-    window.addEventListener('pagehide', cleanup);
-
-    // 返回构造函数
     return TextToSpeech;
-
 }));
