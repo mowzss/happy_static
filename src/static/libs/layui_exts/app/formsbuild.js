@@ -132,7 +132,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                                     cb(res.data.data, res.data.last_page)
                                 },
                                 error: function () {
-                                    layer.msg('搜索异常')
+                                    layer.msg(name + '远程搜索异常')
                                 }
 
                             })
@@ -148,12 +148,12 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                             },
                             success: function (res) {
                                 xmS[name].update({
-                                    data: res.data,
+                                    data: res.data.data,
                                     autoRow: true,
                                 })
                             },
                             error: function () {
-                                layer.msg('搜索异常')
+                                layer.msg('初始化' + name + '数据异常')
                             }
 
                         })
@@ -276,6 +276,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
          */
         triggers: function (triggers, $form) {
 
+
             // 转义选择器中的特殊字符
             function escapeSelector(selector) {
                 return selector.replace(/\[|\]/g, function (match) {
@@ -290,6 +291,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                 } else if ($field.is(':checkbox')) {
                     return $field.is(':checked') ? $field.val() : null;
                 } else if ($field.is('select')) {
+                    console.log($field);
                     return $field.val();
                 } else {
                     return $field.val();
@@ -360,7 +362,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                 $.each(triggers, function (index, trigger) {
                     // 转义 trigger.name 以确保选择器有效
                     let escapedTriggerName = escapeSelector(trigger.name);
-                    let triggerField = $('[name="' + escapedTriggerName + '"]');
+                    let triggerField = $form.find('[name="' + escapedTriggerName + '"]');
                     let currentValue = getFieldValue(triggerField);
 
                     // 处理依赖字段
