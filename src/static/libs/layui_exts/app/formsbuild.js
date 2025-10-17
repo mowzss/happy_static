@@ -291,7 +291,6 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                 } else if ($field.is(':checkbox')) {
                     return $field.is(':checked') ? $field.val() : null;
                 } else if ($field.is('select')) {
-                    console.log($field);
                     return $field.val();
                 } else {
                     return $field.val();
