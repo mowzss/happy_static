@@ -26,6 +26,9 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                 tree: {}, // treeTable 特有的参数
                 limit: '20',
                 limits: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200],
+                response: {
+                    statusCode: 1,
+                },
                 parseData: function (res) { // res 即为原始返回的数据
                     return {
                         "code": res.code, // 解析接口状态
