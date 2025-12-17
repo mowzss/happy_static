@@ -192,13 +192,13 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                         },
                         success: function (res) {
                             layer.close(load);
-                            if (res.code === 0) {
+                            if (res.code === 1) {
                                 layer.msg(res.msg, this, {tips: 1});
                                 // 更新当前缓存数据
                                 let update = {};
                                 update[field] = value;
                                 obj.update(update, true); // 参数 true 为 v2.7 新增功能，即同步更新其他包含自定义模板并可能存在关联的列视图
-                            } else if (res.code >= 1) {
+                            } else {
                                 layer.msg(res.msg);
                             }
                         },
@@ -245,7 +245,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                         value: value
                     },
                     success: function (res) {
-                        if (res.code === 0) { // 假设返回码0表示成功
+                        if (res.code === 1) { // 假设返回码0表示成功
                             layer.msg('更新成功');
                         } else {
                             layer.msg('更新失败：' + res.msg);
@@ -291,7 +291,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                         ids: ids, // 如果需要批量删除，这里应该是一个 ID 数组
                     },
                     success: function (res) {
-                        if (res.code === 0) { // 假设 0 为成功代码
+                        if (res.code === 1) { // 假设 0 为成功代码
                             layer.msg('删除成功');
                             callback(); // 成功后调用回调函数
                         } else {
@@ -323,7 +323,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                 url: url,
                 method: 'GET',
                 success: function (response) {
-                    if (response.code) {
+                    if (response.code === 0) {
                         return layer.msg(response.msg);
                     }
                     layer.open({

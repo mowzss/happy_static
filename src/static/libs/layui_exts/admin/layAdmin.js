@@ -129,7 +129,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
                                 type: 'GET',
                                 success: function (res) {
                                     layer.msg(res.msg);
-                                    if (res.code === 0) {
+                                    if (res.code === 1) {
                                         setTimeout(function () {
                                             sessionStorage.clear();
                                             localStorage.clear();
@@ -211,7 +211,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
                     data: value,
                     success: function (res) {
                         layer.close(index); // 关闭 loading
-                        if (res.code === 0) {
+                        if (res.code === 1) {
                             layer.msg(res.msg);
                         } else {
                             layer.msg(res.msg);
