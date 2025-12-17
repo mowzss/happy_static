@@ -11,7 +11,7 @@
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="icon" href="favicon.ico">
     <link rel="icon" sizes="16x16 32x32 64x64" href="favicon.ico">
-    <link rel="stylesheet" href="__STATIC__/pc_style/css/common.css">
+    <link rel="stylesheet" href="__STATIC__/pc_style/css/common.css?v={:sys_config('static_version',date('md'))}">
     {block name="style"}{/block}
 </head>
 <body>
@@ -63,8 +63,8 @@
 
     </footer>
 </div>
-<script src="__STATIC__/libs/layui/layui.js"></script>
-<script src="__STATIC__/pc_style/js/common.js"></script>
+<script src="__STATIC__/libs/layui/layui.js?v={:sys_config('static_version',date('md'))}"></script>
+<script src="__STATIC__/pc_style/js/common.js?v={:sys_config('static_version',date('md'))}"></script>
 {block name="footer_js"}{/block}
 </body>
 </html>
