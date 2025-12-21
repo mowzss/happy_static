@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <title>登录</title>
-    <link rel="stylesheet" href="__STATIC__/libs/layui/css/layui.css"/>
-    <link rel="stylesheet" href="__STATIC__/admin/css/base.css"/>
+    <link rel="stylesheet" href="__STATIC__/libs/layui/css/layui.css?v={:sys_config('static_version',date('md'))}"/>
+    <link rel="stylesheet" href="__STATIC__/admin/css/base.css?v={:sys_config('static_version',date('md'))}"/>
     <script>if (window.self != window.top) {
         top.location.reload();
     }</script>
@@ -102,8 +102,8 @@
 </div>
 
 <!-- 资 源 引 入 -->
-<script src="__STATIC__/libs/layui/layui.js"></script>
-<script src="__STATIC__/admin/js/common.js"></script>
+<script src="__STATIC__/libs/layui/layui.js?v={:sys_config('static_version',date('md'))}"></script>
+<script src="__STATIC__/admin/js/common.js?v={:sys_config('static_version',date('md'))}"></script>
 <script>
     layui.use(['form', 'popup', 'jquery', 'encrypt'], function () {
         let form = layui.form;
