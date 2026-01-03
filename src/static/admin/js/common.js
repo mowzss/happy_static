@@ -5,7 +5,7 @@ window.$ = window.jQuery = window.jQuery || window.jQuery || layui.$ || layui.jq
 let layuiExts = "/static/libs/";//项目公用扩展目录
 layui.config({
     base: layuiExts + "layui_exts/",
-    version: window.APP_CONFIG.staticVersion
+    version: window.APP_CONFIG.staticVersion || '1.0.0',
 }).extend({
 
     formsbuild: "app/formsbuild",

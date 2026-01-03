@@ -1,6 +1,11 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>登录</title><link rel="stylesheet" href="__STATIC__/libs/layui/css/layui.css?v={:sys_config('static_version',date('md'))}"/><link rel="stylesheet" href="__STATIC__/admin/css/base.css?v={:sys_config('static_version',date('md'))}"/><script>if (window.self != window.top) {
-        top.location.reload();
-    }</script><style>
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><title>登录</title><link rel="stylesheet" href="__STATIC__/libs/layui/css/layui.css?v={:sys_config('static_version',date('md'))}"/><link rel="stylesheet" href="__STATIC__/admin/css/base.css?v={:sys_config('static_version',date('md'))}"/><script>
+        if (window.self != window.top) {
+            top.location.reload();
+        }
+        window.APP_CONFIG = {
+            staticVersion: '{:sys_config("static_version", date("md"))}'
+        };
+    </script><style>
 
 
         body {
@@ -79,7 +84,7 @@
                 },
                 dataType: "json",
                 success: function (data) {
-                    if (data.code === 0) {
+                    if (data.code === 1) {
                         layer.msg("登录成功", function () {
                             location.href = data.url
                         });
