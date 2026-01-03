@@ -2,16 +2,13 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>{block name="title"}{:sys_config('seo_title')}{/block}</title>
+    <title>{block name="title"}欢迎使用HappyAdmin{/block}</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="keywords" content="{block name='keywords'}{:sys_config('seo_keyword')?:''}{/block}">
-    <meta name="description" content="{block name='description'}{:sys_config('seo_description')?:''}{/block}">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="icon" href="favicon.ico">
     <link rel="icon" sizes="16x16 32x32 64x64" href="favicon.ico">
-    <link rel="stylesheet" href="__STATIC__/pc_style/css/common.css?v={:sys_config('static_version',date('md'))}">
+    <link rel="stylesheet" href="__STATIC__/pc_style/css/common.css">
     {block name="style"}{/block}
 </head>
 <body>
@@ -20,20 +17,7 @@
         <div class="layui-container ">
             {block name="header"}
             <ul class="layui-nav layui-bg-blue">
-                {block name="header_nav"}
-                {volist name=":get_nav()" id="rs"}
-                <li class="layui-nav-item">
-                    <a href="{$rs.url}">{$rs.title}</a>
-                    {notempty name="$rs.sub"}
-                    <dl class="layui-nav-child">
-                        {volist name="$rs.sub" id="vs"}
-                        <dd><a href="{$vs.url}">{$vs.title}</a></dd>
-                        {/volist}
-                    </dl>
-                    {/notempty}
-                </li>
-                {/volist}
-                {/block}
+
             </ul>
             {/block}
         </div>
@@ -48,23 +32,18 @@
             {block name="footer"}
             <h3>友情链接</h3>
             {block name="footer_links"}
-            {volist name=":get_links(1)" id="rs"}
-            <a href="{$rs.url}" target="_blank" class="layui-font-gray">{$rs.title}</a>
-            {/volist}
+
             {/block}
             <div class="layui-text" style="text-align: center;padding: 20px 0;">
-                © {:sys_config('copyright')} {:date('Y')} All Rights Reserved.
-                {notempty name=":sys_config('icp_number')"}
-                <a href="https://beian.miit.gov.cn/" target="_blank">{:sys_config('icp_number')}</a>
-                {/notempty}
+
             </div>
             {/block}
         </div>
 
     </footer>
 </div>
-<script src="__STATIC__/libs/layui/layui.js?v={:sys_config('static_version',date('md'))}"></script>
-<script src="__STATIC__/pc_style/js/common.js?v={:sys_config('static_version',date('md'))}"></script>
+<script src="__STATIC__/libs/layui/layui.js"></script>
+<script src="__STATIC__/pc_style/js/common.js"></script>
 {block name="footer_js"}{/block}
 </body>
 </html>
