@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>系统安装</title>
+    <link rel="stylesheet" href="/static/libs/layui/css/layui.css">
+    <style>
+        body {
+            background-color: #f2f2f2;
+        }
+
+        .layui-form-item {
+            margin-bottom: 20px;
+        }
+
+        #connection-status {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-container" style="margin-top: 50px;">
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md6 layui-col-md-offset3">
+            <div class="layui-card" id="installInfo">
+                <div class="layui-card-header">设置管理员</div>
+                <div class="layui-card-body">
+                    <form class="layui-form" id="install-form">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">管理员用户名:</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="admin_username" id="admin_username" required
+                                       lay-verify="required"
+                                       placeholder="请输入管理员用户名" class="layui-input" value="admin">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">管理员密码:</label>
+                            <div class="layui-input-block">
+                                <input type="password" name="admin_password" id="admin_password" required
+                                       lay-verify="required"
+                                       placeholder="请输入管理员密码" class="layui-input" value="123456">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">管理员邮箱:</label>
+                            <div class="layui-input-block">
+                                <input type="email" name="admin_email" id="admin_email" required
+                                       lay-verify="required|email"
+                                       placeholder="请输入管理员邮箱" class="layui-input" value="admin@qq.com">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <span id="connection-status"></span>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button class="layui-btn" id="submit-btn" lay-filter="install" lay-submit>
+                                    提交
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/libs/layui/layui.js"></script>
+<script>
+    layui.use(['form', 'jquery'], function () {
+        var form = layui.form;
+        var $ = layui.jquery;
+
+        // 提交表单
+        form.on('submit(install)', function (data) {
+            $.ajax({
+                url: '{:urls("install")}',
+                type: 'POST',
+                data: data.field,
+                success: function (response) {
+                    if (response.status === 'success') {
+                        layer.msg('安装成功', {icon: 1, time: 2000}, function () {
+                            $('#install-form').remove();
+                            $('#installInfo').find('.layui-card-header').text('安装成功');
+                            $('#installInfo').find('.layui-card-body').html('<p style="text-align: center;">' + response.msg + '</p>' +
+                                '<p>后台登录地址:<a href="' + response.url + '">' + response.url + '</a> </p>' +
+                                '<p>账号:' + data.field.admin_username + '</p>' +
+                                '<p>密码:' + data.field.admin_password + '</p>'
+                            );
+                        });
+                    } else {
+                        layer.msg(response.msg, {icon: 2, time: 2000});
+                    }
+                },
+                error: function () {
+                    layer.msg('请求失败，请重试', {icon: 2, time: 2000});
+                }
+            });
+            return false; // 阻止表单默认提交
+        });
+    });
+</script>
+</body>
+</html>

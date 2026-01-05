@@ -3,91 +3,20 @@
             background-color: #f2f2f2;
         }
 
-        .layui-form-item {
-            margin-bottom: 20px;
+        .layui-btn-container {
+            margin: 40px 0 0;
+            text-align: center;
         }
-
-        #connection-status {
-            color: red;
-            margin-top: 10px;
-        }
-    </style></head><body><div class="layui-container" style="margin-top: 50px;"><div class="layui-row layui-col-space20"><div class="layui-col-md6 layui-col-md-offset3"><div class="layui-card"><div class="layui-card-header">环境检测</div><div class="layui-card-body"><table class="layui-table" id="environment-check"></table></div><div class="layui-card-footer"> <button type="button" class="layui-btn layui-btn-normal layui-btn-fluid" onclick="refreshEnvironmentStatus()"> 刷新检测结果</button></div></div></div><div class="layui-col-md6 layui-col-md-offset3"><div class="layui-card"><div class="layui-card-header">系统安装</div><div class="layui-card-body"><form class="layui-form" id="install-form"><div class="layui-form-item"> <label class="layui-form-label">数据库主机:</label><div class="layui-input-block"> <input type="text" name="db_host" id="db_host" required lay-verify="required" placeholder="请输入数据库主机" class="layui-input" value="127.0.0.1"></div></div><div class="layui-form-item"> <label class="layui-form-label">数据库名称:</label><div class="layui-input-block"> <input type="text" name="db_name" id="db_name" required lay-verify="required" placeholder="请输入数据库名称" class="layui-input" value="md_cn"></div></div><div class="layui-form-item"> <label class="layui-form-label">数据库用户名:</label><div class="layui-input-block"> <input type="text" name="db_user" id="db_user" required lay-verify="required" placeholder="请输入数据库用户名" class="layui-input" value="md_cn"></div></div><div class="layui-form-item"> <label class="layui-form-label">数据库密码:</label><div class="layui-input-block"> <input type="password" name="db_pass" id="db_pass" required lay-verify="required" placeholder="请输入数据库密码" class="layui-input" value="wn4BbwwSFsJAjkAY"></div></div><div class="layui-form-item"> <label class="layui-form-label">表前缀:</label><div class="layui-input-block"> <input type="text" name="db_prefix" id="db_prefix" placeholder="请输入表前缀（可选）" class="layui-input" value="ha_"></div></div><div class="layui-form-item"> <label class="layui-form-label">管理员用户名:</label><div class="layui-input-block"> <input type="text" name="admin_username" id="admin_username" required lay-verify="required" placeholder="请输入管理员用户名" class="layui-input" value="admin"></div></div><div class="layui-form-item"> <label class="layui-form-label">管理员密码:</label><div class="layui-input-block"> <input type="password" name="admin_password" id="admin_password" required lay-verify="required" placeholder="请输入管理员密码" class="layui-input" value="123456"></div></div><div class="layui-form-item"> <label class="layui-form-label">管理员邮箱:</label><div class="layui-input-block"> <input type="email" name="admin_email" id="admin_email" required lay-verify="required|email" placeholder="请输入管理员邮箱" class="layui-input" value="admin@qq.com"></div></div><div class="layui-form-item"><div class="layui-input-block"><span id="connection-status"></span></div></div><div class="layui-form-item"><div class="layui-input-block"> <button class="layui-btn" id="submit-btn" lay-filter="install" lay-submit disabled> 提交</button></div></div></form></div></div></div></div></div><script src="/static/libs/layui/layui.js"></script><script>
+    </style></head><body><div class="layui-container" style="margin-top: 50px;"><div class="layui-row layui-col-space20"><div class="layui-col-md6 layui-col-md-offset3"><div class="layui-card"><div class="layui-card-header">环境检测</div><div class="layui-card-body"><table class="layui-table" id="environment-check"></table><blockquote id="tips" class="layui-elem-quote layui-font-red layui-hide"></blockquote><div class="layui-btn-container"> <button type="button" class="layui-btn layui-bg-green layui-btn-disabled" id="next">下一步</button> <button type="button" class="layui-btn layui-btn-primary" id="refresh"> 刷新检测结果</button></div></div></div></div></div></div><script src="/static/libs/layui/layui.js"></script><script>
     layui.use(['form', 'jquery'], function () {
-        var form = layui.form;
+
         var $ = layui.jquery;
-
-        $('#install-form').on('blur', 'input', function () {
-            checkDbConnection()
-        });
-
-        // 提交表单
-        form.on('submit(install)', function (data) {
-            $.ajax({
-                url: '{:urls("install")}',
-                type: 'POST',
-                data: data.field,
-                success: function (response) {
-                    if (response.status === 'success') {
-                        layer.msg('安装成功', {icon: 1, time: 2000}, function () {
-                            location.href = '/'; // 安装成功后跳转到首页
-                        });
-                    } else {
-                        layer.msg(response.msg, {icon: 2, time: 2000});
-                    }
-                },
-                error: function () {
-                    layer.msg('请求失败，请重试', {icon: 2, time: 2000});
-                }
-            });
-            return false; // 阻止表单默认提交
-        });
-
-        // 检测数据库连接
-        function checkDbConnection() {
-            var dbHost = $('#db_host').val();
-            var dbName = $('#db_name').val();
-            var dbUser = $('#db_user').val();
-            var dbPass = $('#db_pass').val();
-            var dbPre = $('#db_prefix').val();
-            console.log(dbHost, dbName, dbUser, dbPass);
-            if (dbHost && dbName && dbUser && dbPass && dbPre) {
-                $.ajax({
-                    url: '{:urls("checkDbConnection")}',
-                    type: 'POST',
-                    data: {
-                        db_host: dbHost,
-                        db_name: dbName,
-                        db_user: dbUser,
-                        db_pass: dbPass,
-                        db_prefix: dbPre,
-                    },
-                    success: function (response) {
-                        if (response.status === 'success') {
-                            $('#connection-status').text('数据库连接成功').css('color', 'green');
-                            $('#submit-btn').prop('disabled', false);
-                        } else {
-                            $('#connection-status').text('数据库连接失败: ' + response.msg).css('color', 'red');
-                            $('#submit-btn').prop('disabled', true);
-                        }
-                    },
-                    error: function () {
-                        $('#connection-status').text('请求失败，请重试').css('color', 'red');
-                        $('#submit-btn').prop('disabled', true);
-                    }
-                });
-            } else {
-                $('#connection-status').text('请填写所有数据库信息').css('color', 'red');
-                $('#submit-btn').prop('disabled', true);
-            }
-        }
-
-        // 初始化时检查数据库连接
-        checkDbConnection();
-
-        function refreshEnvironmentStatus() {
-            // 调用显示环境状态的函数来刷新检测结果
+        $('#refresh').click(function () {
             displayEnvironmentStatus();
-        }
+        })
+        $('#next').click(function () {
+            window.location.href = '{:urls("install/index/data")}';
+        })
 
         function displayEnvironmentStatus() {
             $.ajax({
@@ -105,8 +34,15 @@
                         }
 
                         envCheckTable.append('</tbody>');
+                        if (response.passed) {
+                            $('#next').removeClass('layui-btn-disabled');
+                            $('#refresh').text('✅️环境检查通过');
+                            layer.msg('环境检测通过，请点击下一步继续', {icon: 1});
+                        } else {
+                            $('#tips').removeClass('layui-hide').text('环境检测未通过，请配置后再试');
+                        }
                     } else {
-                        layer.msg('环境检测失败，请稍后再试', {icon: 2});
+                        layer.msg('网络错误，请稍后再试', {icon: 2});
                     }
                 },
                 error: function () {
@@ -115,7 +51,7 @@
             });
         }
 
-// 页面加载完成后自动执行一次环境检测
+        // 页面加载完成后自动执行一次环境检测
         $(document).ready(function () {
             displayEnvironmentStatus();
         });

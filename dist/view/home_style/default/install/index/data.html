@@ -1,0 +1,98 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>系统安装</title><link rel="stylesheet" href="/static/libs/layui/css/layui.css"><style>
+        body {
+            background-color: #f2f2f2;
+        }
+
+        .layui-form-item {
+            margin-bottom: 20px;
+        }
+
+        #connection-status {
+            color: red;
+            margin-top: 10px;
+        }
+    </style></head><body><div class="layui-container" style="margin-top: 50px;"><div class="layui-row layui-col-space20"><div class="layui-col-md6 layui-col-md-offset3"><div class="layui-card"><div class="layui-card-header">配置数据库</div><div class="layui-card-body"><form class="layui-form" id="install-form"><div class="layui-form-item"> <label class="layui-form-label">数据库主机:</label><div class="layui-input-block"> <input type="text" name="db_host" id="db_host" required lay-verify="required" placeholder="请输入数据库主机" class="layui-input" value="127.0.0.1"></div></div><div class="layui-form-item"> <label class="layui-form-label">数据库名称:</label><div class="layui-input-block"> <input type="text" name="db_name" id="db_name" required lay-verify="required" placeholder="请输入数据库名称" class="layui-input" value="jz_cc"></div></div><div class="layui-form-item"> <label class="layui-form-label">数据库用户名:</label><div class="layui-input-block"> <input type="text" name="db_user" id="db_user" required lay-verify="required" placeholder="请输入数据库用户名" class="layui-input" value="jz_cc"></div></div><div class="layui-form-item"> <label class="layui-form-label">数据库密码:</label><div class="layui-input-block"> <input type="password" name="db_pass" id="db_pass" required lay-verify="required" placeholder="请输入数据库密码" class="layui-input" value="mM5pZ8HRWGzhp1DQ"></div></div><div class="layui-form-item"> <label class="layui-form-label">表前缀:</label><div class="layui-input-block"> <input type="text" name="db_prefix" id="db_prefix" placeholder="请输入表前缀（可选）如ha_" class="layui-input" value=""></div></div><div class="layui-form-item"><div class="layui-input-block"><span id="connection-status"></span></div></div><div class="layui-form-item"><div class="layui-input-block"> <button class="layui-btn layui-btn-disabled" id="submit-btn" lay-filter="install" lay-submit> 提交</button> <button class="layui-btn layui-btn-primary" lay-filter="test" lay-submit> 测试连接</button></div></div></form></div></div></div></div></div><script src="/static/libs/layui/layui.js"></script><script>
+    layui.use(['form', 'jquery'], function () {
+        var form = layui.form;
+        var $ = layui.jquery;
+
+        form.on('submit(test)', function (data) {
+            checkDbConnection();
+            return false; // 阻止表单默认提交
+        })
+
+        // 提交表单
+        form.on('submit(install)', function (data) {
+            var loadIndex = layer.load(1);
+            $.ajax({
+                url: '{:urls("install_data")}',
+                type: 'POST',
+                data: data.field,
+                success: function (response) {
+                    layer.close(loadIndex);
+                    if (response.status === 'success') {
+                        layer.msg(response.msg, {icon: 1, time: 2000}, function () {
+                            setTimeout(function () {
+                                location.href = response.url; // 安装成功后跳转到首页
+                            }, 2000)
+                        });
+                    } else {
+                        layer.msg(response.msg, {icon: 2, time: 2000});
+                    }
+                },
+                error: function () {
+                    layer.close(loadIndex);
+                    layer.msg('请求失败，请重试', {icon: 2, time: 2000});
+                }
+            });
+            return false; // 阻止表单默认提交
+        });
+
+        // 检测数据库连接
+        function checkDbConnection() {
+            var loadIndex = layer.load(1);
+            var dbHost = $('#db_host').val();
+            var dbName = $('#db_name').val();
+            var dbUser = $('#db_user').val();
+            var dbPass = $('#db_pass').val();
+            var dbPre = $('#db_prefix').val();
+            console.log(dbHost, dbName, dbUser, dbPass);
+            if (dbHost && dbName && dbUser && dbPass && dbPre) {
+                $.ajax({
+                    url: '{:urls("checkDbConnection")}',
+                    type: 'POST',
+                    data: {
+                        db_host: dbHost,
+                        db_name: dbName,
+                        db_user: dbUser,
+                        db_pass: dbPass,
+                        db_prefix: dbPre,
+                    },
+                    success: function (response) {
+                        layer.close(loadIndex)
+                        if (response.status === 'success') {
+                            $('#connection-status').text('数据库连接成功').css('color', 'green');
+                            $('#submit-btn').removeClass('layui-btn-disabled');
+                        } else {
+                            $('#connection-status').text('数据库连接失败: ' + response.msg).css('color', 'red');
+                        }
+                    },
+                    error: function () {
+                        layer.close(loadIndex)
+                        $('#connection-status').text('请求失败，请重试').css('color', 'red');
+                    }
+                });
+            } else {
+                layer.close(loadIndex)
+                $('#connection-status').text('请填写所有数据库信息').css('color', 'red');
+            }
+
+        }
+
+        $(function () {
+            // 加载后检查数据库连接
+            checkDbConnection();
+        })
+
+    });
+</script></body></html>
