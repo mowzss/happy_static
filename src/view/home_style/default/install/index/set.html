@@ -78,12 +78,14 @@
 
         // 提交表单
         form.on('submit(install)', function (data) {
+            var layload = layer.load(1);
             $.ajax({
                 url: '{:urls("install")}',
                 type: 'POST',
                 data: data.field,
                 success: function (response) {
                     if (response.status === 'success') {
+                        layer.close(layload);
                         layer.msg('安装成功', {icon: 1, time: 2000}, function () {
                             $('#install-form').remove();
                             $('#installInfo').find('.layui-card-header').text('安装成功');
@@ -98,6 +100,7 @@
                     }
                 },
                 error: function () {
+                    layer.close(layload);
                     layer.msg('请求失败，请重试', {icon: 2, time: 2000});
                 }
             });

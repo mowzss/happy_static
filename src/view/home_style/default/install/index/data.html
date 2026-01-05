@@ -109,7 +109,7 @@
                         layer.msg(response.msg, {icon: 1, time: 2000}, function () {
                             setTimeout(function () {
                                 location.href = response.url; // 安装成功后跳转到首页
-                            }, 2000)
+                            }, 500)
                         });
                     } else {
                         layer.msg(response.msg, {icon: 2, time: 2000});
