@@ -201,11 +201,11 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
             $('[data-input-color]').each(function () {
                 let name = this.dataset.inputColor,
                     $thisInput = $('[name=' + name + ']'),
-                    value = $thisInput.val() || '#1c97f5';
+                    value = $thisInput.val() || '#1c97f5', currentElem = this;
                 layui.use(['colorpicker'], function () {
                     let colorpicker = layui.colorpicker;
                     colorpicker.render({
-                        elem: this,
+                        elem: currentElem,
                         color: value,
                         done: function (color) {
                             $thisInput.val(color);
