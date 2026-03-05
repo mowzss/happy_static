@@ -84,7 +84,8 @@
 </div>
 <script>
     window.APP_CONFIG = {
-        staticVersion: '{:sys_config("static_version", date("md"))}'
+        staticVersion: '{:sys_config("static_version", date("md"))}',
+        rootFile: '{:config("happy.admin_entrance")}'
     };
 </script>
 <script src="__STATIC__/libs/layui/layui.js?v={:sys_config('static_version',date('md'))}"></script>

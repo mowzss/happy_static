@@ -40,12 +40,10 @@ layui.config({
     wangEdit: "wangEditor/wangEdit",//wangEditor配置
     ueditor: "ueditor/ueditor",//配置
 
-    uploads: '{/}' + window.location.origin + '/index/upload/index?',
+    uploads: `{/}${window.location.origin}${APP_CONFIG.rootFile}/system/upload/index?`,
 }).use(['layer', 'jquery', 'popup', 'util'], function () {
     let layer = layui.layer,
         $ = layui.jquery,
-        popup = layui.popup,
-        util = layui.util,
         $body = $('body');
     // data-image 预览图片
     $body.on('click', '[data-image="click"]', function (e) {
