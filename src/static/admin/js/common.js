@@ -40,7 +40,7 @@ layui.config({
     wangEdit: "wangEditor/wangEdit",//wangEditor配置
     ueditor: "ueditor/ueditor",//配置
 
-    uploads: `{/}${window.location.origin}${APP_CONFIG.rootFile}/system/upload/index?`,
+    uploads: `{/}${window.location.origin}/${APP_CONFIG.rootFile}/system/upload/index?`,
 }).use(['layer', 'jquery', 'popup', 'util'], function () {
     let layer = layui.layer,
         $ = layui.jquery,
