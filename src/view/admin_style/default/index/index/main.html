@@ -299,7 +299,7 @@
                 data: {status: status},
                 dataType: 'json',
                 success: function (res) {
-                    if (res.code === 0) {
+                    if (res.code === 1) {
                         layer.msg(res.msg, {icon: 1, time: 1000}, function () {
                             reload()
                         })

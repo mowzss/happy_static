@@ -56,7 +56,6 @@ layui.config({
                 photos: {
                     "data": [{
                         "alt": "点击查看大图",
-                        "pid": 1, // 相册id，可以不填
                         "src": imgSrc,
                         "thumb": imgSrc // 缩略图，可以不填
                     }]
