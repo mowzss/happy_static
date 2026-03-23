@@ -19,12 +19,12 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 data: [
                     {
                         title: '关闭',
-                        icon: 'iconfont icon-cuowuguanbiquxiao',
+                        icon: 'iconfont ha-icon-close',
                         action: 'close',
                         mode: 'this',
                     }, {
                         title: '刷新',
-                        icon: "iconfont icon-shuaxin",
+                        icon: "iconfont ha-icon-refresh",
                         action: 'refresh',
                         mode: 'this',
                     },
@@ -32,22 +32,27 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                         type: '-'
                     },
                     {
-                        title: '关闭右侧', icon: "iconfont icon-zuihouye",
+                        title: '关闭右侧', icon: "iconfont ha-icon-close-right",
                         action: 'close',
                         mode: 'right'
                     }, {
-                        title: '关闭其它', icon: "iconfont icon-hengxiangshouqi",
+                        title: '关闭左侧', icon: "iconfont ha-icon-close-left",
+                        action: 'close',
+                        mode: 'left'
+                    }, {
+                        title: '关闭其它', icon: "iconfont ha-icon-close-other",
                         action: 'close',
                         mode: 'other'
                     }, {
                         type: '-'
                     }, {
-                        title: '关闭所有', icon: "iconfont icon-guanbiquanbu",
+                        title: '关闭所有', icon: "iconfont ha-icon-close-all",
                         action: 'close',
                         mode: 'all'
                     }],
                 click: function (data) {
                     let index = this.elem.index(); // 获取活动标签索引
+                    console.log(data);
                     if (data.action === 'close') { // 关闭标签操作
                         if (data.mode === 'this') {
                             tabs.close(that.config.elem, index); // 关闭当前标签
@@ -55,12 +60,14 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                             tabs.closeMult(that.config.elem, data.mode, index); // 批量关闭标签
                             if (data.mode === 'all') {
                                 that.delSessionTabsAll();
+                            } else if (data.mode === 'right') {
+
+                            } else if (data.mode === 'other') {
+
                             }
                         }
                     } else if (data.action === 'refresh') {
-                        if (data.mode === 'this') {
-                            tabs.change(that.config.elem, index);
-                        }
+                        tabs.change(that.config.elem, index);
                     }
                 }, templet: function (d) {
                     return '<i class="' + d.icon + '" style="font-size: 14px"></> ' + d.title;
