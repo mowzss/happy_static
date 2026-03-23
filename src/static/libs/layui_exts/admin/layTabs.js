@@ -6,6 +6,70 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
         , dropdown = layui.dropdown
         , layer = layui.layer;
 
+    // 将重复的 AJAX 逻辑提取为一个私有函数
+    // 这个函数接收一个配置对象，包含必要的参数
+    function _loadContentIntoElement(config) {
+        const {url, targetElement, onJsonResponse, onHtmlResponse, onBeforeSuccess} = config;
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'html',
+            success: function (res) {
+                if (typeof onBeforeSuccess === 'function') {
+                    onBeforeSuccess(res);
+                }
+
+                // 检查返回如果是json数据则使用layer.msg提示
+                if (res.startsWith('{') || res.startsWith('[')) {
+                    try {
+                        res = JSON.parse(res);
+                        if (typeof onJsonResponse === 'function') {
+                            onJsonResponse(res);
+                        } else {
+                            // 提供默认的 JSON 处理行为
+                            if (res.info) {
+                                layer.msg(res.info);
+                            }
+                            if (res.url) {
+                                setTimeout(function () {
+                                    window.location.href = res.url;
+                                }, 1500)
+                            }
+                        }
+                    } catch (e) {
+                        layer.msg('JSON解析错误');
+                        console.error(e);
+                    }
+                    return;
+                }
+
+                // 提供默认的 HTML 响应处理
+                if (typeof onHtmlResponse === 'function') {
+                    onHtmlResponse(res);
+                } else {
+                    targetElement.html(`<div class="happy-tab-content" style="display: block"
+                                data-page-id="${targetElement.attr('data-page-id')}" 
+                                data-src="${url}">
+                           ${res}
+                       </div>`);
+                    // 应用动画并显示内容
+                    setTimeout(() => {
+                        targetElement.find('.happy-tab-content').addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
+                    }, 200);
+                }
+            },
+            error: function (xhr, status, error) {
+                // 更好的错误处理，提供 xhr 对象以获取更多信息
+                if (typeof config.onError === 'function') {
+                    config.onError(xhr, status, error);
+                } else {
+                    layer.msg('加载失败，请重试！');
+                }
+            }
+        });
+    }
+
     pageTabs = {
         config: {
             elem: "layTabs",
@@ -19,12 +83,12 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 data: [
                     {
                         title: '关闭',
-                        icon: 'iconfont ha-icon-close',
+                        icon: 'happy-admin-iconfont ha-icon-close',
                         action: 'close',
                         mode: 'this',
                     }, {
                         title: '刷新',
-                        icon: "iconfont ha-icon-refresh",
+                        icon: "happy-admin-iconfont ha-icon-refresh",
                         action: 'refresh',
                         mode: 'this',
                     },
@@ -32,27 +96,26 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                         type: '-'
                     },
                     {
-                        title: '关闭右侧', icon: "iconfont ha-icon-close-right",
+                        title: '关闭右侧', icon: "happy-admin-iconfont ha-icon-close-right",
                         action: 'close',
                         mode: 'right'
                     }, {
-                        title: '关闭左侧', icon: "iconfont ha-icon-close-left",
+                        title: '关闭左侧', icon: "happy-admin-iconfont ha-icon-close-left",
                         action: 'close',
                         mode: 'left'
                     }, {
-                        title: '关闭其它', icon: "iconfont ha-icon-close-other",
+                        title: '关闭其它', icon: "happy-admin-iconfont ha-icon-close-other",
                         action: 'close',
                         mode: 'other'
                     }, {
                         type: '-'
                     }, {
-                        title: '关闭所有', icon: "iconfont ha-icon-close-all",
+                        title: '关闭所有', icon: "happy-admin-iconfont ha-icon-close-all",
                         action: 'close',
                         mode: 'all'
                     }],
                 click: function (data) {
                     let index = this.elem.index(); // 获取活动标签索引
-                    console.log(data);
                     if (data.action === 'close') { // 关闭标签操作
                         if (data.mode === 'this') {
                             tabs.close(that.config.elem, index); // 关闭当前标签
@@ -60,10 +123,18 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                             tabs.closeMult(that.config.elem, data.mode, index); // 批量关闭标签
                             if (data.mode === 'all') {
                                 that.delSessionTabsAll();
-                            } else if (data.mode === 'right') {
-
-                            } else if (data.mode === 'other') {
-
+                            } else {
+                                let $tabs = $('#' + that.config.elem + ' .layui-tabs-header li');
+                                that.delSessionTabsAll();
+                                $tabs.each(function () {
+                                    let tabsData = {
+                                        id: $(this).attr('lay-id'),
+                                        title: $(this).text(),
+                                        closable: $(this).attr('lay-closable') !== 'false',
+                                        url: $(this).attr('lay-url')
+                                    }
+                                    that.updateSessionTabs(tabsData.id, tabsData);
+                                })
                             }
                         }
                     } else if (data.action === 'refresh') {
@@ -99,37 +170,13 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 let id = $thisHeaderItem.attr('lay-id');
                 let url = $thisHeaderItem.attr('lay-url');
                 if (url) {
-                    $.ajax({
+                    // 调用重构后的函数
+                    _loadContentIntoElement({
                         url: url,
-                        type: 'GET',
-                        dataType: 'html',
-                        // async: false,
-                        success: function (res) {
-                            //检查返回如果是json数据则使用layer.msg提示
-                            if (res.startsWith('{') || res.startsWith('[')) {
-                                res = JSON.parse(res);
-                                if (res.info) {
-                                    layer.msg(res.info);
-                                }
-                                if (res.url) {
-                                    setTimeout(function () {
-                                        window.location.href = res.url;
-                                    }, 1500)
-                                }
-                                return;
-                            }
-                            $(data.thisBodyItem).html(`<div class="happy-tab-content" style="display: block"
-                                        data-page-id="${id}"
-                                        data-src="${url}">
-                                       ${res}
-                                   </div>`);
-                            // 应用动画并显示内容
-                            setTimeout(() => {
-                                $(data.thisBodyItem).find('.happy-tab-content').addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
-                            }, 200);
-                        },
-                        error: function () {
-                            layer.msg('加载失败，请重试！');
+                        targetElement: $(data.thisBodyItem), // 直接传入 jQuery 元素
+                        onBeforeSuccess: function () {
+                            // 在成功回调最开始执行，可以用来清空或准备容器
+                            $(data.thisBodyItem).empty();
                         }
                     });
                 }
@@ -152,54 +199,48 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                         that.rightMenu();
                         data.headerItem.attr('lay-url', opt.url);
                     },
-                    content: '<div class="happy-tab-content" style="display: block"></div>',
+                    content: '',
                 }, opt),
                 PageUrl = config.url,
                 isAjax = opt.isAjax ?? true;
 
             that.showLoadingBar();
             if (!that.tabIsExist(id)) { // 检查是否存在 tab
-                console.log('isAjax', isAjax, opt.isAjax)
-                if (PageUrl) {
-                    if (isAjax) {
-                        $.ajax({
-                            url: PageUrl,
-                            type: 'GET',
-                            dataType: 'html',
-                            success: function (res) {
-                                //检查返回如果是json数据则使用layer.msg提示
-                                if (res.startsWith('{') || res.startsWith('[')) {
-                                    res = JSON.parse(res);
-                                    if (res.info) {
-                                        layer.msg(res.info);
-                                    }
-                                    if (res.url) {
-                                        setTimeout(function () {
-                                            window.location.href = res.url;
-                                        }, 1500)
-                                    }
-                                    return;
-                                }
-                                config = $.extend(config, {
-                                    content: `<div class="happy-tab-content" style="display: block"
+                if (PageUrl && isAjax) {
+                    // 调用重构后的函数
+                    _loadContentIntoElement({
+                        url: PageUrl,
+                        targetElement: null, // 在 add 方法中，我们不需要立即填充特定元素
+                        onHtmlResponse: function (res) { // 自定义HTML响应处理，将内容赋值给 config
+                            config.content = `<div class="happy-tab-content" style="display: block"
                                     data-page-id="${id}"
                                     data-src="${PageUrl}">
                                    ${res}
-                               </div>`,
-                                })
-                                tabs.add(that.config.elem, config)
-                            },
-                            error: function () {
-                                layer.msg('加载失败，请重试！');
+                               </div>`;
+                            tabs.add(that.config.elem, config);
+                        },
+                        onJsonResponse: function (res) { // 自定义JSON响应处理
+                            if (res.info) {
+                                layer.msg(res.info);
                             }
-                        })
-                    } else {
-                        config.content = '';
-                        tabs.add(that.config.elem, config)
-                    }
+                            if (res.url) {
+                                setTimeout(function () {
+                                    window.location.href = res.url;
+                                }, 1500)
+                            }
+                        },
+                        onError: function () { // 自定义错误处理
+                            layer.msg('加载失败，请重试！');
+                        }
+                    });
+                } else {
+                    // 非Ajax情况
+                    config.content = '';
+                    tabs.add(that.config.elem, config);
                 }
             } else {
-                tabs.change(that.config.elem, id)
+                // 标签已存在，直接切换
+                tabs.change(that.config.elem, id);
             }
             that.updateSessionTabs(id, config);
             that.hideLoadingBar();
