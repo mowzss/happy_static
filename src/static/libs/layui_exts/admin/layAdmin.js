@@ -17,10 +17,10 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
         render: function (options) {
             this.config = $.extend({}, this.config, options);
             this.renderTabs();//渲染tab容器
-            layMenu.render(this.config.menuUrl);
+            layMenu.render(this.config.menuUrl);//渲染菜单
             this.events();//全部监听
             this.initTabs();//渲染tab记录
-            this.closeLoading()
+            this.closeLoading()//关闭加载动画
 
         },
         //初始化记录的标签
@@ -32,6 +32,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
             tabsList.forEach((tab) => {
                 if (tab.id !== activeId) {
                     tab.active = false;
+                    tab.isAjax = false;//初始化时默认不执行ajax
                 }
                 layTabs.add(tab);
             });

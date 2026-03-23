@@ -46,13 +46,16 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                         action: 'close',
                         mode: 'all'
                     }],
-                click: function (data, othis, event) {
+                click: function (data) {
                     let index = this.elem.index(); // 获取活动标签索引
                     if (data.action === 'close') { // 关闭标签操作
                         if (data.mode === 'this') {
                             tabs.close(that.config.elem, index); // 关闭当前标签
                         } else {
                             tabs.closeMult(that.config.elem, data.mode, index); // 批量关闭标签
+                            if (data.mode === 'all') {
+                                that.delSessionTabsAll();
+                            }
                         }
                     } else if (data.action === 'refresh') {
                         if (data.mode === 'this') {
@@ -126,7 +129,7 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 sessionStorage.setItem('tabsActiveId', id);
                 that.activeTabMenu(id);
             });
-            // tabs 关闭前的事件
+            //tabs关闭事件监听 无法监听批量关闭事件 需单独处理批量关闭
             tabs.on('beforeClose(' + that.config.elem + ')', function (data) {
                 let index = data.index;
                 let id = $(data.container.header.items).eq(index).attr('lay-id');
@@ -141,51 +144,57 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                     done: function (data) {
                         that.rightMenu();
                         data.headerItem.attr('lay-url', opt.url);
-                    }
-                }, opt), PageUrl = config.url;
+                    },
+                    content: '<div class="happy-tab-content" style="display: block"></div>',
+                }, opt),
+                PageUrl = config.url,
+                isAjax = opt.isAjax ?? true;
 
             that.showLoadingBar();
             if (!that.tabIsExist(id)) { // 检查是否存在 tab
+                console.log('isAjax', isAjax, opt.isAjax)
                 if (PageUrl) {
-                    $.ajax({
-                        url: PageUrl,
-                        type: 'GET',
-                        dataType: 'html',
-                        success: function (res) {
-                            //检查返回如果是json数据则使用layer.msg提示
-                            if (res.startsWith('{') || res.startsWith('[')) {
-                                res = JSON.parse(res);
-                                if (res.info) {
-                                    layer.msg(res.info);
+                    if (isAjax) {
+                        $.ajax({
+                            url: PageUrl,
+                            type: 'GET',
+                            dataType: 'html',
+                            success: function (res) {
+                                //检查返回如果是json数据则使用layer.msg提示
+                                if (res.startsWith('{') || res.startsWith('[')) {
+                                    res = JSON.parse(res);
+                                    if (res.info) {
+                                        layer.msg(res.info);
+                                    }
+                                    if (res.url) {
+                                        setTimeout(function () {
+                                            window.location.href = res.url;
+                                        }, 1500)
+                                    }
+                                    return;
                                 }
-                                if (res.url) {
-                                    setTimeout(function () {
-                                        window.location.href = res.url;
-                                    }, 1500)
-                                }
-                                return;
-                            }
-                            config = $.extend(config, {
-                                content: `<div class="happy-tab-content" style="display: block"
+                                config = $.extend(config, {
+                                    content: `<div class="happy-tab-content" style="display: block"
                                     data-page-id="${id}"
                                     data-src="${PageUrl}">
                                    ${res}
                                </div>`,
-                                // content: PageUrl
-                            })
-                            tabs.add(that.config.elem, config)
-                        },
-                        error: function () {
-                            layer.msg('加载失败，请重试！');
-                        }
-                    })
+                                })
+                                tabs.add(that.config.elem, config)
+                            },
+                            error: function () {
+                                layer.msg('加载失败，请重试！');
+                            }
+                        })
+                    } else {
+                        config.content = '';
+                        tabs.add(that.config.elem, config)
+                    }
                 }
-                // tabs.add(that.config.elem, config);
             } else {
                 tabs.change(that.config.elem, id)
             }
-
-            that.updataSessionTabs(id, config);
+            that.updateSessionTabs(id, config);
             that.hideLoadingBar();
         },
         // 检查标签页是否存在
@@ -225,7 +234,7 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 }
             }
         },
-        updataSessionTabs: function (tabId, newOpt) {
+        updateSessionTabs: function (tabId, newOpt) {
             let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
             let tabsId = String(tabId);
             // 找到需要更新的Tab
