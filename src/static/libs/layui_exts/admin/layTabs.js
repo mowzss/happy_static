@@ -111,7 +111,7 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
 
         rightMenu: function (opt) {
             let that = this;
-            let rightMenu = dropdown.render({
+            dropdown.render({
                 elem: `#${that.config.elem} .layui-tabs-header>li`,
                 trigger: 'contextmenu',
                 data: [

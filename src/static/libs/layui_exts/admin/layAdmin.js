@@ -9,7 +9,8 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
         layMenu = layui.layMenu,
         element = layui.element;
     const MODULE_NAME = 'layAdmin';
-    let admin = {
+    let admin;
+    admin = {
         config: {
             menuUrl: '',
         },
@@ -143,39 +144,19 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
                     }
                 },
                 //菜单切换
-                menuSwitch: function (othis) { // 左侧菜单事件
+                menuSwitch: function () { // 左侧菜单事件
                     var elem = $(".happy-admin-layout").find('.layui-layout-admin');
                     var flag = elem.hasClass("mini-nav");
                     if (flag) {
                         $(".layui-nav-item i").css("left", 25);
                         elem.removeClass("mini-nav");
-                        localStorage.setItem('mimiMenu', 'false');
+                        sessionStorage.setItem('mimiMenu', 'false');
                     } else {
                         $(".layui-nav-item i").css("left", 20);
                         elem.addClass("mini-nav");
-                        localStorage.setItem('mimiMenu', 'true');
+                        sessionStorage.setItem('mimiMenu', 'true');
                     }
                 },
-            });
-            //导航事件
-            element.on('nav(lay-nav)', function (elem) {
-                let $this = $(elem);
-                if ($this.parents('.mini-nav').length === 1) {
-                    $('[lay-header-event="menuSwitch"]').trigger('click');
-                }
-                if ($this.find('.layui-nav-more').length === 0) {
-                    var obj = $(this);
-                    var title = obj.find(".happy-nav-title").html();
-                    var id = obj.attr("lay-id");
-                    var url = obj.attr("lay-url");
-                    // 添加新标签页
-                    layTabs.add({
-                        id: id,
-                        title: title,
-                        url: url,
-                        closable: true,
-                    });
-                }
             });
             // 原生事件监听
             this.onBody();
@@ -227,7 +208,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
             })
         },
 
-    }
+    };
 
 
     exports(MODULE_NAME, admin);

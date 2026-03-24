@@ -6,7 +6,59 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
 
     let layMenu = {
         render: function (url) {
+            this.initMenuSwitch();
             this.loadAllMenuData(url);
+            this.on();
+        },
+        initMenuSwitch: function () {
+            //  从 sessionStorage 获取之前保存的菜单状态
+            var isMiniNav = sessionStorage.getItem('mimiMenu');
+
+            // // 获取布局元素
+            var elem = $(".happy-admin-layout").find('.layui-layout-admin');
+            //
+            // // 根据存储的状态进行初始化
+            if (isMiniNav === 'true') {
+                // 如果之前是收缩状态，则设置为收缩
+                $(".layui-nav-item i").css("left", 25);
+                elem.addClass("mini-nav");
+            } else {
+                // 如果之前是展开状态（或没有记录），则设置为展开
+                $(".layui-nav-item i").css("left", 20);
+                elem.removeClass("mini-nav");
+            }
+        },
+        on: function () {
+            $("#menu-container").click(function () {
+                const elem = $(".happy-admin-layout").find('.layui-layout-admin');
+                const flag = elem.hasClass("mini-nav");
+                if (flag) {
+                    $(this).find(".layui-nav-item i").css("left", 25);
+                    elem.removeClass("mini-nav");
+                    sessionStorage.setItem('mimiMenu', 'false');
+                    window.lock = true;
+                } else {
+                    window.lock = false;
+                }
+            })
+            //导航事件
+            element.on('nav(lay-nav)', function (elem) {
+                let $this = $(elem);
+                if ($this.find('.layui-nav-more').length === 0) {
+                    var obj = $(this);
+                    var title = obj.find(".happy-nav-title").html();
+                    var id = obj.attr("lay-id");
+                    var url = obj.attr("lay-url");
+                    // 添加新标签页
+                    layTabs.add({
+                        id: id,
+                        title: title,
+                        url: url,
+                        closable: true,
+                    });
+                }
+            });
+
         },
         // 加载所有菜单数据
         loadAllMenuData: function (url) {
@@ -185,7 +237,7 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
                     html += '</li>';
                 } else if (item.type === 1) { // 叶子节点菜单
                     html += '<li class="layui-nav-item">';
-                    html += '<a lay-url="' + item.href + '" lay-id="' + item.id + '">';
+                    html += '<a href="javascript:" lay-url="' + item.href + '" lay-id="' + item.id + '">';
                     html += '<span class="happy-nav-title">' + item.title + '</span>';
                     html += '</a>';
                     html += '</li>';
