@@ -1,130 +1,150 @@
 layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
     const MODULE_NAME = "layTabs";
-    let pageTabs = {}
-        , $ = layui.jquery
-        , tabs = layui.tabs
-        , dropdown = layui.dropdown
-        , layer = layui.layer;
 
-    // 将重复的 AJAX 逻辑提取为一个私有函数
-    // 这个函数接收一个配置对象，包含必要的参数
-    function _loadContentIntoElement(config) {
-        const {url, targetElement, onJsonResponse, onHtmlResponse, onBeforeSuccess} = config;
+    // --- 将硬编码的ID和类名提取为常量 ---
+    const CLASS_NAMES = {
+        TAB_CONTENT: 'happy-tab-content',
+        ANIMATION_IN: 'animated slideInFromBottom'
+    };
+    const ID_SELECTORS = {
+        LOADING_BAR: '#loading-bar',
+        MENU_CONTAINER: '#menu-container',
+        TOP_NAV: '#topNav'
+    };
+    // ---------------------------------------------
 
-        $.ajax({
-            url: url,
-            type: 'GET',
-            dataType: 'html',
-            success: function (res) {
-                if (typeof onBeforeSuccess === 'function') {
-                    onBeforeSuccess(res);
-                }
+    let pageTabs = {};
+    let $ = layui.jquery;
+    let tabs = layui.tabs;
+    let dropdown = layui.dropdown;
+    let layer = layui.layer;
 
-                // 检查返回如果是json数据则使用layer.msg提示
-                if (res.startsWith('{') || res.startsWith('[')) {
-                    try {
-                        res = JSON.parse(res);
-                        if (typeof onJsonResponse === 'function') {
-                            onJsonResponse(res);
-                        } else {
-                            // 提供默认的 JSON 处理行为
-                            if (res.info) {
-                                layer.msg(res.info);
-                            }
-                            if (res.url) {
-                                setTimeout(function () {
-                                    window.location.href = res.url;
-                                }, 1500)
-                            }
+    // --- 重构后的数据获取函数 ---
+    function _fetchContent(url) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'html',
+                success: function (res) {
+                    if (res.startsWith('{') || res.startsWith('[')) {
+                        try {
+                            resolve({type: 'json', data: JSON.parse(res)});
+                        } catch (e) {
+                            layer.msg('JSON解析错误');
+                            console.error(e);
+                            reject(e);
                         }
-                    } catch (e) {
-                        layer.msg('JSON解析错误');
-                        console.error(e);
+                    } else {
+                        resolve({type: 'html', data: res});
                     }
-                    return;
-                }
-
-                // 提供默认的 HTML 响应处理
-                if (typeof onHtmlResponse === 'function') {
-                    onHtmlResponse(res);
-                } else {
-                    targetElement.html(`<div class="happy-tab-content" style="display: block"
-                                data-page-id="${targetElement.attr('data-page-id')}" 
-                                data-src="${url}">
-                           ${res}
-                       </div>`);
-                    // 应用动画并显示内容
-                    setTimeout(() => {
-                        targetElement.find('.happy-tab-content').addClass('animated slideInFromBottom'); // 使用 animate.css 动画库
-                    }, 200);
-                }
-            },
-            error: function (xhr, status, error) {
-                // 更好的错误处理，提供 xhr 对象以获取更多信息
-                if (typeof config.onError === 'function') {
-                    config.onError(xhr, status, error);
-                } else {
+                },
+                error: function (xhr, status, error) {
                     layer.msg('加载失败，请重试！');
+                    console.error('AJAX Error:', error);
+                    reject(error);
                 }
-            }
+            });
         });
+    }
+
+    // ---: 引入内存缓存 ---
+    let cachedTabsList = JSON.parse(sessionStorage.getItem('tabsList')) || [];
+
+    // 辅助函数：将内存缓存同步到 sessionStorage
+    function _syncToStorage(activeId = null) {
+        sessionStorage.setItem('tabsList', JSON.stringify(cachedTabsList));
+        if (activeId) {
+            sessionStorage.setItem('tabsActiveId', activeId);
+        }
     }
 
     pageTabs = {
         config: {
             elem: "layTabs",
         },
+
+        // ---: 拆分 activeTabMenu 的逻辑 ---
+        _highlightMenuItem: function ($menuItem) {
+            const $menuContainer = $(ID_SELECTORS.MENU_CONTAINER);
+            $menuContainer.find('.layui-nav-item').removeClass('layui-this');
+
+            if ($menuItem.length > 0) {
+                $menuItem.parent('.layui-nav-item').addClass('layui-this');
+            }
+        },
+
+        _expandParentMenu: function ($menuItem) {
+            const pItem = $menuItem.parents('.side-menu-container > .layui-nav-item');
+            if (pItem.length && !pItem.hasClass('layui-nav-itemed')) {
+                pItem.addClass('layui-nav-itemed');
+            }
+        },
+
+        _showSideContainer: function ($menuItem) {
+            $(ID_SELECTORS.MENU_CONTAINER).find('.side-menu-container').hide();
+            const parentContainer = $menuItem.parents('.side-menu-container').show();
+            return parentContainer.length ? parentContainer.attr('data-tab-id') : null;
+        },
+
+        _activateTopNav: function (pid) {
+            if (pid) {
+                const $topNav = $(ID_SELECTORS.TOP_NAV);
+                $topNav.find('.layui-nav-item').removeClass('layui-this');
+                $topNav.find(`.layui-nav-item[data-tab-id="${pid}"]`).addClass('layui-this');
+            }
+        },
+
+        activeTabMenu: function (tabId) {
+            const $menuContainer = $(ID_SELECTORS.MENU_CONTAINER);
+            const $menuItem = $menuContainer.find('[lay-id]').filter(function () {
+                return $(this).attr('lay-id') === tabId;
+            });
+
+            this._highlightMenuItem($menuItem);
+
+            const pid = this._showSideContainer($menuItem);
+            this._expandParentMenu($menuItem);
+            this._activateTopNav(pid);
+        },
+        // --- end ---
+
         rightMenu: function (opt) {
             let that = this;
-            // 为标签头添加上下文菜单
             let rightMenu = dropdown.render({
-                elem: '#' + that.config.elem + ' .layui-tabs-header>li',
+                elem: `#${that.config.elem} .layui-tabs-header>li`,
                 trigger: 'contextmenu',
                 data: [
+                    {title: '关闭', icon: 'happy-admin-iconfont ha-icon-close', action: 'close', mode: 'this'},
+                    {title: '刷新', icon: "happy-admin-iconfont ha-icon-refresh", action: 'refresh', mode: 'this'},
+                    {type: '-'},
                     {
-                        title: '关闭',
-                        icon: 'happy-admin-iconfont ha-icon-close',
-                        action: 'close',
-                        mode: 'this',
-                    }, {
-                        title: '刷新',
-                        icon: "happy-admin-iconfont ha-icon-refresh",
-                        action: 'refresh',
-                        mode: 'this',
-                    },
-                    {
-                        type: '-'
-                    },
-                    {
-                        title: '关闭右侧', icon: "happy-admin-iconfont ha-icon-close-right",
+                        title: '关闭右侧',
+                        icon: "happy-admin-iconfont ha-icon-close-right",
                         action: 'close',
                         mode: 'right'
-                    }, {
-                        title: '关闭左侧', icon: "happy-admin-iconfont ha-icon-close-left",
-                        action: 'close',
-                        mode: 'left'
-                    }, {
-                        title: '关闭其它', icon: "happy-admin-iconfont ha-icon-close-other",
+                    },
+                    {title: '关闭左侧', icon: "happy-admin-iconfont ha-icon-close-left", action: 'close', mode: 'left'},
+                    {
+                        title: '关闭其它',
+                        icon: "happy-admin-iconfont ha-icon-close-other",
                         action: 'close',
                         mode: 'other'
-                    }, {
-                        type: '-'
-                    }, {
-                        title: '关闭所有', icon: "happy-admin-iconfont ha-icon-close-all",
-                        action: 'close',
-                        mode: 'all'
-                    }],
+                    },
+                    {type: '-'},
+                    {title: '关闭所有', icon: "happy-admin-iconfont ha-icon-close-all", action: 'close', mode: 'all'}
+                ],
                 click: function (data) {
-                    let index = this.elem.index(); // 获取活动标签索引
-                    if (data.action === 'close') { // 关闭标签操作
+                    let index = this.elem.index();
+                    if (data.action === 'close') {
                         if (data.mode === 'this') {
-                            tabs.close(that.config.elem, index); // 关闭当前标签
+                            tabs.close(that.config.elem, index);
                         } else {
-                            tabs.closeMult(that.config.elem, data.mode, index); // 批量关闭标签
+                            tabs.closeMult(that.config.elem, data.mode, index);
                             if (data.mode === 'all') {
                                 that.delSessionTabsAll();
                             } else {
-                                let $tabs = $('#' + that.config.elem + ' .layui-tabs-header li');
+                                let $tabs = $(`#${that.config.elem} .layui-tabs-header li`);
                                 that.delSessionTabsAll();
                                 $tabs.each(function () {
                                     let tabsData = {
@@ -132,123 +152,137 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                                         title: $(this).text(),
                                         closable: $(this).attr('lay-closable') !== 'false',
                                         url: $(this).attr('lay-url')
-                                    }
+                                    };
                                     that.updateSessionTabs(tabsData.id, tabsData);
-                                })
+                                });
                             }
                         }
                     } else if (data.action === 'refresh') {
                         tabs.change(that.config.elem, index);
                     }
-                }, templet: function (d) {
-                    return '<i class="' + d.icon + '" style="font-size: 14px"></> ' + d.title;
+                },
+                templet: function (d) {
+                    return `<i class="${d.icon}" style="font-size: 14px"></i> ${d.title}`;
                 }
             });
         },
-        // 显示加载进度条
+
         showLoadingBar: function () {
-            $('#loading-bar').css('width', '0%').show();
+            $(ID_SELECTORS.LOADING_BAR).css('width', '0%').show();
             setTimeout(() => {
-                $('#loading-bar').css('width', '100%');
+                $(ID_SELECTORS.LOADING_BAR).css('width', '100%');
             }, 0);
         },
-        // 隐藏加载进度条
+
         hideLoadingBar: function () {
             setTimeout(() => {
-                $('#loading-bar').css('width', '0%').hide();
-            }, 2000); // 模拟加载时间
+                $(ID_SELECTORS.LOADING_BAR).css('width', '0%').hide();
+            }, 2000);
         },
+
         on: function () {
             let that = this;
-            //tabs切换前
             tabs.on('beforeChange(' + that.config.elem + ')', function (data) {
-                $('#' + that.config.elem).find('.layui-tabs-body > .layui-tabs-item').empty();
-            })
-            // tabs切换后
-            tabs.on('afterChange(' + that.config.elem + ')', function (data) {
+                $(`#${that.config.elem}`).find('.layui-tabs-body > .layui-tabs-item').empty();
+            });
+
+            tabs.on('afterChange(' + that.config.elem + ')', async function (data) {
                 let $thisHeaderItem = $(data.thisHeaderItem);
                 let id = $thisHeaderItem.attr('lay-id');
                 let url = $thisHeaderItem.attr('lay-url');
+
                 if (url) {
-                    // 调用重构后的函数
-                    _loadContentIntoElement({
-                        url: url,
-                        targetElement: $(data.thisBodyItem), // 直接传入 jQuery 元素
-                        onBeforeSuccess: function () {
-                            // 在成功回调最开始执行，可以用来清空或准备容器
-                            $(data.thisBodyItem).empty();
+                    try {
+                        const response = await _fetchContent(url);
+                        const $bodyItem = $(data.thisBodyItem);
+                        $bodyItem.empty();
+
+                        if (response.type === 'json') {
+                            if (response.data.info) layer.msg(response.data.info);
+                            if (response.data.url) {
+                                setTimeout(() => window.location.href = response.data.url, 1500);
+                            }
+                        } else if (response.type === 'html') {
+                            $bodyItem.html(`<div class="${CLASS_NAMES.TAB_CONTENT} ${CLASS_NAMES.ANIMATION_IN}" style="display: block" 
+                                             data-page-id="${$bodyItem.attr('data-page-id')}" 
+                                             data-src="${url}">
+                                            ${response.data}
+                                        </div>`);
                         }
-                    });
+                    } catch (error) {
+                        console.error('Failed to load content for active tab:', error);
+                    }
                 }
-                sessionStorage.setItem('tabsActiveId', id);
+                _syncToStorage(id);
                 that.activeTabMenu(id);
             });
-            //tabs关闭事件监听 无法监听批量关闭事件 需单独处理批量关闭
+
             tabs.on('beforeClose(' + that.config.elem + ')', function (data) {
                 let index = data.index;
                 let id = $(data.container.header.items).eq(index).attr('lay-id');
-                that.delSessionTabs(id)
+                that.delSessionTabs(id);
             });
         },
-        add: function (opt) {
-            let that = this,
-                id = String(opt.id),
-                config = $.extend({
-                    id: String(opt.id),
-                    done: function (data) {
-                        that.rightMenu();
-                        data.headerItem.attr('lay-url', opt.url);
-                    },
-                    content: '',
-                }, opt),
-                PageUrl = config.url,
-                isAjax = opt.isAjax ?? true;
+
+        add: async function (opt) {
+            // --- 增加参数校验 ---
+            if (!opt || typeof opt.id === 'undefined') {
+                console.error('LayTabs.add: Missing required parameter "opt.id".');
+                return;
+            }
+            // -------------------------
+
+            let that = this;
+            let id = String(opt.id);
+            let config = $.extend({
+                id: String(opt.id),
+                done: function (data) {
+                    that.rightMenu();
+                    data.headerItem.attr('lay-url', opt.url);
+                },
+                content: '',
+            }, opt);
+
+            let PageUrl = config.url;
+            let isAjax = opt.isAjax ?? true;
 
             that.showLoadingBar();
-            if (!that.tabIsExist(id)) { // 检查是否存在 tab
+
+            if (!that.tabIsExist(id)) {
                 if (PageUrl && isAjax) {
-                    // 调用重构后的函数
-                    _loadContentIntoElement({
-                        url: PageUrl,
-                        targetElement: null, // 在 add 方法中，我们不需要立即填充特定元素
-                        onHtmlResponse: function (res) { // 自定义HTML响应处理，将内容赋值给 config
-                            config.content = `<div class="happy-tab-content" style="display: block"
-                                    data-page-id="${id}"
-                                    data-src="${PageUrl}">
-                                   ${res}
-                               </div>`;
+                    try {
+                        const response = await _fetchContent(PageUrl);
+
+                        if (response.type === 'json') {
+                            if (response.data.info) layer.msg(response.data.info);
+                            if (response.data.url) {
+                                setTimeout(() => window.location.href = response.data.url, 1500);
+                            }
+                        } else if (response.type === 'html') {
+                            config.content = `<div class="${CLASS_NAMES.TAB_CONTENT}" style="display: block"
+                                                 data-page-id="${id}"
+                                                 data-src="${PageUrl}">
+                                                ${response.data}
+                                            </div>`;
                             tabs.add(that.config.elem, config);
-                        },
-                        onJsonResponse: function (res) { // 自定义JSON响应处理
-                            if (res.info) {
-                                layer.msg(res.info);
-                            }
-                            if (res.url) {
-                                setTimeout(function () {
-                                    window.location.href = res.url;
-                                }, 1500)
-                            }
-                        },
-                        onError: function () { // 自定义错误处理
-                            layer.msg('加载失败，请重试！');
                         }
-                    });
+                    } catch (error) {
+                        console.error('Failed to load content for new tab:', id, error);
+                    }
                 } else {
-                    // 非Ajax情况
-                    config.content = '';
                     tabs.add(that.config.elem, config);
                 }
             } else {
-                // 标签已存在，直接切换
                 tabs.change(that.config.elem, id);
             }
+
             that.updateSessionTabs(id, config);
             that.hideLoadingBar();
         },
-        // 检查标签页是否存在
+
         tabIsExist: function (id) {
             let isExist = false;
-            $("#" + this.config.elem).find('.layui-tabs-header li').each(function () {
+            $(`#${this.config.elem}`).find('.layui-tabs-header li').each(function () {
                 if ($(this).attr("lay-id") === id) {
                     isExist = true;
                     return false;
@@ -256,101 +290,71 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
             });
             return isExist;
         },
-        activeTabMenu: function (tabId) {
-            // 为当前id选中菜单
-            let $menuContainer = $('#menu-container');
 
-            // 使用 filter 方法查找匹配的元素
-            let $menuItem = $menuContainer.find('[lay-id]').filter(function () {
-                return $(this).attr('lay-id') === tabId;
-            });
-
-            $menuContainer.find('.layui-nav-item').removeClass('layui-this');
-
-            if ($menuItem.length > 0) {
-                $menuContainer.find('.side-menu-container').hide();
-                let pid = $menuItem.parents('.side-menu-container').show().attr('data-tab-id');
-                $menuItem.parent('.layui-nav-item').addClass('layui-this');
-                let pItem = $menuItem.parents('.side-menu-container > .layui-nav-item');
-                if (!pItem.hasClass('layui-nav-itemed')) {
-                    pItem.addClass('layui-nav-itemed');
-                }
-                if (pid) {
-                    let topNav = $('#topNav');
-                    topNav.find('.layui-nav-item').removeClass('layui-this');
-                    topNav.find('.layui-nav-item[data-tab-id="' + pid + '"]').addClass('layui-this');
-                }
-            }
-        },
+        // --- 更新缓存函数 ---
         updateSessionTabs: function (tabId, newOpt) {
-            let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
             let tabsId = String(tabId);
-            // 找到需要更新的Tab
-            let index = tabs.findIndex(tab => tab.id === tabsId);
+
+            let cacheOpt = {...newOpt};
+            delete cacheOpt.content; // 移除 content 字段
+
+            let index = cachedTabsList.findIndex(tab => tab.id === tabsId);
 
             if (index === -1) {
-                // 如果未找到Tab，则直接新增到最后
-                tabs.push({id: tabsId, ...newOpt});
+                cachedTabsList.push({id: tabsId, ...cacheOpt});
+            } else {
+                // 更新时也只更新不包含 content 的属性
+                Object.assign(cachedTabsList[index], cacheOpt);
             }
-            // 更新 sessionStorage
-            sessionStorage.setItem('tabsList', JSON.stringify(tabs));
-            sessionStorage.setItem('tabsActiveId', tabsId);
-
+            _syncToStorage(tabsId);
         },
+
         delSessionTabs: function (tabId) {
-            let tabs = JSON.parse(sessionStorage.getItem('tabsList')) || [];
-            // 找到需要删除的Tab，并移除它
-            let index = tabs.findIndex(tab => tab.id === tabId);
-
+            let index = cachedTabsList.findIndex(tab => tab.id === tabId);
             if (index !== -1) {
-                // 如果找到Tab，则从数组中移除
-                tabs.splice(index, 1);
-                // 更新 sessionStorage
-                sessionStorage.setItem('tabsList', JSON.stringify(tabs));
+                cachedTabsList.splice(index, 1);
+                _syncToStorage();
             }
         },
+
         delSessionTabsAll: function () {
+            cachedTabsList = [];
             sessionStorage.removeItem('tabsList');
         },
-        /**
-         * 进入全屏
-         * @param element
-         * @returns {Promise<unknown>}
-         */
+        // --- end ---
+
         requestFullscreen: function (element) {
             return new Promise((resolve, reject) => {
                 if (element.requestFullscreen) {
                     element.requestFullscreen().then(resolve).catch(reject);
-                } else if (element.mozRequestFullScreen) { // Firefox
+                } else if (element.mozRequestFullScreen) {
                     element.mozRequestFullScreen().then(resolve).catch(reject);
-                } else if (element.webkitRequestFullscreen) { // Chrome, Safari and Opera
+                } else if (element.webkitRequestFullscreen) {
                     element.webkitRequestFullscreen().then(resolve).catch(reject);
-                } else if (element.msRequestFullscreen) { // IE/Edge
+                } else if (element.msRequestFullscreen) {
                     element.msRequestFullscreen().then(resolve).catch(reject);
                 } else {
                     reject(new Error("浏览器不支持全屏"));
                 }
             });
         },
-        /**
-         * 退出全屏
-         * @returns {Promise<unknown>}
-         */
+
         exitFullscreen: function () {
             return new Promise((resolve, reject) => {
                 if (document.exitFullscreen) {
                     document.exitFullscreen().then(resolve).catch(reject);
-                } else if (document.mozCancelFullScreen) { // Firefox
+                } else if (document.mozCancelFullScreen) {
                     document.mozCancelFullScreen().then(resolve).catch(reject);
-                } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+                } else if (document.webkitExitFullscreen) {
                     document.webkitExitFullscreen().then(resolve).catch(reject);
-                } else if (document.msExitFullscreen) { // IE/Edge
+                } else if (document.msExitFullscreen) {
                     document.msExitFullscreen().then(resolve).catch(reject);
                 } else {
                     reject(new Error("浏览器不支持退出全屏"));
                 }
             });
         },
-    }
-    exports(MODULE_NAME, pageTabs)
-})
+    };
+
+    exports(MODULE_NAME, pageTabs);
+});
