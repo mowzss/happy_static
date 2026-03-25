@@ -1,6 +1,31 @@
 // admin.js
 layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], function (exports) {
     "use strict";
+
+    const SELECTORS = {
+        LAYOUT_ADMIN: '.layui-layout-admin',// 布局元素
+        NAV_ITEM_ICON: '.layui-nav-item i',// 导航图标
+        CONTENT_WRAPPER: '#happy-content',// tabs 容器
+        LOADING_MASK: '.loading-mask', // 加载遮罩
+        DATA_OPEN: '[data-open]', // 菜单打开
+        DATA_WIN_OPEN: '[data-win-open]',// 窗口打开
+        DATA_AJAX: '[data-ajax]'// ajax 请求
+    };
+
+    const STORAGE_KEYS = {
+        MINI_MENU: 'mimiMenu',
+        TABS_LIST: 'tabsList',
+        TABS_ACTIVE_ID: 'tabsActiveId'
+    };
+
+    const CSS_CLASSES = {
+        MINI_NAV: 'mini-nav',
+        HIDDEN: 'hidden',
+        LAYUI_THIS: 'layui-this',
+        LAYUI_NAV_ITEMED: 'layui-nav-itemed'
+    };
+    // ---------------------------------------------
+
     let util = layui.util,
         layer = layui.layer,
         $ = layui.jquery,
@@ -8,35 +33,84 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
         layTabs = layui.layTabs,
         layMenu = layui.layMenu,
         element = layui.element;
+
     const MODULE_NAME = 'layAdmin';
-    let admin;
-    admin = {
+
+    let admin = {
         config: {
             menuUrl: '',
         },
+
+        // --- 封装获取布局元素的函数 ---
+        _getLayoutElement: function () {
+            return $(".happy-admin-layout").find(SELECTORS.LAYOUT_ADMIN);
+        },
+
+        // --- 封装菜单切换的核心逻辑 ---
+        _toggleMenu: function () {
+            const $elem = this._getLayoutElement();
+            const isMinified = $elem.hasClass(CSS_CLASSES.MINI_NAV);
+
+            if (isMinified) {
+                // 展开菜单
+                $(SELECTORS.NAV_ITEM_ICON).css("left", 25);
+                $elem.removeClass(CSS_CLASSES.MINI_NAV);
+                sessionStorage.setItem(STORAGE_KEYS.MINI_MENU, 'false');
+            } else {
+                // 收缩菜单
+                $(SELECTORS.NAV_ITEM_ICON).css("left", 20);
+                $elem.addClass(CSS_CLASSES.MINI_NAV);
+                sessionStorage.setItem(STORAGE_KEYS.MINI_MENU, 'true');
+            }
+        },
+
+        // --- 封装从 sessionStorage 初始化菜单状态的逻辑 ---
+        _initMenuState: function () {
+            const savedState = sessionStorage.getItem(STORAGE_KEYS.MINI_MENU);
+            const $elem = this._getLayoutElement();
+
+            if (savedState === 'true') {
+                $(SELECTORS.NAV_ITEM_ICON).css("left", 20);
+                $elem.addClass(CSS_CLASSES.MINI_NAV);
+            } else {
+                $(SELECTORS.NAV_ITEM_ICON).css("left", 25);
+                $elem.removeClass(CSS_CLASSES.MINI_NAV);
+            }
+        },
+
         // 初始化
         render: function (options) {
             this.config = $.extend({}, this.config, options);
-            this.renderTabs();//渲染tab容器
-            layMenu.render(this.config.menuUrl);//渲染菜单
-            this.events();//全部监听
-            this.initTabs();//渲染tab记录
-            this.closeLoading()//关闭加载动画
 
+            // 1. 先渲染并初始化菜单状态
+            this._initMenuState();
+
+            // 2. 渲染各组件
+            this.renderTabs();
+            layMenu.render(this.config.menuUrl);
+            this.initTabs(); // 在菜单渲染后再初始化Tabs，以保证菜单高亮正确
+
+            // 3. 绑定事件
+            this.events();
+
+            // 4. 完成渲染
+            this.closeLoading();
         },
-        //初始化记录的标签
+
+        // 初始化记录的标签
         initTabs: function () {
-            let tabsList = JSON.parse(sessionStorage.getItem('tabsList')) || [];
-            let activeId = String(sessionStorage.getItem('tabsActiveId'));
+            let tabsList = JSON.parse(sessionStorage.getItem(STORAGE_KEYS.TABS_LIST)) || [];
+            let activeId = String(sessionStorage.getItem(STORAGE_KEYS.TABS_ACTIVE_ID));
 
             // 重新添加所有保存的Tab
             tabsList.forEach((tab) => {
                 if (tab.id !== activeId) {
                     tab.active = false;
-                    tab.isAjax = false;//初始化时默认不执行ajax
+                    tab.isAjax = false; // 初始化时默认不执行ajax
                 }
                 layTabs.add(tab);
             });
+
             // 设置激活的Tab
             if (activeId && tabsList.some(tab => tab.id === activeId)) {
                 tabs.change(layTabs.config.elem, activeId);
@@ -45,130 +119,123 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
                 tabs.change(layTabs.config.elem, tabsList[0].id);
             }
         },
+
         // 动态渲染layui-body-tabs
         renderTabs: function () {
             let tabsHtml = `
-        <div class="layui-body-tabs layui-tab-rollTool layui-tabs layui-hide-v" id="${layTabs.config.elem}" lay-options="{headerMode:'scroll',closable:true}">
-            <ul class="layui-tabs-header"></ul>
-            <div class="layui-tabs-body"></div>        
-        </div>
-    `;
-            // 插入到#happy-content中
-            $("#happy-content").html(tabsHtml);
+                <div class="layui-body-tabs layui-tab-rollTool layui-tabs layui-hide-v" 
+                     id="${layTabs.config.elem}" 
+                     lay-options="{headerMode:'scroll',closable:true}">
+                    <ul class="layui-tabs-header"></ul>
+                    <div class="layui-tabs-body"></div>        
+                </div>
+            `;
+            $(SELECTORS.CONTENT_WRAPPER).html(tabsHtml);
             tabs.render();
         },
-        //关闭遮罩层
+
+        // 关闭遮罩层
         closeLoading: function () {
-            $('.loading-mask').addClass('hidden');
+            $(SELECTORS.LOADING_MASK).addClass(CSS_CLASSES.HIDDEN);
         },
         showLoading: function () {
-            $('.loading-mask').removeClass('hidden');
+            $(SELECTORS.LOADING_MASK).removeClass(CSS_CLASSES.HIDDEN);
         },
+
         // 事件监听
         events: function () {
             layTabs.on(); // 监听标签页切换事件
+
+            // 1. 监听 layui 自定义事件
             util.event('lay-header-event', {
-                home: function () {
+                home: () => {
                     tabs.change(layTabs.config.elem, 'home');
                 },
-                //清理缓存
-                cleanCache: function (othis) {
-                    let url = othis.data('url')
-                    layer.confirm('确认清理缓存？', function () {
+
+                // 清理缓存
+                cleanCache: (othis) => {
+                    let url = othis.data('url');
+                    layer.confirm('确认清理缓存？', () => {
                         sessionStorage.clear();
                         if (url) {
                             $.ajax({
                                 url: url,
                                 type: 'GET',
-                                success: function (res) {
-                                    layer.msg(res.msg);
-                                }
-                            })
+                                success: (res) => layer.msg(res.msg)
+                            });
                         } else {
-                            layer.msg('本地缓存已清空')
+                            layer.msg('本地缓存已清空');
                         }
-                    })
+                    });
                 },
+
                 // 网页全屏
-                fullScreen: function (othis) {
-                    // 使用 othis.find() 获取图标元素
+                fullScreen: (othis) => {
                     let iconElement = othis.find('em');
-                    // 检查当前是否处于全屏模式
-                    if (!document.fullscreenElement) {
-                        // 请求全屏
-                        try {
-                            layTabs.requestFullscreen(document.documentElement).then(() => {
-                                // 更新图标为退出全屏图标
-                                iconElement.removeClass('layui-icon-screen-full').addClass('layui-icon-screen-restore');
-                                othis.attr('title', "退出全屏");
-                            }).catch(err => {
-                                layer.msg("无法进入全屏模式,请手动操作");
-                            });
-                        } catch (err) {
-                            layer.msg("无法进入全屏模式,请手动操作");
+                    let isFullscreen = !!document.fullscreenElement;
+
+                    const toggleIconAndTitle = (entering) => {
+                        if (entering) {
+                            iconElement.removeClass('layui-icon-screen-full').addClass('layui-icon-screen-restore');
+                            othis.attr('title', "退出全屏");
+                        } else {
+                            iconElement.removeClass('layui-icon-screen-restore').addClass('layui-icon-screen-full');
+                            othis.attr('title', "全屏");
                         }
-                    } else {
-                        // 退出全屏
-                        try {
-                            layTabs.exitFullscreen().then(() => {
-                                // 更新图标为进入全屏图标
-                                iconElement.removeClass('layui-icon-screen-restore').addClass('layui-icon-screen-full');
-                                othis.attr('title', "全屏");
-                            }).catch(err => {
-                                layer.msg("无法退出全屏模式,请手动操作");
-                            });
-                        } catch (err) {
-                            layer.msg("无法退出全屏模式,请手动操作");
-                        }
-                    }
+                    };
+
+                    const requestOrExit = isFullscreen
+                        ? layTabs.exitFullscreen()
+                        : layTabs.requestFullscreen(document.documentElement);
+
+                    requestOrExit.then(() => toggleIconAndTitle(!isFullscreen))
+                        .catch(() => layer.msg(`${isFullscreen ? '退出' : '进入'}全屏模式失败,请手动操作`));
                 },
-                logout: function (othis) {
+
+                logout: (othis) => {
                     let url = othis.data('href');
                     if (url) {
-                        layer.confirm('确认退出系统？', function () {
+                        layer.confirm('确认退出系统？', () => {
                             $.ajax({
                                 url: url,
                                 type: 'GET',
-                                success: function (res) {
+                                success: (res) => {
                                     layer.msg(res.msg);
                                     if (res.code === 1) {
-                                        setTimeout(function () {
+                                        setTimeout(() => {
                                             sessionStorage.clear();
                                             localStorage.clear();
                                             location.href = res.url;
                                         }, 1000);
                                     }
                                 }
-                            })
-                        })
+                            });
+                        });
                     }
                 },
-                //菜单切换
-                menuSwitch: function () { // 左侧菜单事件
-                    var elem = $(".happy-admin-layout").find('.layui-layout-admin');
-                    var flag = elem.hasClass("mini-nav");
-                    if (flag) {
-                        $(".layui-nav-item i").css("left", 25);
-                        elem.removeClass("mini-nav");
-                        sessionStorage.setItem('mimiMenu', 'false');
-                    } else {
-                        $(".layui-nav-item i").css("left", 20);
-                        elem.addClass("mini-nav");
-                        sessionStorage.setItem('mimiMenu', 'true');
-                    }
+
+                // 菜单切换
+                menuSwitch: () => {
+                    this._toggleMenu();
                 },
             });
-            // 原生事件监听
+
+            // 2. 监听原生DOM事件
             this.onBody();
         },
+
         // 原生事件监听
         onBody: function () {
             let $body = $('body');
-            $body.on('click', '[data-open]', function (e) {
-                let url = $(e.target).data('open'),
-                    id = url.split('?')[0],
-                    title = $(e.target).text();
-                // 添加新标签页
+
+            // 通用 Tab 打开事件
+            $body.on('click', SELECTORS.DATA_OPEN, (e) => {
+                e.preventDefault(); // 阻止默认行为，防止锚点跳转
+                let $target = $(e.target);
+                let url = $target.data('open');
+                let id = url.split('?')[0];
+                let title = $target.text().trim(); // 去除可能的空白字符
+
                 layTabs.add({
                     id: id,
                     title: title,
@@ -177,39 +244,39 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
                     change: true,
                 });
             });
-            $body.on('click', '[data-win-open]', function (e) {
+
+            // 新窗口打开事件
+            $body.on('click', SELECTORS.DATA_WIN_OPEN, (e) => {
                 let url = $(e.target).data('winOpen');
                 window.open(url, '_blank');
-            })
-            $body.on('click', '[data-ajax]', function (e) {
+            });
+
+            // Ajax 请求事件
+            $body.on('click', SELECTORS.DATA_AJAX, (e) => {
+                e.preventDefault(); // 阻止默认行为
+                let $this = $(this);
                 let index = layer.load(1);
-                e.preventDefault();
-                let url = this.dataset.ajax;
-                let type = this.dataset.type || 'GET';
-                let value = this.dataset.value || {};
+
+                let url = $this.data('ajax');
+                let type = $this.data('type') || 'GET';
+                let value = $this.data('value') || {};
+
                 $.ajax({
                     url: url,
                     type: type,
                     data: value,
-                    success: function (res) {
-                        layer.close(index); // 关闭 loading
-                        if (res.code === 1) {
-                            layer.msg(res.msg);
-                        } else {
-                            layer.msg(res.msg);
-                        }
+                    success: (res) => {
+                        layer.close(index);
+                        layer.msg(res.msg, {icon: res.code === 1 ? 1 : 2}); // code=1用对号，其他用叉号
                     },
-                    error: function () {
-                        layer.close(index); // 关闭 loading
-                        layer.msg('网络错误')
+                    error: () => {
+                        layer.close(index);
+                        layer.msg('网络错误');
                     }
-
-                })
-            })
+                });
+            });
         },
-
     };
-
 
     exports(MODULE_NAME, admin);
 });

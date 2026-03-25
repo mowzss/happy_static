@@ -29,7 +29,7 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
             }
         },
         on: function () {
-            $("#menu-container").click(function () {
+            $("#menu-container").on('click', function () {
                 const elem = $(".happy-admin-layout").find('.layui-layout-admin');
                 const flag = elem.hasClass("mini-nav");
                 if (flag) {

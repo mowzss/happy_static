@@ -82,9 +82,15 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
         },
 
         _showSideContainer: function ($menuItem) {
-            $(ID_SELECTORS.MENU_CONTAINER).find('.side-menu-container').hide();
-            const parentContainer = $menuItem.parents('.side-menu-container').show();
-            return parentContainer.length ? parentContainer.attr('data-tab-id') : null;
+            const $targetContainer = $menuItem.parents('.side-menu-container');
+
+            if ($targetContainer.length > 0) {
+                $(ID_SELECTORS.MENU_CONTAINER).find('.side-menu-container').hide();
+
+                $targetContainer.show();
+                return $targetContainer.attr('data-tab-id');
+            }
+            return null;
         },
 
         _activateTopNav: function (pid) {
