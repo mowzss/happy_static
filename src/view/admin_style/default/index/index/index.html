@@ -30,17 +30,17 @@
             <!-- 顶部导航区域 -->
         </ul>
         <ul class="layui-nav layui-layout-right">
-            <li class="layui-nav-item">
+            <li class="layui-nav-item layui-hide-xs">
                 <a href="{:hurl('index')}" title="打开首页" target="_blank">
                     <em class="layui-icon layui-icon-website"></em>
                 </a>
             </li>
-            <li class="layui-nav-item">
+            <li class="layui-nav-item layui-hide-xs">
                 <a href="javascript:" title="清理缓存" lay-header-event="cleanCache" data-url="{:urls('clean')}">
                     <em class="layui-icon layui-icon-delete"></em>
                 </a>
             </li>
-            <li class="layui-nav-item">
+            <li class="layui-nav-item layui-hide-xs">
                 <a href="javascript:" title="全屏" lay-header-event="fullScreen" id="fullscreen-toggle">
                     <em class="layui-icon layui-icon-screen-full"></em>
                 </a>
@@ -57,7 +57,7 @@
                     <dd><a href="javascript:;" lay-header-event="logout" data-href="{:urls('logout')}">安全退出</a></dd>
                 </dl>
             </li>
-            <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
+            <li class="layui-nav-item layui-hide-xs" lay-header-event="menuRight" lay-unselect>
                 <a href="javascript:;">
                     <i class="layui-icon layui-icon-more-vertical"></i>
                 </a>
