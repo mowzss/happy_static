@@ -19,9 +19,14 @@
 <body>
 <div class="login">
     <div class="login-bg">
-        <img src="__STATIC__/admin/svg/login_bg.svg"></img>
+        <img src="__STATIC__/admin/svg/login_bg.svg?v={:sys_config('static_version',date('md'))}"></img>
     </div>
     <div class="login-container">
+        {notempty name=":sys_config('square_logo')"}
+        <div class="logo">
+            <img src="{:sys_config('square_logo')}" alt="login">
+        </div>
+        {/notempty}
         <div class="title">{:sys_config('site_name','管理后台')}登录</div>
         <form class="layui-form">
             <div class="layui-form-item">
