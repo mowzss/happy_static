@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>登录</title>
+    <title>{:sys_config('site_name','管理后台')}-管理中心</title>
     <link rel="stylesheet" href="__STATIC__/libs/layui/css/layui.css?v={:sys_config('static_version',date('md'))}"/>
     <link rel="stylesheet" href="__STATIC__/admin/css/base.css?v={:sys_config('static_version',date('md'))}"/>
     <link rel="stylesheet" href="__STATIC__/admin/css/login.css?v={:sys_config('static_version',date('md'))}"/>
@@ -27,7 +27,7 @@
             <img src="{:sys_config('square_logo')}" alt="login">
         </div>
         {/notempty}
-        <div class="title">{:sys_config('site_name','管理后台')}登录</div>
+        <div class="title">{:sys_config('site_name','网站')} 管理中心</div>
         <form class="layui-form">
             <div class="layui-form-item">
                 <div class="layui-input-wrap">
