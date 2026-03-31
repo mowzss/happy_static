@@ -62,7 +62,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                     data: field,
                     dataType: "json",
                     success: function (response) {
-                        if (response.code === 0) {
+                        if (response.code === 1) {
                             layer.msg(response.msg, function () {
                                 layer.closeAll();
                                 //页面存在table 则不删除 仅刷新表格

@@ -312,7 +312,6 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
             // 获取元素上的数据属性
             let title = $(elem).text(),
                 customWidth = '800px', // 使用 || 提供默认值或保持为 undefined
-                customHeight = 'auto', // 同上
                 screenWidth = $(window).width(),
                 screenHeight = $(window).height(),
                 modalHeight = screenHeight - 200,
