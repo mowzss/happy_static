@@ -229,7 +229,11 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 that.delSessionTabs(id);
             });
         },
-
+        /**
+         * 打开标签
+         * @param opt
+         * @returns {Promise<void>}
+         */
         add: async function (opt) {
             // --- 增加参数校验 ---
             if (!opt || typeof opt.id === 'undefined') {
@@ -285,7 +289,15 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
             that.updateSessionTabs(id, config);
             that.hideLoadingBar();
         },
-
+        /**
+         * 刷新当前标签页
+         * @param id
+         */
+        refresh: function (id) {
+            const activeId = String(sessionStorage.getItem('tabsActiveId'));
+            let index = id || activeId;
+            tabs.change(this.config.elem, index);
+        },
         tabIsExist: function (id) {
             let isExist = false;
             $(`#${this.config.elem}`).find('.layui-tabs-header li').each(function () {

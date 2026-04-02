@@ -288,8 +288,8 @@
     </div>
 </div>
 <script>
-    layui.use(['layer',], function () {
-        var $ = layui.jquery,
+    layui.use(['layer', 'layTabs'], function () {
+        var $ = layui.jquery, layTabs = layui.layTabs,
             layer = layui.layer;
         $('#run_mode').click(function () {
             let status = $(this).attr('data-status');
@@ -301,16 +301,12 @@
                 success: function (res) {
                     if (res.code === 1) {
                         layer.msg(res.msg, {icon: 1, time: 1000}, function () {
-                            reload()
+                            layTabs.refresh()
                         })
                     } else {
                         layer.msg(res.msg, {icon: 2, time: 1000}, function () {
-                            reload()
+                            layTabs.refresh()
                         })
-                    }
-
-                    function reload() {
-                        $("[lay-header-event='refreshTab']").trigger('click')
                     }
                 }
 
