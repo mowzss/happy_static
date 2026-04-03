@@ -28,7 +28,9 @@
 <div class="layui-row layui-col-space15">
     <div class="layui-col-md6">
         <div class="layui-card">
-            <div class="layui-card-header"><a style="color: #0b5ed7;" data-open="{:urls('system/spider_logs/index')}">最近爬取数据</a>
+            <div class="layui-card-header">
+                <a class="layui-font-blue" href="javascript:"
+                   data-menu-open="{:urls('system/spider_logs/index')}">蜘蛛访问明细</a>
             </div>
             <div class="layui-card-body">
                 <table class="layui-table layui-table-sm">
@@ -89,11 +91,11 @@
 {block name="js"}
 <script type="text/javascript">
     layui.use(['echarts', 'jquery'], function () {
-        var $ = layui.jquery;
-        var chartData = JSON.parse($('#chartData').text());
+        let $ = layui.jquery;
+        let chartData = JSON.parse($('#chartData').text());
 
         // 使用ECharts绘制饼图（修改版 - 显示扇区间隙）
-        var pieChart = echarts.init(document.getElementById('pieChart'));
+        let pieChart = echarts.init(document.getElementById('pieChart'));
         pieChart.setOption({
             tooltip: {
                 trigger: 'item'
@@ -125,7 +127,7 @@
         });
 
         // 使用ECharts绘制柱状图：蜘蛛为X轴，每组显示今日/昨日柱子
-        var barChart = echarts.init(document.getElementById('barChart'));
+        let barChart = echarts.init(document.getElementById('barChart'));
 
         // 准备数据
         let xAxisData = [];
@@ -167,9 +169,9 @@
         });
 
         // 使用ECharts绘制折线图（保持不变）
-        var lineChart = echarts.init(document.getElementById('lineChart'));
-        var seriesLine = [];
-        for (var name in chartData.seven_days_trend.data) {
+        let lineChart = echarts.init(document.getElementById('lineChart'));
+        let seriesLine = [];
+        for (let name in chartData.seven_days_trend.data) {
             seriesLine.push({
                 name: name,
                 type: 'line',
@@ -192,15 +194,15 @@
             },
             series: seriesLine
         });
-// 初始化图表
-        var hourlyChart = echarts.init(document.getElementById('hourlyChart'));
+        // 初始化图表
+        let hourlyChart = echarts.init(document.getElementById('hourlyChart'));
 
-// 渲染指定蜘蛛的数据（折线图）
+        // 渲染指定蜘蛛的数据（折线图）
         function renderHourlyChart(spiderName) {
-            var spiderItem = chartData.hourly_trend_by_spider.spiderData.find(s => s.name === spiderName);
+            let spiderItem = chartData.hourly_trend_by_spider.spiderData.find(s => s.name === spiderName);
             if (!spiderItem) return;
 
-            var option = {
+            let option = {
                 tooltip: {
                     trigger: 'axis'
                 },
@@ -243,10 +245,10 @@
             hourlyChart.setOption(option, true);
         }
 
-// 初始化下拉菜单
+        // 初始化下拉菜单
         function initSpiderSelector() {
-            var selector = $('#spiderSelector');
-            var spiderList = chartData.hourly_trend_by_spider.spiderData;
+            let selector = $('#spiderSelector');
+            let spiderList = chartData.hourly_trend_by_spider.spiderData;
 
             spiderList.forEach(function (spider) {
                 selector.append(`<option value="${spider.name}">${spider.name}</option>`);
@@ -260,13 +262,12 @@
             layui.form.render('select'); // 刷新下拉菜单样式
         }
 
-// 监听下拉框变化
+        // 监听下拉框变化
         layui.form.on('select(spiderSelector)', function (obj) {
             renderHourlyChart(obj.value);
         });
-
-// 页面加载时初始化
-        $(document).ready(function () {
+        // 页面加载时初始化
+        $(function () {
             initSpiderSelector();
         });
     });
