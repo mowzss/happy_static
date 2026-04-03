@@ -7,7 +7,8 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
         NAV_ITEM_ICON: '.layui-nav-item i',// 导航图标
         CONTENT_WRAPPER: '#happy-content',// tabs 容器
         LOADING_MASK: '.loading-mask', // 加载遮罩
-        DATA_OPEN: '[data-open]', // 菜单打开
+        DATA_OPEN: '[data-open]', // 全屏窗口打开
+        DATA_MENU_OPEN: '[data-menu-open]',// 菜单打开
         DATA_WIN_OPEN: '[data-win-open]',// 窗口打开
         DATA_AJAX: '[data-ajax]'// ajax 请求
     };
@@ -226,16 +227,32 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
 
         // 原生事件监听
         onBody: function () {
-            let $body = $('body');
+            const $body = $('body');
 
             // 通用 Tab 打开事件
-            $body.on('click', SELECTORS.DATA_OPEN, (e) => {
+            $body.on('click', SELECTORS.DATA_MENU_OPEN, (e) => {
                 e.preventDefault(); // 阻止默认行为，防止锚点跳转
                 let $target = $(e.target);
-                let url = $target.data('open');
+                let url = $target.data('menu-open');
                 let id = url.split('?')[0];
                 let title = $target.text().trim(); // 去除可能的空白字符
-
+                // 检测url如果非内部链接则新标签跳转
+                if (url.startsWith('http://') || url.startsWith('https://')) {
+                    // 如果是外部链接，则在新标签页中打开
+                    try {
+                        const currentHost = window.location.host;
+                        const urlObj = new URL(url);
+                        if (urlObj.host !== currentHost) {
+                            // 外部链接，在新标签页打开
+                            window.open(url, '_blank');
+                            return; // 不执行后续的layTabs.add
+                        }
+                    } catch (e) {
+                        // 如果URL格式不正确，也作为外部链接处理
+                        window.open(url, '_blank');
+                        return;
+                    }
+                }
                 layTabs.add({
                     id: id,
                     title: title,
@@ -275,6 +292,26 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
                     }
                 });
             });
+            $body.on('click', SELECTORS.DATA_OPEN, (e) => {
+                e.preventDefault();
+                const $this = $(e.target);
+                let url = $this.data('open');
+                let type = $this.data('type') || 'GET';
+                let title = $this.data('title') || $this.text().trim() || '窗口操作';
+                $.ajax({
+                    url: url,
+                    type: type,
+                    success: (res) => {
+                        layer.open({
+                            type: '1',
+                            title: title,
+                            content: res,
+                            maxmin: true,
+                            area: ['80%', '80%'],
+                        })
+                    }
+                })
+            })
         },
     };
 
