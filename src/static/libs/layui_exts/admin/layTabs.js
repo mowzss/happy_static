@@ -308,11 +308,11 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
             });
             return isExist;
         },
-        del: function (id = null) {
+        close: function (id = null) {
             if (!id) {
                 id = sessionStorage.getItem('tabsActiveId');
             }
-            tabs.del(this.config.elem, id);
+            tabs.close(this.config.elem, id);
         },
 
         // --- 更新缓存函数 ---
