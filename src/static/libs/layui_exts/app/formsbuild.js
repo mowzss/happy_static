@@ -1,10 +1,10 @@
 // formsbuild.js
-layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports) {
+layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (exports) {
     "use strict";
 
     let form = layui.form,
         layer = layui.layer,
-        tabs = layui.tabs,
+        LayTabs = layui.LayTabs,
         layTable = layui.layTable,
         $ = layui.jquery;
 
@@ -70,13 +70,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'tabs'], function (exports)
                                 if ($pageTable.length > 0) {
                                     layTable.reload($pageTable.attr('id'));
                                 } else {
-                                    let isDelTab = $(".happy-container").find(".layui-setting-box");
-                                    if (isDelTab.length === 0) {
-                                        let $tabsElem = $("#happy-content").find('.layui-body-tabs'),
-                                            layid = $tabsElem.find('.happy-tab-content').data('pageId'),
-                                            filter = $tabsElem.attr('id');
-                                        tabs.close(filter, layid);
-                                    }
+                                    LayTabs.del();
                                 }
                             });
                         } else {
