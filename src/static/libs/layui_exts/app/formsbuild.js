@@ -2,15 +2,14 @@
 layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (exports) {
     "use strict";
 
-    let form = layui.form,
-        layer = layui.layer,
-        LayTabs = layui.LayTabs,
-        layTable = layui.layTable,
-        $ = layui.jquery;
+    const form = layui.form, layer = layui.layer, LayTabs = layui.LayTabs, layTable = layui.layTable, $ = layui.jquery;
 
 
-    // 定义 formsbuild 模块
-    let formsbuild = {
+    /**
+     * 表单构建
+     * @type {any}
+     */
+    const formsbuild = {
         render: function (options) {
             options = options || {};
             let $form = $(options.formSelector || '#form'); // 默认表单选择器
@@ -24,13 +23,9 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                 let that = this, up = {};
                 layui.use(['uploads'], function () {
                     let uploads = layui.uploads;
-                    let multiple = that.dataset.multiple === "true",
-                        type = that.dataset.file, id = $(that).attr('id');
+                    let multiple = that.dataset.multiple === "true", type = that.dataset.file, id = $(that).attr('id');
                     new uploads({
-                        elem: "#" + id,
-                        type: type,
-                        multiple: multiple,
-                        sort: multiple,
+                        elem: "#" + id, type: type, multiple: multiple, sort: multiple,
                     });
                 });
             });
@@ -48,7 +43,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
             this.cron()
             // 返回 formsbuild 实例
             return formsbuild;
-        },
+        }, //表单渲染
         form: function (options) {
             // 表单渲染
             form.render();
@@ -57,11 +52,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                 let field = data.field;
                 let url = data.form.action;
                 $.ajax({
-                    type: "POST",
-                    url: url,
-                    data: field,
-                    dataType: "json",
-                    success: function (response) {
+                    type: "POST", url: url, data: field, dataType: "json", success: function (response) {
                         if (response.code === 1) {
                             layer.msg(response.msg, function () {
                                 layer.closeAll();
@@ -80,14 +71,10 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                 });
                 return false; // 阻止默认 form 跳转
             });
-        },
-        xmSelect: function () {
+        }, xmSelect: function () {
             $('[data-xm-select]').each(function () {
 
-                let xmS = [],
-                    that = this, $that = $(this),
-                    name = $that.data('name'),
-                    elemId = '#' + $that.attr('id'),
+                let xmS = [], that = this, $that = $(this), name = $that.data('name'), elemId = '#' + $that.attr('id'),
                     data = JSON.parse($('[xm-select-value="' + name + '"]').text()),
                     options = JSON.parse($('[xm-select="' + name + '"]').text());
 
@@ -103,8 +90,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                         paging: true,
                         pageRemote: true,
                         prop: {
-                            name: 'title',
-                            value: 'id'
+                            name: 'title', value: 'id'
                         },
                         radio: options.radio || false,
                         data: options.dataInit ?? data,
@@ -115,17 +101,11 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                                 return cb([]);
                             }
                             $.ajax({
-                                type: "POST",
-                                url: options.searchUrl,
-                                data: {
-                                    keyword: val,
-                                    add: options.autoAdd || false,
-                                    page: pageIndex,
-                                },
-                                success: function (res) {
+                                type: "POST", url: options.searchUrl, data: {
+                                    keyword: val, add: options.autoAdd || false, page: pageIndex,
+                                }, success: function (res) {
                                     cb(res.data.data, res.data.last_page)
-                                },
-                                error: function () {
+                                }, error: function () {
                                     layer.msg(name + '远程搜索异常')
                                 }
 
@@ -135,18 +115,13 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                     xmS[name] = xmSelect.render(options)
                     if (options.dataInit) {
                         $.ajax({
-                            type: "POST",
-                            url: options.dataInit,
-                            data: {
+                            type: "POST", url: options.dataInit, data: {
                                 id: data
-                            },
-                            success: function (res) {
+                            }, success: function (res) {
                                 xmS[name].update({
-                                    data: res.data.data,
-                                    autoRow: true,
+                                    data: res.data.data, autoRow: true,
                                 })
-                            },
-                            error: function () {
+                            }, error: function () {
                                 layer.msg('初始化' + name + '数据异常')
                             }
 
@@ -155,8 +130,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                     // xmS[name]
                 })
             })
-        },
-        cron: function () {
+        }, cron: function () {
             $('[data-input-cron]').each(function () {
                 let that = this, elemId = '#' + $(this).attr('id'), cronTestUrl = this.dataset.inputCron;
                 layui.use(['cron'], function () {
@@ -168,18 +142,14 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                 })
             })
         },
-        /**
-         * 时间选择
-         */
+        // 日期选择器
         inputDate: function () {
             $('[data-input-date]').each(function () {
                 let that = this, type = this.dataset.inputDate || 'date', range = this.dataset.range || '';
                 layui.use(['laydate'], function () {
-                    let laydate = layui.laydate,
-                        options = {
-                            elem: that,
-                            type: type,
-                        };
+                    let laydate = layui.laydate, options = {
+                        elem: that, type: type,
+                    };
                     if (range) {
                         options.range = range;
                         options.rangeLinked = true;
@@ -188,38 +158,28 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                 })
             });
         },
-        /**
-         * 颜色选择器
-         */
+        // 颜色选择器
         color: function () {
             $('[data-input-color]').each(function () {
-                let name = this.dataset.inputColor,
-                    $thisInput = $('[name=' + name + ']'),
+                let name = this.dataset.inputColor, $thisInput = $('[name=' + name + ']'),
                     value = $thisInput.val() || '#1c97f5', currentElem = this;
                 layui.use(['colorpicker'], function () {
                     let colorpicker = layui.colorpicker;
                     colorpicker.render({
-                        elem: currentElem,
-                        color: value,
-                        done: function (color) {
+                        elem: currentElem, color: value, done: function (color) {
                             $thisInput.val(color);
                         }
                     });
                 })
             });
         },
-        /**
-         * 图标选择
-         */
+        // 图标选择器
         icon: function () {
             // 图标选择器
             $('[data-icon]').on('click', function () {
                 let url = this.dataset.icon;
                 layer.open({
-                    type: 2,
-                    content: url,
-                    title: '图标选择',
-                    area: ['800px', '80%']
+                    type: 2, content: url, title: '图标选择', area: ['800px', '80%']
                 });
             });
             $('[data-input-icon]').on('change', function () {
@@ -228,15 +188,10 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                 $(this).trigger('change');
             });
         },
-        /**
-         * 编辑器
-         */
+        // 富文本编辑器
         editor: function () {
             $('[data-input-editor]').each(function () {
-                let that = this,
-                    type = this.dataset.type,
-                    name = this.dataset.inputEditor,
-                    id = $(this).attr('id');
+                let that = this, type = this.dataset.type, name = this.dataset.inputEditor, id = $(this).attr('id');
                 switch (type) {
                     case 'tinymce':
                         layui.use(['tiny'], function () {
@@ -264,7 +219,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
             });
         },
         /**
-         * 联动字段
+         * 触发器
          * @param triggers
          * @param $form
          */
@@ -278,7 +233,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                 });
             }
 
-// 获取字段的当前值
+            // 获取字段的当前值
             function getFieldValue($field) {
                 if ($field.is(':radio')) {
                     return $field.filter(':checked').val();
@@ -291,7 +246,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                 }
             }
 
-// 处理依赖字段的显示/隐藏
+            // 处理依赖字段的显示/隐藏
             function handleDependentFields(trigger, data) {
                 if (Array.isArray(trigger.values)) { // 确保 values 是一个数组
                     // 获取所有可能的依赖字段
@@ -331,7 +286,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
                 }
             }
 
-// 处理表单变化
+            // 处理表单变化
             function handleFormChange(data) {
                 if (!Array.isArray(triggers) || triggers.length === 0) {
                     return;
@@ -380,6 +335,8 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'LayTabs'], function (expor
         }
     };
 
-    // 暴露 formsbuild 模块
+    /**
+     * 表单构建
+     */
     exports('formsbuild', formsbuild);
 });
