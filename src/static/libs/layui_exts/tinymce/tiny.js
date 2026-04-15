@@ -2,7 +2,7 @@ layui.define(['jquery', 'tinymce',], function (exports) {
     var $ = layui.$;
     var tinymce = layui.tinymce;
     // 图片上传接口
-    var images_upload_url = '/index.php?s=/index/Upload/save';
+    var images_upload_url = '/?s=/index/Upload/save';
 
     // 默认配置项
     var defaultConfig = {

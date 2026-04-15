@@ -2,9 +2,9 @@ let srcs = document.scripts[document.scripts.length - 1].src.split('/');
 window.appRoot = srcs.slice(0, -3).join('/') + '/';
 window.baseRoot = srcs.slice(0, -2).join('/') + '/';
 window.$ = window.jQuery = window.jQuery || window.jQuery || layui.$ || layui.jquery;
-let layuiExts = "/static/libs/";//项目公用扩展目录
+let AppLibs = "/static/libs/";//项目公用扩展目录
 layui.config({
-    base: layuiExts + "layui_exts/",
+    base: AppLibs + "layui_exts/",
     version: window.APP_CONFIG.staticVersion || '1.0.0',
 }).extend({
 
@@ -29,11 +29,11 @@ layui.config({
     yaml: "extends/yaml",
 
     //外部模块
-    sortable: {src: layuiExts + "sortable/Sortable", api: "Sortable"},
-    tinymce: {src: layuiExts + "tinymce/tinymce.min", api: "tinymce"},//tinymce
-    wangEditor: {src: layuiExts + "wangEditor/index", api: "wangEditor"},//wangEditor
-    UE: {src: layuiExts + "layui_exts/ueditor/ueditor.all.min", api: "UE"},
-    UECONFING: {src: layuiExts + "layui_exts/ueditor/ueditor.config", api: "UE"},
+    sortable: {src: AppLibs + "sortable/Sortable", api: "Sortable"},
+    tinymce: {src: AppLibs + "tinymce/tinymce.min", api: "tinymce"},//tinymce
+    wangEditor: {src: AppLibs + "wangEditor/index", api: "wangEditor"},//wangEditor
+    UE: {src: AppLibs + "layui_exts/ueditor/ueditor.all.min", api: "UE"},
+    UECONFING: {src: AppLibs + "layui_exts/ueditor/ueditor.config", api: "UE"},
 
     //编辑器配置信息
     tiny: "tinymce/tiny",//tinymce配置

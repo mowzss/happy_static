@@ -191,7 +191,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
         // 富文本编辑器
         editor: function () {
             $('[data-input-editor]').each(function () {
-                let that = this, type = this.dataset.type, name = this.dataset.inputEditor, id = $(this).attr('id');
+                let type = this.dataset.type, id = $(this).attr('id');
                 switch (type) {
                     case 'tinymce':
                         layui.use(['tiny'], function () {

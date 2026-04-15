@@ -2,17 +2,16 @@ layui.define(['jquery', 'toast', 'wangEditor'], function (exports) {
     "use strict";
     //引入css样式
     layui.link(layui.cache.base + "wangEditor/wangEditor.css", 'wangEditorCss')
-
-    var wangEditor = layui.wangEditor;
-    var $ = layui.jquery;
-    var toast = layui.toast;
+    const wangEditor = layui.wangEditor;
+    const $ = layui.jquery;
+    const toast = layui.toast;
     // 定义默认配置
-    var defaultConfig = {
+    const defaultConfig = {
         selector: '#editor', // 编辑器容器的选择器
         html: '<p><br></p>',
         height: 400,
         placeholder: 'Type here...',
-        upload_url: '/index.php?s=/index/Upload/save',
+        upload_url: '/?s=/index/Upload/save',
         base64LimitSize: 100, // base64图片大小限制
         serverResponseSuccessCode: 0, // 上传成功的返回码
         mode: 'default', // or 'simple'
@@ -22,7 +21,7 @@ layui.define(['jquery', 'toast', 'wangEditor'], function (exports) {
     // 初始化WangEditor实例
     function initEditor(options) {
         // 合并用户提供的配置与默认配置
-        var config = Object.assign({}, defaultConfig, options);
+        const config = Object.assign({}, defaultConfig, options);
         if ($(config.elem).data('wangEditor')) return;
         const $wangEditor = $('<div class="wangEditor"><div class="wangEditor-toolbar"></div><div class="wangEditor-editor"></div></div>');
         $(config.elem).hide().data('wangEditor', $wangEditor).after($wangEditor).parent();
@@ -70,7 +69,7 @@ layui.define(['jquery', 'toast', 'wangEditor'], function (exports) {
     }
 
     // 暴露给外部的接口
-    var wangEdit = {
+    const wangEdit = {
         render: function (options) {
             return initEditor(options);
         }
