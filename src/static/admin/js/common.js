@@ -7,8 +7,7 @@ layui.config({
     base: AppLibs + "layui_exts/",
     version: window.APP_CONFIG.staticVersion || '1.0.0',
 }).extend({
-
-    formsbuild: "app/formsbuild",
+    formsBuild: "app/formsBuild",
     app: 'app/app',
     //新
     layAdmin: "admin/layAdmin",

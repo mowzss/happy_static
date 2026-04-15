@@ -17,30 +17,28 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
          */
         render: function (options) {
             options = options || {};
-            let $form = $(options.formSelector || '#form'); // 默认表单选择器
+            const $form = $(options.formSelector || '#form'); // 默认表单选择器
             let triggers = options.triggers || []; // 默认为空数组
             const that = this;
-            // DOM 加载完成后执行
-            document.addEventListener("DOMContentLoaded", function () {
-                // 表单验证
-                that.form(options);
-                //图标选择
-                that.icon();
-                // 上传
-                that.uploads()
-                // 时间选择器
-                that.inputDate()
-                // 颜色选择器
-                that.color()
-                // 联动字段
-                that.triggers(triggers, $form);
-                // 编辑器
-                that.editor();
-                //xmSelect
-                that.xmSelect()
-                //Cron
-                that.cron()
-            });
+
+            // 表单验证
+            that.form(options);
+            //图标选择
+            that.icon($form);
+            // 上传
+            that.uploads($form)
+            // 时间选择器
+            that.inputDate($form)
+            // 颜色选择器
+            that.color($form)
+            // 联动字段
+            that.triggers(triggers, $form);
+            // 编辑器
+            that.editor($form);
+            //xmSelect
+            that.xmSelect($form)
+            //Cron
+            that.cron($form)
             // 返回 formsbuild 实例
             return formsBuild;
         }, //表单渲染
@@ -72,9 +70,9 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                 return false; // 阻止默认 form 跳转
             });
         },
-        uploads: function () {
+        uploads: function (elem) {
             // 图片上传
-            $('[data-file]').each(function () {
+            elem.find('[data-file]').each(function () {
                 let that = this;
                 layui.use(['uploads'], function (uploads) {
                     let multiple = that.dataset.multiple === "true", type = that.dataset.file,
@@ -85,13 +83,14 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                 });
             });
         },
-        xmSelect: function () {
-            $('[data-xm-select]').each(function () {
+        xmSelect: function (elem) {
+            elem.find('[data-xm-select]').each(function () {
 
-                let xmS = [], that = this, $that = $(this), name = $that.data('name'), elemId = '#' + $that.attr('id'),
-                    data = JSON.parse($('[xm-select-value="' + name + '"]').text()),
-                    options = JSON.parse($('[xm-select="' + name + '"]').text());
-
+                let xmS = [], $this = $(this), name = this.dataset.name, elemId = '#' + $this.attr('id');
+                const selectValue = $('[xm-select-value="' + name + '"]').text() || '[]';
+                const selectOptions = $('[xm-select="' + name + '"]').text() || '[]';
+                const data = JSON.parse(selectValue);
+                let options = JSON.parse(selectOptions);
                 layui.use(['xmSelect'], function (xmSelect) {
                     options = Object.assign({}, options, {
                         el: elemId,
@@ -145,8 +144,8 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                 })
             })
         },
-        cron: function () {
-            $('[data-input-cron]').each(function () {
+        cron: function (elem) {
+            elem.find('[data-input-cron]').each(function () {
                 let that = this, elemId = '#' + $(this).attr('id'), cronTestUrl = this.dataset.inputCron;
                 layui.use(['cron'], function () {
                     let cron = layui.cron;
@@ -158,8 +157,8 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
             })
         },
         // 日期选择器
-        inputDate: function () {
-            $('[data-input-date]').each(function () {
+        inputDate: function (elem) {
+            elem.find('[data-input-date]').each(function () {
                 let that = this, type = this.dataset.inputDate || 'date', range = this.dataset.range || '';
                 layui.use(['laydate'], function () {
                     let laydate = layui.laydate, options = {
@@ -174,8 +173,8 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
             });
         },
         // 颜色选择器
-        color: function () {
-            $('[data-input-color]').each(function () {
+        color: function (elem) {
+            elem.find('[data-input-color]').each(function () {
                 let name = this.dataset.inputColor, $thisInput = $('[name=' + name + ']'),
                     value = $thisInput.val() || '#1c97f5', currentElem = this;
                 layui.use(['colorpicker'], function () {
@@ -189,23 +188,23 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
             });
         },
         // 图标选择器
-        icon: function () {
+        icon: function (elem) {
             // 图标选择器
-            $('[data-icon]').on('click', function () {
+            elem.find('[data-icon]').on('click', function () {
                 let url = this.dataset.icon;
                 layer.open({
                     type: 2, content: url, title: '图标选择', area: ['800px', '80%']
                 });
             });
-            $('[data-input-icon]').on('change', function () {
+            elem.find('[data-input-icon]').on('change', function () {
                 $(this).next().find('i').get(0).className = this.value;
             }).each(function () {
                 $(this).trigger('change');
             });
         },
         // 富文本编辑器
-        editor: function () {
-            $('[data-input-editor]').each(function () {
+        editor: function (elem) {
+            elem.find('[data-input-editor]').each(function () {
                 let type = this.dataset.type, id = $(this).attr('id');
                 switch (type) {
                     case 'tinymce':

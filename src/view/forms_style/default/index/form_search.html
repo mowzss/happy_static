@@ -34,14 +34,18 @@
     </div>
 </form>
 <script>
-    layui.use(['form', 'layer', 'jquery', 'layTable', 'formsbuild'], function () {
-        let form = layui.form, layer = layui.layer, $ = layui.jquery, layTable = layui.layTable;
-        var formsbuild = layui.formsbuild;
-        formsbuild.inputDate();
+    layui.use(['form', 'jquery', 'layTable', 'formsBuild'], function () {
+        const form = layui.form;
+        const $ = layui.jquery;
+        const layTable = layui.layTable;
+        const formsBuild = layui.formsBuild;
+        const formElem = "#form{$lay_filter}"
+        const $form = $(formElem)
+        formsBuild.inputDate($form);
         form.render();
         // 提交事件
         form.on('submit({$lay_filter})', function (data) {
-            var field = data.field;
+            let field = data.field;
             layTable.reload($(data.form).data('tableId'), {
                 where: field
             })

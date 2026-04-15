@@ -41,9 +41,9 @@
 </div>
 {/notempty}
 <script>
-    layui.use('formsbuild', function () {
-        var formsbuild = layui.formsbuild;
-        formsbuild.render({
+    layui.use('formsBuild', function () {
+        const formsBuild = layui.formsBuild;
+        formsBuild.render({
             formSelector: '#form{$lay_filter}', // 替换为你的表单ID
             triggers: JSON.parse('{$trigger|default=[]|raw|json_encode}'), // 替换为你的触发器数据
             layFilter: '{$lay_filter}' // 如果有特定的过滤器，请指定
