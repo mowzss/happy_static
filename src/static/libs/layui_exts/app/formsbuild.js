@@ -9,40 +9,40 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
      * 表单构建
      * @type {any}
      */
-    const formsbuild = {
+    const formsBuild = {
+        /**
+         * 表单构建
+         * @param options
+         * @returns {*}
+         */
         render: function (options) {
             options = options || {};
             let $form = $(options.formSelector || '#form'); // 默认表单选择器
             let triggers = options.triggers || []; // 默认为空数组
-
-            this.form(options);
-            //图标选择
-            this.icon();
-            // 图片上传
-            $('[data-file]').each(function () {
-                let that = this, up = {};
-                layui.use(['uploads'], function () {
-                    let uploads = layui.uploads;
-                    let multiple = that.dataset.multiple === "true", type = that.dataset.file, id = $(that).attr('id');
-                    new uploads({
-                        elem: "#" + id, type: type, multiple: multiple, sort: multiple,
-                    });
-                });
+            const that = this;
+            // DOM 加载完成后执行
+            document.addEventListener("DOMContentLoaded", function () {
+                // 表单验证
+                that.form(options);
+                //图标选择
+                that.icon();
+                // 上传
+                that.uploads()
+                // 时间选择器
+                that.inputDate()
+                // 颜色选择器
+                that.color()
+                // 联动字段
+                that.triggers(triggers, $form);
+                // 编辑器
+                that.editor();
+                //xmSelect
+                that.xmSelect()
+                //Cron
+                that.cron()
             });
-            // 时间选择器
-            this.inputDate()
-            // 颜色选择器
-            this.color()
-            // 联动字段
-            this.triggers(triggers, $form);
-            // 编辑器
-            this.editor();
-            //xmSelect
-            this.xmSelect()
-            //Cron
-            this.cron()
             // 返回 formsbuild 实例
-            return formsbuild;
+            return formsBuild;
         }, //表单渲染
         form: function (options) {
             // 表单渲染
@@ -71,7 +71,21 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                 });
                 return false; // 阻止默认 form 跳转
             });
-        }, xmSelect: function () {
+        },
+        uploads: function () {
+            // 图片上传
+            $('[data-file]').each(function () {
+                let that = this;
+                layui.use(['uploads'], function (uploads) {
+                    let multiple = that.dataset.multiple === "true", type = that.dataset.file,
+                        id = $(that).attr('id');
+                    new uploads({
+                        elem: "#" + id, type: type, multiple: multiple, sort: multiple,
+                    });
+                });
+            });
+        },
+        xmSelect: function () {
             $('[data-xm-select]').each(function () {
 
                 let xmS = [], that = this, $that = $(this), name = $that.data('name'), elemId = '#' + $that.attr('id'),
@@ -130,7 +144,8 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                     // xmS[name]
                 })
             })
-        }, cron: function () {
+        },
+        cron: function () {
             $('[data-input-cron]').each(function () {
                 let that = this, elemId = '#' + $(this).attr('id'), cronTestUrl = this.dataset.inputCron;
                 layui.use(['cron'], function () {
@@ -338,5 +353,5 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
     /**
      * 表单构建
      */
-    exports('formsbuild', formsbuild);
+    exports('formsbuild', formsBuild);
 });
