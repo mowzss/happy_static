@@ -190,6 +190,7 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
             let that = this;
             tabs.on('beforeChange(' + that.config.elem + ')', function (data) {
                 $(`#${that.config.elem}`).find('.layui-tabs-body > .layui-tabs-item').empty();
+                console.log('beforeChange', data, $(`#${that.config.elem}`).find('.layui-tabs-body > .layui-tabs-item'));
             });
 
             tabs.on('afterChange(' + that.config.elem + ')', async function (data) {
@@ -241,7 +242,6 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 return;
             }
             // -------------------------
-
             let that = this;
             let id = String(opt.id);
             let config = $.extend({
@@ -252,40 +252,11 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 },
                 content: '',
             }, opt);
-
-            let PageUrl = config.url;
-            let isAjax = opt.isAjax ?? true;
-
-            that.showLoadingBar();
-
             if (!that.tabIsExist(id)) {
-                if (PageUrl && isAjax) {
-                    try {
-                        const response = await _fetchContent(PageUrl);
-
-                        if (response.type === 'json') {
-                            if (response.data.info) layer.msg(response.data.info);
-                            if (response.data.url) {
-                                setTimeout(() => window.location.href = response.data.url, 1500);
-                            }
-                        } else if (response.type === 'html') {
-                            config.content = `<div class="${CLASS_NAMES.TAB_CONTENT}" style="display: block"
-                                                 data-page-id="${id}"
-                                                 data-src="${PageUrl}">
-                                                ${response.data}
-                                            </div>`;
-                            tabs.add(that.config.elem, config);
-                        }
-                    } catch (error) {
-                        console.error('Failed to load content for new tab:', id, error);
-                    }
-                } else {
-                    tabs.add(that.config.elem, config);
-                }
-            } else {
-                tabs.change(that.config.elem, id);
+                tabs.add(that.config.elem, config);
             }
-
+            tabs.change(that.config.elem, id);
+            that.showLoadingBar();
             that.updateSessionTabs(id, config);
             that.hideLoadingBar();
         },
