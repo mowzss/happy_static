@@ -43,10 +43,6 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                     type: 'desc' // 降序排序
                 },
                 rightEdit: true,//自动增加操作栏 false则不增加
-                // done: function (res, curr, count) {
-                //     $("table").css("width", "100%");
-                //     $("tbody").css("width", "100%");
-                // },
             };
 
             // 合并用户提供的选项和默认选项

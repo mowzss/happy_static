@@ -12,10 +12,10 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
         },
         initMenuSwitch: function () {
             //  从 sessionStorage 获取之前保存的菜单状态
-            var isMiniNav = sessionStorage.getItem('mimiMenu');
+            let isMiniNav = sessionStorage.getItem('mimiMenu');
 
             // // 获取布局元素
-            var elem = $(".happy-admin-layout").find('.layui-layout-admin');
+            let elem = $(".happy-admin-layout").find('.layui-layout-admin');
             //
             // // 根据存储的状态进行初始化
             if (isMiniNav === 'true') {
@@ -45,10 +45,10 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
             element.on('nav(lay-nav)', function (elem) {
                 let $this = $(elem);
                 if ($this.find('.layui-nav-more').length === 0) {
-                    var obj = $(this);
-                    var title = obj.find(".happy-nav-title").html();
-                    var id = obj.attr("lay-id");
-                    var url = obj.attr("lay-url");
+                    let obj = $(this);
+                    let title = obj.find(".happy-nav-title").html();
+                    let id = obj.attr("lay-id");
+                    let url = obj.attr("lay-url");
                     // 添加新标签页
                     layTabs.add({
                         id: id,
