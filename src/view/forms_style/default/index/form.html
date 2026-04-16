@@ -43,7 +43,8 @@
 <script>
     layui.use('formsBuild', function () {
         const formsBuild = layui.formsBuild;
-        formsBuild.render({
+        let FormsInit = [];
+        FormsInit['{$lay_filter}'] = formsBuild.render({
             formSelector: '#form{$lay_filter}', // 替换为你的表单ID
             triggers: JSON.parse('{$trigger|default=[]|raw|json_encode}'), // 替换为你的触发器数据
             layFilter: '{$lay_filter}' // 如果有特定的过滤器，请指定

@@ -1,7 +1,7 @@
 // formsbuild.js
 layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (exports) {
     "use strict";
-
+    const MODULE_NAME = 'formsBuild';
     const form = layui.form, layer = layui.layer, layTabs = layui.layTabs, layTable = layui.layTable, $ = layui.jquery;
 
 
@@ -87,10 +87,25 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
             elem.find('[data-xm-select]').each(function () {
 
                 let xmS = [], $this = $(this), name = this.dataset.name, elemId = '#' + $this.attr('id');
-                const selectValue = $('[xm-select-value="' + name + '"]').text() || '[]';
-                const selectOptions = $('[xm-select="' + name + '"]').text() || '[]';
-                const data = JSON.parse(selectValue);
-                let options = JSON.parse(selectOptions);
+                const selectValueText = elem.find('[xm-select-value="' + name + '"]').text() || '[]';
+                const selectOptionsText = elem.find('[xm-select="' + name + '"]').text() || '[]';
+                let data = [];
+                let options = {};
+
+                // 添加 JSON 格式验证
+                try {
+                    data = selectValueText.trim() ? JSON.parse(selectValueText) : [];
+                } catch (e) {
+                    console.error('Invalid JSON format for selectValue:', selectValueText, 'Error:', e.message);
+                    data = [];
+                }
+
+                try {
+                    options = selectOptionsText.trim() ? JSON.parse(selectOptionsText) : {};
+                } catch (e) {
+                    console.error('Invalid JSON format for selectOptions:', selectOptionsText, 'Error:', e.message);
+                    options = {};
+                }
                 layui.use(['xmSelect'], function (xmSelect) {
                     options = Object.assign({}, options, {
                         el: elemId,
@@ -146,9 +161,10 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
         },
         cron: function (elem) {
             elem.find('[data-input-cron]').each(function () {
-                let that = this, elemId = '#' + $(this).attr('id'), cronTestUrl = this.dataset.inputCron;
+                let elemId = '#' + $(this).attr('id');
+                let cronTestUrl = this.dataset.inputCron;
                 layui.use(['cron'], function () {
-                    let cron = layui.cron;
+                    const cron = layui.cron;
                     cron.render({
                         elem: elemId, // 绑定元素
                         run: cronTestUrl, // 获取最近运行时间的接口
@@ -352,5 +368,5 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
     /**
      * 表单构建
      */
-    exports('formsbuild', formsBuild);
+    exports(MODULE_NAME, formsBuild);
 });
