@@ -1,7 +1,6 @@
 layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
     const MODULE_NAME = "layTabs";
 
-    // --- 将硬编码的ID和类名提取为常量 ---
     const CLASS_NAMES = {
         TAB_CONTENT: 'happy-tab-content',
         ANIMATION_IN: 'animated slideInFromBottom'
@@ -11,13 +10,13 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
         MENU_CONTAINER: '#menu-container',
         TOP_NAV: '#topNav'
     };
-    // ---------------------------------------------
+
 
     let pageTabs = {};
-    let $ = layui.jquery;
-    let tabs = layui.tabs;
-    let dropdown = layui.dropdown;
-    let layer = layui.layer;
+    const $ = layui.jquery;
+    const tabs = layui.tabs;
+    const dropdown = layui.dropdown;
+    const layer = layui.layer;
 
     // --- 重构后的数据获取函数 ---
     function _fetchContent(url) {
@@ -190,7 +189,6 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
             let that = this;
             tabs.on('beforeChange(' + that.config.elem + ')', function (data) {
                 $(`#${that.config.elem}`).find('.layui-tabs-body > .layui-tabs-item').empty();
-                console.log('beforeChange', data, $(`#${that.config.elem}`).find('.layui-tabs-body > .layui-tabs-item'));
             });
 
             tabs.on('afterChange(' + that.config.elem + ')', async function (data) {
@@ -211,7 +209,7 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                             }
                         } else if (response.type === 'html') {
                             $bodyItem.html(`<div class="${CLASS_NAMES.TAB_CONTENT} ${CLASS_NAMES.ANIMATION_IN}" style="display: block" 
-                                             data-page-id="${$bodyItem.attr('data-page-id')}" 
+                                             data-page-id="${$bodyItem.attr('lay-id')}" 
                                              data-src="${url}">
                                             ${response.data}
                                         </div>`);
@@ -233,16 +231,15 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
         /**
          * 打开标签
          * @param opt
-         * @returns {Promise<void>}
          */
-        add: async function (opt) {
-            // --- 增加参数校验 ---
+        add: function (opt) {
+            const that = this;
+            let tabsAddLoad = layer.load(2);
+            that.showLoadingBar();
             if (!opt || typeof opt.id === 'undefined') {
                 console.error('LayTabs.add: Missing required parameter "opt.id".');
                 return;
             }
-            // -------------------------
-            let that = this;
             let id = String(opt.id);
             let config = $.extend({
                 id: String(opt.id),
@@ -256,9 +253,9 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 tabs.add(that.config.elem, config);
             }
             tabs.change(that.config.elem, id);
-            that.showLoadingBar();
             that.updateSessionTabs(id, config);
-            that.hideLoadingBar();
+            that.hideLoadingBar()
+            layer.close(tabsAddLoad);
         },
         /**
          * 刷新当前标签页

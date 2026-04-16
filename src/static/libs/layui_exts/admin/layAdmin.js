@@ -83,18 +83,17 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
         render: function (options) {
             this.config = $.extend({}, this.config, options);
 
-            // 1. 先渲染并初始化菜单状态
+            //  先渲染并初始化菜单状态
             this._initMenuState();
 
-            // 2. 渲染各组件
-            this.renderTabs();
+            // 渲染各组件
+            this.renderTabsDom();
             layMenu.render(this.config.menuUrl);
-            this.initTabs(); // 在菜单渲染后再初始化Tabs，以保证菜单高亮正确
-
-            // 3. 绑定事件
+            // 绑定事件
             this.events();
-
-            // 4. 完成渲染
+            // 渲染标签
+            this.initTabs();
+            // 完成渲染
             this.closeLoading();
         },
 
@@ -107,13 +106,13 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
             tabsList.forEach((tab) => {
                 if (tab.id !== activeId) {
                     tab.active = false;
-                    tab.isAjax = false; // 初始化时默认不执行ajax
                 }
                 layTabs.add(tab);
             });
 
             // 设置激活的Tab
             if (activeId && tabsList.some(tab => tab.id === activeId)) {
+
                 tabs.change(layTabs.config.elem, activeId);
             } else if (tabsList.length > 0) {
                 // 如果没有保存的激活Tab，选择第一个Tab作为默认激活
@@ -122,7 +121,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
         },
 
         // 动态渲染layui-body-tabs
-        renderTabs: function () {
+        renderTabsDom: function () {
             let tabsHtml = `
                 <div class="layui-body-tabs layui-tab-rollTool layui-tabs layui-hide-v" 
                      id="${layTabs.config.elem}" 
