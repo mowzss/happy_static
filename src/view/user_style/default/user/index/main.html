@@ -6,7 +6,7 @@
                 <img alt="{$user.nickname}" src="{$user.avatar|default=''}">
                 <span class="user-base-uid">UID:{$user.id}</span></div>
             <div class="user-base-info-box">
-                <a class="user-welcome-words" href="{:url('user/edit')}">{$user.nickname}，{:get_hello()}</a>
+                <a class="user-welcome-words" href="{:urls('user/edit')}">{$user.nickname}，{:get_hello()}</a>
                 <div class="layui-row user-base-data">
                     <div class="layui-col-md2"> 积分</div>
                     <div class="layui-col-md4"> {$user.points??0}</div>
