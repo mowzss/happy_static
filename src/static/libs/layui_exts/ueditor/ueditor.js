@@ -70,7 +70,8 @@ layui.define(['jquery', 'UECONFING', 'UE'], function (exports) {
                     title: result.data.name,  // 文件名
                     original: result.data.name,  // 原始文件名
                     type: result.data.ext,  // 文件扩展名
-                    size: result.data.size  // 文件大小
+                    size: result.data.size,  // 文件大小
+                    thumb: result.data.thumb
                 };
                 callback.success(uploadResult);  // 调用成功回调
             } else {
