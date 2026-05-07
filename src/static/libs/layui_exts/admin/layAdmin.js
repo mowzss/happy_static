@@ -270,13 +270,14 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
             // Ajax 请求事件
             $body.on('click', SELECTORS.DATA_AJAX, (e) => {
                 e.preventDefault(); // 阻止默认行为
-                let $this = $(this);
+
+                let $this = $(e.target);
                 let index = layer.load(1);
 
                 let url = $this.data('ajax');
                 let type = $this.data('type') || 'GET';
                 let value = $this.data('value') || {};
-
+                console.log($this, url, type, value);
                 $.ajax({
                     url: url,
                     type: type,
