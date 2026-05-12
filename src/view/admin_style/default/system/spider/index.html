@@ -91,41 +91,62 @@
 {block name="js"}
 <script type="text/javascript">
     layui.use(['echarts', 'jquery'], function () {
-        let $ = layui.jquery;
-        let chartData = JSON.parse($('#chartData').text());
+        const $ = layui.jquery;
+        const chartData = JSON.parse($('#chartData').text());
+        const echarts = layui.echarts;
+        // 使用ECharts绘制漏斗图
+        let chart = echarts.init(document.getElementById('pieChart'));
+        const pieChartData = chartData.today_pie_chart;
+        const pieChartOptions = {
 
-        // 使用ECharts绘制饼图（修改版 - 显示扇区间隙）
-        let pieChart = echarts.init(document.getElementById('pieChart'));
-        pieChart.setOption({
             tooltip: {
-                trigger: 'item'
+                trigger: 'item',
+                formatter: '{a} <br/>{b}: {c} ({d}%)'
             },
             legend: {
+                type: 'scroll',
                 orient: 'vertical',
-                left: 'left'
+                left: 10,
+                top: 20,
+                bottom: 20,
+                data: pieChartData.map(function (item) {
+                    return item.name;
+                })
             },
             series: [
                 {
-                    name: '访问量',
+                    name: '蜘蛛来源',
                     type: 'pie',
-                    radius: ['40%', '70%'], // 设置内外圆半径比例，形成空心效果
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
                     itemStyle: {
-                        borderRadius: 5,     // 扇区圆角（可选）
-                        borderColor: '#fff', // 设置扇区间隔的颜色（模拟间隙）
-                        borderWidth: 2       // 设置边框宽度，越大间隙越明显
+                        borderRadius: 4,
+                        borderColor: '#FFFFFF',
+                        borderWidth: 1
                     },
-                    data: chartData.today_pie_chart,
-                    emphasis: {
-                        itemStyle: {
-                            shadowBlur: 10,
-                            shadowOffsetX: 0,
-                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    label: {
+                        position: 'center',
+                        show: false,
+                        formatter: function (params) {
+                            // params.percent 也是可用的，等同于 {d}
+                            return `${params.name}: ${params.percent}%`;
                         }
-                    }
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: 20,
+                            fontWeight: 'bold'
+                        }
+                    },
+                    labelLine: {
+                        show: false
+                    },
+                    data: pieChartData
                 }
             ]
-        });
-
+        }
+        chart.setOption(pieChartOptions);
         // 使用ECharts绘制柱状图：蜘蛛为X轴，每组显示今日/昨日柱子
         let barChart = echarts.init(document.getElementById('barChart'));
 
@@ -233,7 +254,7 @@
                         type: 'line',
                         data: spiderItem.yesterday,
                         smooth: true,
-                        itemStyle: {color: '#aaa'}, // 浅灰色
+                        itemStyle: {color: '#AAAAAA'}, // 浅灰色
                         lineStyle: {width: 1.5}
                     }
                 ],
