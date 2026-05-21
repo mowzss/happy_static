@@ -277,20 +277,20 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
                 let url = $this.data('ajax');
                 let type = $this.data('type') || 'GET';
                 let value = $this.data('value') || {};
-                console.log($this, url, type, value);
                 $.ajax({
                     url: url,
                     type: type,
                     data: value,
                     success: (res) => {
                         layer.close(index);
-                        layer.msg(res.msg, {icon: res.code === 1 ? 1 : 2}); // code=1用对号，其他用叉号
+                        layer.msg(res.msg, {icon: res.code === 1 ? 1 : 2});
                     },
                     error: () => {
                         layer.close(index);
                         layer.msg('网络错误');
                     }
                 });
+                layTabs.refresh();
             });
             $body.on('click', SELECTORS.DATA_OPEN, (e) => {
                 e.preventDefault();
