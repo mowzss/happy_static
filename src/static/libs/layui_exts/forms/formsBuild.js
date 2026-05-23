@@ -39,6 +39,8 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
             that.xmSelect($form)
             //Cron
             that.cron($form)
+            // 开关
+            that.checkboxSwitch($form)
             // 返回 formsbuild 实例
             return formsBuild;
         }, //表单渲染
@@ -69,6 +71,17 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                 });
                 return false; // 阻止默认 form 跳转
             });
+        },
+        checkboxSwitch: function (elem) {
+            elem.find('[lay-skin="switch"]').each(function () {
+                const filter = $(this).attr('lay-filter');
+                const inputName = this.dataset.input;
+                if (filter) {
+                    form.on('switch(' + filter + ')', function (data) {
+                        $("[name=" + inputName + "]").val(data.elem.checked ? 1 : 0);
+                    })
+                }
+            })
         },
         uploads: function (elem) {
             // 图片上传
@@ -109,7 +122,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                 layui.use(['xmSelect'], function (xmSelect) {
                     options = Object.assign({}, options, {
                         el: elemId,
-                        theme: {color: '#16b777'},
+                        theme: {color: '#16B777'},
                         name: name,
                         autoRow: true,
                         toolbar: {show: true},
@@ -192,7 +205,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
         color: function (elem) {
             elem.find('[data-input-color]').each(function () {
                 let name = this.dataset.inputColor, $thisInput = $('[name=' + name + ']'),
-                    value = $thisInput.val() || '#1c97f5', currentElem = this;
+                    value = $thisInput.val() || '#1C97F5', currentElem = this;
                 layui.use(['colorpicker'], function () {
                     let colorpicker = layui.colorpicker;
                     colorpicker.render({
