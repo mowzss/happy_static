@@ -142,17 +142,12 @@
                     <div class="layui-card">
                         <div class="layui-card-header">已安装模块包</div>
                         <div class="layui-card-body">
-                            <table class="layui-table">
-                                <colgroup>
-                                    <col width="200"></col>
-                                    <col></col>
-                                    <col></col>
-                                </colgroup>
+                            <table class="layui-table" lay-filter="happy-module">
                                 <thead>
                                 <tr>
-                                    <th>名称</th>
-                                    <th>描述</th>
-                                    <th>版本</th>
+                                    <th lay-data="{field:'name', width:'180'}">名称</th>
+                                    <th lay-data="{field:'description'}">描述</th>
+                                    <th lay-data="{field:'version', width:'100'}">版本</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -172,22 +167,15 @@
                     <div class="layui-card">
                         <div class="layui-card-header">项目依赖</div>
                         <div class="layui-card-body">
-                            <table class="layui-table">
-                                <colgroup>
-                                    <col width="200"></col>
-                                    <col></col>
-                                    <col></col>
-                                    <col></col>
-                                    <col></col>
-                                </colgroup>
+                            <table class="layui-table" lay-filter="happy-libs">
                                 <thead>
                                 <tr>
-                                    <th>名称</th>
-                                    <th>类型</th>
-                                    <th>描述</th>
-                                    <th>开源协议</th>
-                                    <th>版本</th>
-                                    <th>项目主页</th>
+                                    <th lay-data="{field:'name', width:180}">名称</th>
+                                    <th lay-data="{field:'type', width:80}">类型</th>
+                                    <th lay-data="{field:'description'}">描述</th>
+                                    <th lay-data="{field:'license', width:100}">开源协议</th>
+                                    <th lay-data="{field:'version', width:80}">版本</th>
+                                    <th lay-data="{field:'homepage', width:180}">项目主页</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -199,9 +187,7 @@
                                     <td>
                                         {if is_array($vo.license)}
                                         {volist name="$vo.license" id="vs"}
-                                        <span>
                                         {$vs}
-                                        </span>
                                         {/volist}
                                         {else}
                                         {$vo.license}
@@ -257,10 +243,6 @@
                             <td>mysql版本:</td>
                             <td>{$system.mysql_version}</td>
                         </tr>
-                        <tr>
-                            <td>运行内存:</td>
-                            <td>{$system.php_run_memory}</td>
-                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -277,7 +259,8 @@
                         {foreach $php_ext as $key=>$vo }
                         <tr>
                             <td>{$key}:</td>
-                            <td>{$vo}</td>
+                            <td><span class="{eq name='$vo' value='on'}layui-font-green{else/}layui-font-red{/eq}">{eq name='$vo' value='on'}✅️ 已安装{else/}❌️ 未安装{/eq}</span>
+                            </td>
                         </tr>
                         {/foreach}
                         </tbody>
@@ -288,10 +271,10 @@
     </div>
 </div>
 <script>
-    layui.use(['layer', 'layTabs'], function () {
-        var $ = layui.jquery, layTabs = layui.layTabs,
-            layer = layui.layer;
-        $('#run_mode').click(function () {
+    layui.use(['layer', 'layTabs', 'table'], function () {
+        const $ = layui.jquery, layTabs = layui.layTabs,
+            layer = layui.layer, table = layui.table;
+        $('#run_mode').on('click', function () {
             let status = $(this).attr('data-status');
             $.ajax({
                 url: "{:urls('runMode')}",
@@ -312,5 +295,7 @@
 
             })
         })
+        const LibsTable = table.init('happy-libs', {even: true})
+        const ModuleTable = table.init('happy-module', {even: true})
     });
 </script>

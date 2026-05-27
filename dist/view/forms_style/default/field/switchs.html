@@ -1,1 +1,1 @@
-<div class="layui-form"> <input type="checkbox" name="{$name}" title="{$vals}" lay-skin="switch" {notempty name="$value"} checked{/notempty}></div>
+<div class="layui-form"> <input type="checkbox" data-input="{$name}" title="{$title}" lay-skin="switch" {notempty name="$value"} checked{/notempty} lay-filter="lay-switch-{$name}"> <input type="hidden" name="{$name}" value="{$value}"></div>
