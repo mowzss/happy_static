@@ -18,6 +18,7 @@ layui.config({
 
     cron: "cron/cron",
     xmSelect: "xm-select",
+    inputTag: "inputTag",
     popup: "extends/popup",
     count: "extends/count",
     toast: "extends/toast",
@@ -70,7 +71,6 @@ layui.config({
         let imgSrc = $el.find('img').attr('src') || $el.attr('src');
 
         if (imgSrc) {
-            console.log('Image src:', imgSrc); // 调试：打印图片路径
 
             // 创建一个 Image 对象来确保图片路径有效
             let img = new Image();
