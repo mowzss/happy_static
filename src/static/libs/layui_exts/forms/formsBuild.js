@@ -96,6 +96,19 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                 });
             });
         },
+        tag: function (elem) {
+            elem.find('[data-tag]').each(function () {
+                const that = this, name = $(this).attr('name'), $tag = "#" + $(this).attr('id'), value = $(this).val();
+                let tags;
+                layui.use(['inputTag'], function (inputTag) {
+                    tags[name] = inputTag.render({
+                        elem: $tag,          // 绑定元素
+                        enterAdd: true,         // 是否开启回车添加标签
+                        value: value,
+                    });
+                })
+            })
+        },
         xmSelect: function (elem) {
             elem.find('[data-xm-select]').each(function () {
 
