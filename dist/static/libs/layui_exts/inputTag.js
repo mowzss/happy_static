@@ -1,4 +1,4 @@
-layui.define(["jquery"],function(e){let g=layui.jquery;document.getElementById("inputTagtyle")||((a=document.createElement("style")).id="inputTagtyle",a.textContent=`
+layui.define(["jquery"],function(e){let h=layui.jquery;document.getElementById("inputTagtyle")||((a=document.createElement("style")).id="inputTagtyle",a.textContent=`
       .layui-input-tag {
         position: relative;
         height: auto;
@@ -16,6 +16,8 @@ layui.define(["jquery"],function(e){let g=layui.jquery;document.getElementById("
         overflow: hidden;
         box-sizing: border-box;
         transition: none;
+        /* 【新增】定义默认标签颜色变量 */
+        --tag-bg-color: #16B777+;
       }
       .layui-input-tag.multiline {
         max-height: 76px !important;
@@ -27,7 +29,8 @@ layui.define(["jquery"],function(e){let g=layui.jquery;document.getElementById("
         height: 28px;
         line-height: 28px;
         padding: 0 10px;
-        background: #16baaa;
+        /* 【改动】使用 CSS 变量替代硬编码颜色 */
+        background: var(--tag-bg-color);
         color: #fff;
         border-radius: 5px;
         display: inline-flex;
@@ -68,4 +71,4 @@ layui.define(["jquery"],function(e){let g=layui.jquery;document.getElementById("
         font-size: 14px;
         display: none;
       }
-    `,document.head.appendChild(a));var a={render:function(e){let a=g(e.elem);var i=e.width||"100%",t=!1!==e.enterAdd;let l=e.onDelete||function(){},n=e.onClear||function(){},o=[],p=(o=e.value&&Array.isArray(e.value)?JSON.parse(JSON.stringify(e.value)):(a.val()||e.value||"").split(",").filter(Boolean).map(e=>({label:e,value:e})),g("<div>",{class:"layui-input-tag",css:{width:i}})),r=g("<input>",{type:"text",readonly:!t||void 0,placeholder:t?"输入后按回车添加标签":""}),s=g('<div class="tag-clear-btn"><i class="layui-icon layui-icon-clear"></i></div>'),u=g('<div class="tag-expand-btn"><i class="layui-icon layui-icon-more"></i></div>');function d(){setTimeout(()=>{p.removeClass("multiline"),40<p[0].scrollHeight?(p.addClass("multiline"),u.show()):u.hide(),s.toggle(0<o.length)},20)}function c(){a.val(o.map(e=>e.value).join(",")).trigger("change")}return p.append(r,s,u),a.after(p).hide(),o.forEach(e=>{g(`<span class="tag-item" data-value="${e.value}">${e.label}<i class="del">×</i></span>`).insertBefore(r)}),u.on("click",e=>{e.stopPropagation(),p.toggleClass("expanded"),u.html(p.hasClass("expanded")?'<i class="layui-icon layui-icon-up"></i>':'<i class="layui-icon layui-icon-more"></i> ')}),s.on("click",e=>{e.stopPropagation(),o=[],p.find(".tag-item").remove(),c(),d(),n()}),t&&r.on("keydown",e=>{if(13===e.keyCode){e.preventDefault();let a=r.val().trim();a&&!o.some(e=>e.value===a)&&(e={label:a,value:a},o.push(e),g(`<span class="tag-item" data-value="${e.value}">${e.label}<i class="del">×</i></span>`).insertBefore(r),r.val(""),c(),d())}}),p.on("click",".del",function(e){e.stopPropagation();e=g(this).closest(".tag-item");let a=e.attr("data-value");var i=o.find(e=>e.value===a),t=o.findIndex(e=>e.value===a);-1<t&&(o.splice(t,1),e.remove(),c(),d(),l(i))}),p.on("click",()=>r.focus()),c(),d(),{addTag(e){if(e){let a="string"==typeof e?{label:e,value:e}:{label:e.label||"",value:e.value||""};a.label&&a.value&&!o.some(e=>e.value===a.value)&&(o.push(a),g(`<span class="tag-item" data-value="${a.value}">${a.label}<i class="del">×</i></span>`).insertBefore(r),c(),d())}},getValue:()=>[...o],clear(){o=[],p.find(".tag-item").remove(),c(),d()}}}};e("inputTag",a)});
+    `,document.head.appendChild(a));var a={render:function(e){let a=h(e.elem);var t=e.width||"100%",i=!1!==e.enterAdd;let l=!1!==e.splitByComma;var n=e.tagColor||"#16B777";let o=e.onDelete||function(){},r=e.onClear||function(){},p=[],u=(p=e.value&&Array.isArray(e.value)?JSON.parse(JSON.stringify(e.value)):(a.val()||e.value||"").split(",").filter(Boolean).map(e=>({label:e,value:e})),h("<div>",{class:"layui-input-tag",css:{width:t,"--tag-bg-color":n}})),s=h("<input>",{type:"text",readonly:!i||void 0,placeholder:i?l?"输入后按回车添加标签，多个用逗号分隔":"输入后按回车添加标签":""}),d=h('<div class="tag-clear-btn"><i class="layui-icon layui-icon-clear"></i></div>'),c=h('<div class="tag-expand-btn"><i class="layui-icon layui-icon-more"></i></div>');function g(){setTimeout(()=>{u.removeClass("multiline"),40<u[0].scrollHeight?(u.addClass("multiline"),c.show()):c.hide(),d.toggle(0<p.length)},20)}function f(){a.val(p.map(e=>e.value).join(",")).trigger("change")}function x(a){var e;if((a=(a||"").trim())&&!p.some(e=>e.value===a))return e={label:a,value:a},p.push(e),h(`<span class="tag-item" data-value="${e.value}">${e.label}<i class="del">×</i></span>`).insertBefore(s),1}return u.append(s,d,c),a.after(u).hide(),p.forEach(e=>{h(`<span class="tag-item" data-value="${e.value}">${e.label}<i class="del">×</i></span>`).insertBefore(s)}),c.on("click",e=>{e.stopPropagation(),u.toggleClass("expanded"),c.html(u.hasClass("expanded")?'<i class="layui-icon layui-icon-up"></i>':'<i class="layui-icon layui-icon-more"></i> ')}),d.on("click",e=>{e.stopPropagation(),p=[],u.find(".tag-item").remove(),f(),g(),r()}),i&&s.on("keydown",t=>{if(13===t.keyCode){t.preventDefault();t=s.val();if(t&&t.trim()){let e,a=(e=l?t.split(/[,，]/).map(e=>e.trim()).filter(Boolean):[t.trim()],!1);e.forEach(e=>{x(e)&&(a=!0)}),a&&(s.val(""),f(),g())}}}),u.on("click",".del",function(e){e.stopPropagation();e=h(this).closest(".tag-item");let a=e.attr("data-value");var t=p.find(e=>e.value===a),i=p.findIndex(e=>e.value===a);-1<i&&(p.splice(i,1),e.remove(),f(),g(),o(t))}),u.on("click",()=>s.focus()),f(),g(),{addTag(e){if(e){let a="string"==typeof e?{label:e,value:e}:{label:e.label||"",value:e.value||""};x(a.value)&&(a.label&&a.label!==a.value&&(u.find(".tag-item").last().contents().first().replaceWith(document.createTextNode(a.label)),e=p.find(e=>e.value===a.value))&&(e.label=a.label),f(),g())}},getValue:()=>[...p],clear(){p=[],u.find(".tag-item").remove(),f(),g()}}}};e("inputTag",a)});

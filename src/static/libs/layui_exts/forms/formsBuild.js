@@ -35,6 +35,8 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
             that.triggers(triggers, $form);
             // 编辑器
             that.editor($form);
+            //tag
+            that.tag($form)
             //xmSelect
             that.xmSelect($form)
             //Cron
@@ -99,11 +101,10 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
         tag: function (elem) {
             elem.find('[data-tag]').each(function () {
                 const that = this, name = $(this).attr('name'), $tag = "#" + $(this).attr('id'), value = $(this).val();
-                let tags;
+                let inputTags;
                 layui.use(['inputTag'], function (inputTag) {
-                    tags[name] = inputTag.render({
+                    inputTags[name] = inputTag.render({
                         elem: $tag,          // 绑定元素
-                        enterAdd: true,         // 是否开启回车添加标签
                         value: value,
                     });
                 })

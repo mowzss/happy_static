@@ -22,6 +22,8 @@ layui.define(['jquery'], function (exports) {
         overflow: hidden;
         box-sizing: border-box;
         transition: none;
+        /* 【新增】定义默认标签颜色变量 */
+        --tag-bg-color: #16B777+;
       }
       .layui-input-tag.multiline {
         max-height: 76px !important;
@@ -33,7 +35,8 @@ layui.define(['jquery'], function (exports) {
         height: 28px;
         line-height: 28px;
         padding: 0 10px;
-        background: #16baaa;
+        /* 【改动】使用 CSS 变量替代硬编码颜色 */
+        background: var(--tag-bg-color);
         color: #fff;
         border-radius: 5px;
         display: inline-flex;
@@ -83,6 +86,9 @@ layui.define(['jquery'], function (exports) {
             const elem = $(options.elem);
             const width = options.width || '100%';
             const enterAdd = options.enterAdd !== false;
+            const splitByComma = options.splitByComma !== false;
+            // 【新增】自定义标签背景色，默认 #16baaa
+            const tagColor = options.tagColor || '#16B777';
             const onDelete = options.onDelete || function () {
             };
             const onClear = options.onClear || function () {
@@ -98,12 +104,18 @@ layui.define(['jquery'], function (exports) {
 
             const $container = $('<div>', {
                 class: 'layui-input-tag',
-                css: {width: width}
+                css: {
+                    width: width,
+                    // 【核心改动】通过 CSS 变量设置当前实例的标签颜色
+                    '--tag-bg-color': tagColor
+                }
             });
             const $input = $('<input>', {
                 type: 'text',
                 readonly: !enterAdd || undefined,
-                placeholder: enterAdd ? '输入后按回车添加标签' : ''
+                placeholder: enterAdd
+                    ? (splitByComma ? '输入后按回车添加标签，多个用逗号分隔' : '输入后按回车添加标签')
+                    : ''
             });
             const $clearBtn = $(`<div class="tag-clear-btn"><i class="layui-icon layui-icon-clear"></i></div>`);
             const $expandBtn = $(`<div class="tag-expand-btn"><i class="layui-icon layui-icon-more"></i></div>`);
@@ -133,10 +145,21 @@ layui.define(['jquery'], function (exports) {
                 elem.val(tags.map(t => t.value).join(',')).trigger('change');
             }
 
+            function addSingleTag(val) {
+                val = (val || '').trim();
+                if (!val || tags.some(t => t.value === val)) return false;
+                const tag = {label: val, value: val};
+                tags.push(tag);
+                $(`<span class="tag-item" data-value="${tag.value}">${tag.label}<i class="del">×</i></span>`).insertBefore($input);
+                return true;
+            }
+
             $expandBtn.on('click', e => {
                 e.stopPropagation();
                 $container.toggleClass('expanded');
-                $expandBtn.html($container.hasClass('expanded') ? '<i class="layui-icon layui-icon-up"></i>' : '<i class="layui-icon layui-icon-more"></i> ');
+                $expandBtn.html($container.hasClass('expanded')
+                    ? '<i class="layui-icon layui-icon-up"></i>'
+                    : '<i class="layui-icon layui-icon-more"></i> ');
             });
 
             $clearBtn.on('click', e => {
@@ -152,26 +175,35 @@ layui.define(['jquery'], function (exports) {
                 $input.on('keydown', e => {
                     if (e.keyCode === 13) {
                         e.preventDefault();
-                        const val = $input.val().trim();
-                        if (!val || tags.some(t => t.value === val)) return;
-                        const tag = {label: val, value: val};
-                        tags.push(tag);
-                        $(`<span class="tag-item" data-value="${tag.value}">${tag.label}<i class="del">×</i></span>`).insertBefore($input);
-                        $input.val('');
-                        syncValue();
-                        updateLayout();
+                        const rawVal = $input.val();
+                        if (!rawVal || !rawVal.trim()) return;
+
+                        let parts;
+                        if (splitByComma) {
+                            parts = rawVal.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+                        } else {
+                            parts = [rawVal.trim()];
+                        }
+
+                        let added = false;
+                        parts.forEach(val => {
+                            if (addSingleTag(val)) added = true;
+                        });
+
+                        if (added) {
+                            $input.val('');
+                            syncValue();
+                            updateLayout();
+                        }
                     }
                 });
             }
+
             $container.on('click', '.del', function (e) {
                 e.stopPropagation();
                 const $item = $(this).closest('.tag-item');
                 const val = $item.attr('data-value');
-
-                // 找到被删除的 tag 对象
                 const deletedTag = tags.find(item => item.value === val);
-
-                // 删除数据
                 const idx = tags.findIndex(t => t.value === val);
                 if (idx > -1) {
                     tags.splice(idx, 1);
@@ -192,11 +224,16 @@ layui.define(['jquery'], function (exports) {
                     const tag = typeof obj === 'string'
                         ? {label: obj, value: obj}
                         : {label: obj.label || '', value: obj.value || ''};
-                    if (!tag.label || !tag.value || tags.some(t => t.value === tag.value)) return;
-                    tags.push(tag);
-                    $(`<span class="tag-item" data-value="${tag.value}">${tag.label}<i class="del">×</i></span>`).insertBefore($input);
-                    syncValue();
-                    updateLayout();
+                    if (addSingleTag(tag.value)) {
+                        if (tag.label && tag.label !== tag.value) {
+                            const $last = $container.find('.tag-item').last();
+                            $last.contents().first().replaceWith(document.createTextNode(tag.label));
+                            const t = tags.find(item => item.value === tag.value);
+                            if (t) t.label = tag.label;
+                        }
+                        syncValue();
+                        updateLayout();
+                    }
                 },
                 getValue: () => [...tags],
                 clear() {
