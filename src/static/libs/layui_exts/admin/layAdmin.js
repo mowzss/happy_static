@@ -81,6 +81,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
 
         // 初始化
         render: function (options) {
+            this.showLoading();
             this.config = $.extend({}, this.config, options);
 
             //  先渲染并初始化菜单状态
@@ -94,7 +95,9 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
             // 渲染标签
             this.initTabs();
             // 完成渲染
-            this.closeLoading();
+            setTimeout(() => {
+                this.closeLoading();
+            }, 500)
         },
 
         // 初始化记录的标签

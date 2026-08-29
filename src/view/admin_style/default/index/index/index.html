@@ -75,7 +75,7 @@
         <div id="happy-content"></div>
     </div>
     <div class="layui-footer">
-        <span>Powered by <a href="" target="_blank">HappyAdmin</a> v1.0 Code ©2022-2024 </span>
+        <span>Powered by <a href="" target="_blank">HappyAdmin</a> v1.0 Code ©2022-{:date('Y')} </span>
     </div>
     <!-- 遮罩层和加载动画 -->
     <div class="loading-mask semi-transparent">
@@ -93,8 +93,8 @@
 <!-- 框 架 初 始 化 -->
 <script>
     layui.use(['layAdmin', 'jquery', 'popup'], function () {
-        var admin = layui.layAdmin;
-        admin.render({
+        const layAdmin = layui.layAdmin;
+        layAdmin.render({
             menuUrl: "{:urls('index/index/menu')}"
         });
     })
