@@ -7,6 +7,11 @@
         root.AutoInitService = factory();
     }
 }(this, function () {
+    /**
+     * 统计服务初始化类
+     * @param config 统计服务配置
+     * @constructor
+     */
     function AutoInitService(config) {
         const services = {
             lingQue: (key) => {
@@ -51,7 +56,11 @@
                 window.LA = {ids: [{id: w51tjKey, ck: w51tjKey, autoTrack: true}]};
             }
         };
-
+        /**
+         *  动态插入脚本
+         * @param src
+         * @param id
+         */
         const insertScript = (src, id = '') => {
             let el = document.createElement("script");
             el.src = src;
@@ -61,7 +70,9 @@
             let s = document.getElementsByTagName("script")[0];
             s.parentNode.insertBefore(el, s);
         };
-
+        /**
+         * 初始化统计服务
+         */
         this.init = () => {
             for (let [serviceName, serviceFunc] of Object.entries(services)) {
                 // 如果服务不需要参数，或者配置中存在该服务的参数，则调用服务函数
