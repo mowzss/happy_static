@@ -9,8 +9,8 @@
     }
   ],
   "require": {
-    "mowzs/lib": "dev-master",
-    "mowzs/system": "dev-master"
+    "mowzs/system": "dev-master",
+    "mowzs/happy-module-installer": "dev-master"
   },
   "extra": {
     "module": {
