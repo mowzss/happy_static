@@ -11,10 +11,6 @@
     "dev-template": "gulp template",
     "dev-watch": "gulp watch"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://gitee.com/mowzs/sunboys.git"
-  },
   "author": "",
   "license": "ISC",
   "devDependencies": {

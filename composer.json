@@ -1,5 +1,5 @@
 {
-  "name": "mowzs/static",
+  "name": "mowzs/happy-admin-static",
   "description": "静态资源 ",
   "type": "happy-module",
   "authors": [
@@ -9,8 +9,8 @@
     }
   ],
   "require": {
-    "mowzs/system": "dev-master",
-    "mowzs/happy-module-installer": "dev-master"
+    "mowzs/happy-admin-system": "dev-master",
+    "mowzs/happy-admin-installer": "dev-master"
   },
   "extra": {
     "module": {
