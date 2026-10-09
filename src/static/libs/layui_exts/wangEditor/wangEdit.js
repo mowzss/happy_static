@@ -1,10 +1,10 @@
-layui.define(['jquery', 'toast', 'wangEditor'], function (exports) {
+layui.define(['jquery', 'layer', 'wangEditor'], function (exports) {
     "use strict";
     //引入css样式
     layui.link(layui.cache.base + "wangEditor/wangEditor.css", 'wangEditorCss')
     const wangEditor = layui.wangEditor;
     const $ = layui.jquery;
-    const toast = layui.toast;
+    const layer = layui.layer;
     // 定义默认配置
     const defaultConfig = {
         selector: '#editor', // 编辑器容器的选择器
@@ -40,10 +40,10 @@ layui.define(['jquery', 'toast', 'wangEditor'], function (exports) {
                         server: config.upload_url,
                         customInsert(res, insertFn) {
                             if (res.code === config.serverResponseSuccessCode) {
-                                toast.success({title: "上传成功", message: res.msg});
+                                layer.msg("上传成功", {icon: 1});
                                 insertFn(res.data.url, res.data.name);
                             } else {
-                                toast.error({title: "上传失败", message: res.msg});
+                                layer.msg("上传失败", {icon: 2});
                             }
                         },
                     }
