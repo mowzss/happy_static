@@ -315,37 +315,6 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
         },
         // --- end ---
 
-        requestFullscreen: function (element) {
-            return new Promise((resolve, reject) => {
-                if (element.requestFullscreen) {
-                    element.requestFullscreen().then(resolve).catch(reject);
-                } else if (element.mozRequestFullScreen) {
-                    element.mozRequestFullScreen().then(resolve).catch(reject);
-                } else if (element.webkitRequestFullscreen) {
-                    element.webkitRequestFullscreen().then(resolve).catch(reject);
-                } else if (element.msRequestFullscreen) {
-                    element.msRequestFullscreen().then(resolve).catch(reject);
-                } else {
-                    reject(new Error("浏览器不支持全屏"));
-                }
-            });
-        },
-
-        exitFullscreen: function () {
-            return new Promise((resolve, reject) => {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen().then(resolve).catch(reject);
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen().then(resolve).catch(reject);
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen().then(resolve).catch(reject);
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen().then(resolve).catch(reject);
-                } else {
-                    reject(new Error("浏览器不支持退出全屏"));
-                }
-            });
-        },
     };
 
     exports(MODULE_NAME, pageTabs);
