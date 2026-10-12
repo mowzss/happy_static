@@ -43,7 +43,7 @@ layui.define([], function (exports) {
             switch (col.templet) {
                 case 'link':
                     col.templet = function (d) {
-                        return `<a href="${d[col.field]}" target="_blank" style="color: blue;">${d[col.field]}</a>`;
+                        return `<a href="${d[col.field]}" target="_blank" style="color: blue;">${col.link_title ?? d[col.field]}</a>`;
                     };
                     break;
 
