@@ -27,6 +27,7 @@ layui.config({
     echartsTheme: "extends/echartsTheme",
     yaml: "extends/yaml",
 
+    encrypt: "extends/encrypt",
     //外部模块
     sortable: {src: AppLibs + "sortable/Sortable", api: "Sortable"},
     tinymce: {src: AppLibs + "tinymce/tinymce.min", api: "tinymce"},//tinymce
