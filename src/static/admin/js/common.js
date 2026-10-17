@@ -17,8 +17,8 @@ layui.config({
     fullscreen: "admin/fullscreen",
 
     cron: "cron/cron",
-    xmSelect: "xm-select",
-    inputTag: "inputTag",
+    xmSelect: "xm-select/xm-select",
+    inputTag: "inputTag/inputTag",
     popup: "extends/popup",
     count: "extends/count",
     toast: "extends/toast",
@@ -27,7 +27,7 @@ layui.config({
     echartsTheme: "extends/echartsTheme",
     yaml: "extends/yaml",
 
-    encrypt: "extends/encrypt",
+    encrypt: "encrypt/encrypt",
     //外部模块
     sortable: {src: AppLibs + "sortable/Sortable", api: "Sortable"},
     tinymce: {src: AppLibs + "tinymce/tinymce.min", api: "tinymce"},//tinymce
