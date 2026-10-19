@@ -43,10 +43,14 @@ layui.define([], function (exports) {
             switch (col.templet) {
                 case 'link':
                     col.templet = function (d) {
-                        return `<a href="${d[col.field]}" target="_blank" style="color: blue;">${col.link_title ?? d[col.field]}</a>`;
+                        return `<a href="${d[col.field]}" target="_blank" class="layui-font-blue">${col.link_title ?? d[col.field]}</a>`;
                     };
                     break;
-
+                case 'a_link':
+                    col.templet = function (d) {
+                        return `<div>${d[col.field]}</div>`;
+                    };
+                    break;
                 case 'switch':
                     if (col.switch && typeof col.switch === 'object') {
                         let switchName = col.switch.name || '正常|隐藏';  // 默认值为 "正常|隐藏"
