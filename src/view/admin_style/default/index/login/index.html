@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>{:sys_config('site_name','管理后台')}-管理中心</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>{:sys_config('site_name','管理后台')}</title>
     <link rel="stylesheet" href="__STATIC__/libs/layui/css/layui.css?v={:sys_config('static_version',date('md'))}"/>
     <link rel="stylesheet" href="__STATIC__/admin/css/base.css?v={:sys_config('static_version',date('md'))}"/>
     <link rel="stylesheet" href="__STATIC__/admin/css/login.css?v={:sys_config('static_version',date('md'))}"/>
@@ -27,7 +28,7 @@
             <img src="{:sys_config('square_logo')}" alt="login">
         </div>
         {/notempty}
-        <div class="title">{:sys_config('site_name','网站')} 管理中心</div>
+        <div class="title">{:sys_config('site_name','网站')}</div>
         <form class="layui-form">
             <div class="layui-form-item">
                 <div class="layui-input-wrap">
@@ -56,7 +57,7 @@
 
         </form>
         <div class="layui-form-item">
-            <button class="layui-btn layui-btn-fluid layui-btn-primary" id="back">返回首页</button>
+            <button class="layui-btn layui-btn-fluid layui-bg-black" id="back">返回首页</button>
         </div>
     </div>
 </div>
@@ -66,7 +67,7 @@
 <script src="__STATIC__/libs/layui/layui.js?v={:sys_config('static_version',date('md'))}"></script>
 <script src="__STATIC__/admin/js/common.js?v={:sys_config('static_version',date('md'))}"></script>
 <script>
-    layui.use(['form', 'popup', 'jquery', 'encrypt'], function () {
+    layui.use(['form', 'jquery', 'encrypt'], function () {
         let form = layui.form;
         let $ = layui.jquery;
         let encrypt = layui.encrypt;
