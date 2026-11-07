@@ -1,5 +1,5 @@
 <div class="layui-form">
     {foreach $option as $key=>$vals }
-    <input type="checkbox" name="{$name}[]" value="{$key}" title="{$vals}" lay-skin="tag" {if condition="in_array($key, $value)"}checked{/if} >
+    <input type="checkbox" name="{$name}[]" value="{$key}" title="{$vals}" lay-skin="tag" {$required|raw} {$disabled?'disabled':''} {if condition="in_array($key, $value)"}checked{/if} >
     {/foreach}
 </div>

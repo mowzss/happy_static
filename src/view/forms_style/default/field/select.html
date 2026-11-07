@@ -1,4 +1,4 @@
-<select name='{$name}' id="input-{$name}" lay-search="{fuzzy: true}">
+<select name="{$name}" id="input-{$name}" lay-search="{fuzzy: true}" {$required|raw} {$disabled?'disabled':''}>
     <option value=''>-- 请选择 --</option>
     {foreach $option as $key=>$val }
     {eq name="$value" value="$key"}

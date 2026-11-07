@@ -112,79 +112,115 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
         },
         xmSelect: function (elem) {
             elem.find('[data-xm-select]').each(function () {
+                const $this = $(this), name = this.dataset.name, elemId = '#' + $this.attr('id');
+                const required = this.dataset.required === '1', disabled = this.dataset.disabled === '1';
 
-                let xmS = [], $this = $(this), name = this.dataset.name, elemId = '#' + $this.attr('id');
-                const selectValueText = elem.find('[xm-select-value="' + name + '"]').text() || '[]';
-                const selectOptionsText = elem.find('[xm-select="' + name + '"]').text() || '[]';
-                let data = [];
-                let options = {};
+                // 读取模板中的 JSON 数据，解析失败时降级为空数组
+                const readJson = function (selector, fallback) {
+                    const text = elem.find(selector).text();
+                    if (!text || !text.trim()) {
+                        return fallback;
+                    }
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('xmSelect JSON 解析失败: ' + selector, text, e.message);
+                        return fallback;
+                    }
+                };
 
-                // 添加 JSON 格式验证
-                try {
-                    data = selectValueText.trim() ? JSON.parse(selectValueText) : [];
-                } catch (e) {
-                    console.error('Invalid JSON format for selectValue:', selectValueText, 'Error:', e.message);
-                    data = [];
-                }
+                const value = readJson('[xm-select-value="' + name + '"]', []);
+                const data = readJson('[xm-select-data="' + name + '"]', []);
+                const config = readJson('[xm-select="' + name + '"]', {});
+                const pageSize = Math.max(1, parseInt(config.pageSize, 10) || 20);
+                const remoteSearch = !!config.remoteSearch && !!config.searchUrl;
 
-                try {
-                    options = selectOptionsText.trim() ? JSON.parse(selectOptionsText) : {};
-                } catch (e) {
-                    console.error('Invalid JSON format for selectOptions:', selectOptionsText, 'Error:', e.message);
-                    options = {};
-                }
+                // 远程接口返回结构兼容：{data:{data:[],last_page:0}} 或 {data:[]}
+                const readList = function (res) {
+                    if (!res) {
+                        return {list: [], lastPage: 1};
+                    }
+                    const payload = res.data !== undefined ? res.data : res;
+                    if (Array.isArray(payload)) {
+                        return {list: payload, lastPage: 1};
+                    }
+                    if (payload && Array.isArray(payload.data)) {
+                        return {list: payload.data, lastPage: Math.max(1, parseInt(payload.last_page, 10) || 1)};
+                    }
+                    return {list: [], lastPage: 1};
+                };
+
                 layui.use(['xmSelect'], function (xmSelect) {
-                    options = Object.assign({}, options, {
+                    const loadData = Array.isArray(data) ? data : [];
+                    const option = {
                         el: elemId,
-                        theme: {color: '#16B777'},
                         name: name,
+                        theme: {color: '#16B777'},
                         autoRow: true,
-                        toolbar: {show: true},
                         filterable: true,
-                        empty: '输入内容搜一下吧！',
-                        paging: true,
-                        pageRemote: true,
-                        prop: {
-                            name: 'title', value: 'id'
-                        },
-                        radio: options.radio || false,
-                        data: options.dataInit ?? data,
-                    });
-                    if (options.remoteSearch && options.searchUrl) { //开启远程搜索
-                        options.remoteMethod = function (val, cb, show, pageIndex) {
-                            if (!val) {
-                                return cb([]);
+                        radio: !!config.radio,
+                        prop: config.prop && config.prop.name && config.prop.value ? config.prop : {name: 'title', value: 'id'},
+                        data: loadData,
+                        initValue: Array.isArray(value) ? value : [],
+                        paging: remoteSearch || loadData.length > pageSize,
+                        pageRemote: remoteSearch,
+                        pageSize: pageSize,
+                        disabled: disabled,
+                        layVerify: (required && !disabled) ? 'required' : '',
+                        layReqText: '请选择' + name,
+                        toolbar: {show: config.showToolbar !== false},
+                        empty: config.empty || '暂无数据',
+                    };
+
+                    if (remoteSearch) {
+                        const minLength = Math.max(0, parseInt(config.minKeywordLength, 10) || 0);
+                        let lastRequest = null;
+                        option.remoteMethod = function (val, cb, show, pageIndex) {
+                            const keyword = $.trim(val || '');
+                            if (keyword.length < minLength) {
+                                // 关键字不足最小长度时不请求后端，避免无效请求
+                                return cb(keyword === '' ? loadData : [], 1);
                             }
-                            $.ajax({
-                                type: "POST", url: options.searchUrl, data: {
-                                    keyword: val, add: options.autoAdd || false, page: pageIndex,
+                            if (lastRequest && lastRequest.readyState !== 4) {
+                                lastRequest.abort();
+                            }
+                            lastRequest = $.ajax({
+                                type: 'POST', url: config.searchUrl, dataType: 'json', data: {
+                                    keyword: keyword, page: pageIndex || 1, page_size: pageSize,
+                                    add: config.autoAdd ? 1 : 0,
                                 }, success: function (res) {
-                                    cb(res.data.data, res.data.last_page)
-                                }, error: function () {
-                                    layer.msg(name + '远程搜索异常')
+                                    const result = readList(res);
+                                    cb(result.list, result.lastPage);
+                                }, error: function (xhr, status) {
+                                    if (status === 'abort') {
+                                        return;
+                                    }
+                                    layer.msg(name + ' 远程搜索异常');
+                                    cb([], 1);
                                 }
-
-                            })
-                        }
+                            });
+                        };
                     }
-                    xmS[name] = xmSelect.render(options)
-                    if (options.dataInit) {
+
+                    const instance = xmSelect.render(option);
+
+                    // 旧配置兼容：服务端未返回数据时，按已选值请求初始化接口
+                    if (config.initUrl && Array.isArray(value) && value.length && loadData.length === 0) {
                         $.ajax({
-                            type: "POST", url: options.dataInit, data: {
-                                id: data
+                            type: 'POST', url: config.initUrl, dataType: 'json', data: {
+                                id: value,
                             }, success: function (res) {
-                                xmS[name].update({
-                                    data: res.data.data, autoRow: true,
-                                })
+                                const result = readList(res);
+                                if (result.list.length) {
+                                    instance.update({data: result.list, autoRow: true});
+                                }
                             }, error: function () {
-                                layer.msg('初始化' + name + '数据异常')
+                                layer.msg('初始化 ' + name + ' 数据异常');
                             }
-
-                        })
+                        });
                     }
-                    // xmS[name]
-                })
-            })
+                });
+            });
         },
         cron: function (elem) {
             elem.find('[data-input-cron]').each(function () {
