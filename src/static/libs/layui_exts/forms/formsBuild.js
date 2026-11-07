@@ -188,6 +188,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                                 type: 'POST', url: config.searchUrl, dataType: 'json', data: {
                                     keyword: keyword, page: pageIndex || 1, page_size: pageSize,
                                     add: config.autoAdd ? 1 : 0,
+                                    source: config.source ? JSON.stringify(config.source) : '',
                                 }, success: function (res) {
                                     const result = readList(res);
                                     cb(result.list, result.lastPage);
