@@ -5,7 +5,8 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
         element = layui.element;
 
     let layMenu = {
-        render: function (url) {
+        render: function (url, homeUrl) {
+            this.homeUrl = homeUrl || '';
             this.loadAllMenuData(url);
             this.on();
         },
@@ -69,7 +70,8 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
                         if (sessionTabs.length === 0) {
                             let opt = {
                                 id: "home",
-                                url: getBaseURL() + '/index/index/main',
+                                // 优先使用后端 aurl() 生成的地址，避免丢失后台入口
+                                url: layMenu.homeUrl || (getBaseURL() + '/index/index/main'),
                                 title: "首页",
                                 closable: false,
                             };
@@ -236,11 +238,7 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
     }
 
     function getBaseURL() {
-        // common.js 位于 /static/admin/js/ 下，appRoot 指向 /static/，去掉后即项目根
-        if (window.appRoot) {
-            return window.appRoot.replace(/\/+$/, '').replace(/\/static$/, '');
-        }
-        // 获取当前页面完整的URL
+        // 兜底：从当前后台页面地址中取入口（如 http://host/admin.php）
         let fullURL = window.location.href;
 
         // 使用正则表达式匹配需要的部分

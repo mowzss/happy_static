@@ -70,7 +70,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
 
             // 渲染各组件
             this.renderTabsDom();
-            layMenu.render(this.config.menuUrl);
+            layMenu.render(this.config.menuUrl, this.config.homeUrl);
             // 绑定事件
             this.events();
             // 渲染标签
@@ -88,6 +88,10 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
 
             // 重新添加所有保存的Tab
             tabsList.forEach((tab) => {
+                // 首页地址由后端 aurl() 生成，修正历史缓存里可能缺少后台入口的地址
+                if (tab.id === 'home' && this.config.homeUrl) {
+                    tab.url = this.config.homeUrl;
+                }
                 if (tab.id !== activeId) {
                     tab.active = false;
                 }

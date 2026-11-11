@@ -7,7 +7,8 @@
     layui.use(['layAdmin', 'jquery', 'popup'], function () {
         const layAdmin = layui.layAdmin;
         layAdmin.render({
-            menuUrl: "{:urls('index/index/menu')}"
+            menuUrl: "{:aurl('index/index/menu')}",
+            homeUrl: "{:aurl('index/index/main')}"
         });
     })
 </script></body></html>
