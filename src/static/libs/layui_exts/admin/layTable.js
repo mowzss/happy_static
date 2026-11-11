@@ -6,10 +6,73 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
     let fieldHandler = layui.fieldHandler;
     let form = layui.form;
     const MODUME_NAME = 'layTable';
+
+    // 已渲染表格的配置登记表：tableId / layFilter => settings
+    const tableRegistry = {};
+
+    // 快捷开关：模块加载时只注册一次，按开关所属表格派发请求
+    form.on('switch(form-switch-edit)', function (obj) {
+        const $view = $(obj.elem).closest('.layui-table-view');
+        const tableId = $view.attr('lay-id') || $view.attr('lay-filter');
+        const settings = tableRegistry[$view.attr('lay-id')] || tableRegistry[$view.attr('lay-filter')];
+        if (!settings || !settings.dataUrls || !settings.dataUrls.quick) {
+            return;
+        }
+        const field = obj.elem.name;
+        const rowData = getRowData(tableId, obj.elem);
+        if (!rowData || rowData.id === undefined || rowData.id === null) {
+            revertSwitch(obj, $view);
+            layer.msg('未获取到当前行数据');
+            return;
+        }
+        const value = obj.elem.checked ? 1 : 0;
+        const url = updateUrlParams(settings.dataUrls.quick, {id: rowData.id});
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: {
+                field: field,
+                value: value
+            },
+            success: function (res) {
+                if (res && res.code === 1) {
+                    layer.msg(res.msg || '更新成功');
+                    // 同步本地缓存，避免下次切换取到旧值
+                    rowData[field] = value;
+                } else {
+                    revertSwitch(obj, $view);
+                    layer.msg('更新失败：' + ((res && res.msg) || '未知错误'));
+                }
+            },
+            error: function () {
+                revertSwitch(obj, $view);
+                layer.msg('请求失败，请稍后再试');
+            }
+        });
+    });
+
+    // 撤销开关界面状态（只重渲染当前表格的开关）
+    function revertSwitch(obj, $view) {
+        obj.elem.checked = !obj.elem.checked;
+        const filter = $view.attr('lay-filter');
+        if (filter) {
+            form.render('checkbox', filter);
+        } else {
+            form.render('checkbox');
+        }
+    }
+
+    // 取当前行数据：兼容普通表格与 treeTable
+    function getRowData(tableId, elem) {
+        const index = $(elem).closest('tr').data('index');
+        const list = (table.cache && table.cache[tableId])
+            || (treeTable && treeTable.cache && treeTable.cache[tableId])
+            || [];
+        return list[index] || null;
+    }
+
     // 定义 layTable 模块
     let layTable = {
-        // 用于存储事件监听器的对象
-        eventListeners: {},
         // 初始化表格
         render: function (options) {
             let that = this;
@@ -48,7 +111,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
             // 合并用户提供的选项和默认选项
             let settings = $.extend(true, {}, defaults, options);
 
-            // 如果没有设置 toolbar，默认使用 elem + '-toolbarTop'
+            // 如果没有设置 toolbar，默认使用 elem + 'ToolbarTop'
             if (!settings.toolbar) {
                 settings.toolbar = settings.elem + 'ToolbarTop';
             }
@@ -59,9 +122,15 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
             if (!settings.url) {
                 settings.url = $(settings.elem).data('url');
             }
-            if (!settings.page) {
-                settings.limit = '300'
+            // 未开启分页且调用方没有显式指定 limit 时才使用大页容量
+            if (!settings.page && !options.limit) {
+                settings.limit = 300;
             }
+            // 登记表格配置，供快捷开关按表格派发
+            if (settings.id) {
+                tableRegistry[settings.id] = settings;
+            }
+            tableRegistry[settings.layFilters] = settings;
             // 处理表头字段
             fieldHandler.init(settings);
 
@@ -76,6 +145,10 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                 del: function (obj, callback, defaultHandler) {
                     let checkStatus = table.checkStatus(obj.config.id); // 获取选中行的状态
                     let data = checkStatus.data; // 获取选中的数据
+                    if (!data.length) {
+                        layer.msg('请先选择要删除的记录');
+                        return;
+                    }
                     let ids = data.map(function (item) {
                         return item.id;
                     }); // 提取选中的ID
@@ -172,12 +245,10 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                     let load = layer.load();
                     let field = obj.field; // 得到修改的字段
                     let value = obj.value; // 得到修改后的值
-                    let oldValue = obj.oldValue; // 得到修改前的值 -- v2.8.0 新增
                     let data = obj.data; // 得到所在行所有键值
-                    let col = obj.getCol(); // 得到当前列的表头配置属性 -- v2.8.0 新增
                     let url = updateUrlParams(settings.dataUrls.quick, {id: data.id});
                     // 值的校验
-                    if (value.replace(/\s/g, '') === '') {
+                    if (String(value).replace(/\s/g, '') === '') {
                         layer.tips('值不能为空', this, {tips: 1});
                         return obj.reedit(); // 重新编辑 -- v2.8.0 新增
                     }
@@ -192,18 +263,20 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                         success: function (res) {
                             layer.close(load);
                             if (res.code === 1) {
-                                layer.msg(res.msg, this, {tips: 1});
+                                layer.msg(res.msg || '更新成功', {icon: 1});
                                 // 更新当前缓存数据
                                 let update = {};
                                 update[field] = value;
                                 obj.update(update, true); // 参数 true 为 v2.7 新增功能，即同步更新其他包含自定义模板并可能存在关联的列视图
                             } else {
-                                layer.msg(res.msg);
+                                layer.msg(res.msg || '更新失败', {icon: 2});
+                                obj.reedit(); // 失败时回到编辑态，避免界面与数据不一致
                             }
                         },
                         error: function (xhr, textstatus, thrown) {
                             layer.close(load);
-                            layer.msg('网络请求失败')
+                            layer.msg('网络请求失败', {icon: 2});
+                            obj.reedit();
                         }
                     })
                 };
@@ -229,46 +302,13 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                     }
                 }
             }
-            // 监听行工具事件
-            form.on('switch(form-switch-edit)', function (obj) {
-                let field = obj.elem.name // 得到修改的字段
-                let data = that.getRowData(settings.layFilters, obj.elem) // 得到所在行所有键值
-                let value = obj.elem.checked ? 1 : 0 //
-                let url = updateUrlParams(settings.dataUrls.quick, {id: data.id});
-                // 发送AJAX请求更新后端数据
-                $.ajax({
-                    url: url, // 替换为你的实际API地址
-                    type: 'POST',
-                    data: {
-                        field: field,
-                        value: value
-                    },
-                    success: function (res) {
-                        if (res.code === 1) { // 假设返回码0表示成功
-                            layer.msg('更新成功');
-                        } else {
-                            layer.msg('更新失败：' + res.msg);
-                            // 更新失败时撤销用户操作
-                            layui.form.render('checkbox'); // 刷新表单元素，撤销用户的操作
-                        }
-                    },
-                    error: function () {
-                        layer.msg('请求失败，请稍后再试');
-                        layui.form.render('checkbox'); // 同样地，刷新表单元素以撤销用户的操作
-                    }
-                });
-            });
             // 返回渲染实例，以便后续操作
             return that;
         },
         // 重载表格
         reload: function (elem, options) {
             if (elem === null || elem === undefined) {
-                let $content = $('#happy-content'), $elem;
-                $elem = $content.find('.layui-tabs-body');
-                $elem = $elem.find('.layui-tabs-item .layui-show');
-                if ($elem.length === 0) return;
-                elem = $elem.attr('id');
+                return this.reloadByActiveTab(options);
             }
 
             // 确定要使用的 table 实例
@@ -280,6 +320,16 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
             }
             // 调用相应的 reload 方法
             instance.reload(elem, options);
+        },
+        // 重载当前激活页签内的表格，返回是否找到表格
+        reloadByActiveTab: function (options) {
+            const $activeItem = $('#happy-content .layui-tabs-body > .layui-tabs-item.layui-show');
+            const $table = $activeItem.find('.page-Table').first();
+            if (!$table.length) {
+                return false;
+            }
+            this.reload($table.attr('id'), options);
+            return true;
         },
         defaultDeleteHandler: function (url, ids, callback) {
             layer.confirm('确认删除？', function (index) {
@@ -337,30 +387,8 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
                     layer.msg('请求失败: ' + textStatus + ', ' + errorThrown, {icon: 5});
                 }
             });
-        },
-        // 获取当前行数据
-        getRowData: function (tableId, elem) {
-            let index = $(elem).closest('tr').data('index')
-            return table.cache[tableId][index] || {}
         }
     };
-
-    /**
-     * 获取get参数 转换为where使用
-     * @returns {{}}
-     */
-    function getUrlParams() {
-        // 创建一个 URLSearchParams 对象，它会自动解析当前页面的查询字符串
-        const searchParams = new URLSearchParams(window.location.search);
-        // 将查询参数转换为一个对象
-        const params = {};
-        for (const [key, value] of searchParams.entries()) {
-            if (value !== 'undefined' && value !== '') {
-                params[key] = value;
-            }
-        }
-        return params;
-    }
 
     /**
      * 更新url 组合参数

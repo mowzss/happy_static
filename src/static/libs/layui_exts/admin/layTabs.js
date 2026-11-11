@@ -58,6 +58,39 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
         }
     }
 
+    // 正在加载中的页签，避免同一页签重复请求
+    const loadingTabs = new Set();
+
+    // 加载页签内容（仅在页签内容为空时调用）
+    async function _loadTabContent($headerItem, $bodyItem) {
+        const id = $headerItem.attr('lay-id');
+        const url = $headerItem.attr('lay-url');
+        if (!url || loadingTabs.has(id)) {
+            return;
+        }
+        loadingTabs.add(id);
+        try {
+            const response = await _fetchContent(url);
+            $bodyItem.empty();
+            if (response.type === 'json') {
+                if (response.data.info) layer.msg(response.data.info);
+                if (response.data.url) {
+                    setTimeout(() => window.location.href = response.data.url, 1500);
+                }
+            } else if (response.type === 'html') {
+                $bodyItem.html(`<div class="${CLASS_NAMES.TAB_CONTENT} ${CLASS_NAMES.ANIMATION_IN}" style="display: block"
+                                 data-page-id="${id}"
+                                 data-src="${url}">
+                                ${response.data}
+                            </div>`);
+            }
+        } catch (error) {
+            console.error('Failed to load content for tab:', error);
+        } finally {
+            loadingTabs.delete(id);
+        }
+    }
+
     pageTabs = {
         config: {
             elem: "layTabs",
@@ -163,7 +196,7 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                             }
                         }
                     } else if (data.action === 'refresh') {
-                        tabs.change(that.config.elem, index);
+                        that.reload($(this.elem).attr('lay-id'));
                     }
                 },
                 templet: function (d) {
@@ -187,36 +220,14 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
 
         on: function () {
             let that = this;
-            tabs.on('beforeChange(' + that.config.elem + ')', function (data) {
-                $(`#${that.config.elem}`).find('.layui-tabs-body > .layui-tabs-item').empty();
-            });
-
-            tabs.on('afterChange(' + that.config.elem + ')', async function (data) {
+            tabs.on('afterChange(' + that.config.elem + ')', function (data) {
                 let $thisHeaderItem = $(data.thisHeaderItem);
+                let $bodyItem = $(data.thisBodyItem);
                 let id = $thisHeaderItem.attr('lay-id');
-                let url = $thisHeaderItem.attr('lay-url');
 
-                if (url) {
-                    try {
-                        const response = await _fetchContent(url);
-                        const $bodyItem = $(data.thisBodyItem);
-                        $bodyItem.empty();
-
-                        if (response.type === 'json') {
-                            if (response.data.info) layer.msg(response.data.info);
-                            if (response.data.url) {
-                                setTimeout(() => window.location.href = response.data.url, 1500);
-                            }
-                        } else if (response.type === 'html') {
-                            $bodyItem.html(`<div class="${CLASS_NAMES.TAB_CONTENT} ${CLASS_NAMES.ANIMATION_IN}" style="display: block" 
-                                             data-page-id="${$bodyItem.attr('lay-id')}" 
-                                             data-src="${url}">
-                                            ${response.data}
-                                        </div>`);
-                        }
-                    } catch (error) {
-                        console.error('Failed to load content for active tab:', error);
-                    }
+                // 已加载过的页签保留原内容，只有空页签才请求
+                if (!$bodyItem.children().length) {
+                    _loadTabContent($thisHeaderItem, $bodyItem);
                 }
                 _syncToStorage(id);
                 that.activeTabMenu(id);
@@ -234,37 +245,61 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
          */
         add: function (opt) {
             const that = this;
-            let tabsAddLoad = layer.load(2);
-            that.showLoadingBar();
             if (!opt || typeof opt.id === 'undefined') {
                 console.error('LayTabs.add: Missing required parameter "opt.id".');
                 return;
             }
-            let id = String(opt.id);
-            let config = $.extend({
-                id: String(opt.id),
-                done: function (data) {
-                    that.rightMenu();
-                    data.headerItem.attr('lay-url', opt.url);
-                },
-                content: '',
-            }, opt);
-            if (!that.tabIsExist(id)) {
-                tabs.add(that.config.elem, config);
+            let tabsAddLoad = layer.load(2);
+            that.showLoadingBar();
+            try {
+                let id = String(opt.id);
+                let config = $.extend({
+                    id: String(opt.id),
+                    done: function (data) {
+                        that.rightMenu();
+                        data.headerItem.attr('lay-url', opt.url);
+                    },
+                    content: '',
+                }, opt);
+                if (!that.tabIsExist(id)) {
+                    tabs.add(that.config.elem, config);
+                }
+                tabs.change(that.config.elem, id);
+                that.updateSessionTabs(id, config);
+            } finally {
+                that.hideLoadingBar()
+                layer.close(tabsAddLoad);
             }
-            tabs.change(that.config.elem, id);
-            that.updateSessionTabs(id, config);
-            that.hideLoadingBar()
-            layer.close(tabsAddLoad);
+        },
+        /**
+         * 重新加载指定页签的内容
+         * @param id 页签 id，默认当前激活页签
+         */
+        reload: function (id) {
+            const tabId = String(id || sessionStorage.getItem('tabsActiveId'));
+            const $headerItems = $(`#${this.config.elem} .layui-tabs-header > li`);
+            const $headerItem = $headerItems.filter(function () {
+                return $(this).attr('lay-id') === tabId;
+            });
+            if (!$headerItem.length) {
+                return;
+            }
+            const isActive = $headerItem.hasClass('layui-this');
+            const $bodyItem = $(`#${this.config.elem} .layui-tabs-body > .layui-tabs-item`).eq($headerItems.index($headerItem));
+            loadingTabs.delete(tabId);
+            $bodyItem.empty();
+            if (isActive) {
+                _loadTabContent($headerItem, $bodyItem);
+            } else {
+                tabs.change(this.config.elem, tabId);
+            }
         },
         /**
          * 刷新当前标签页
          * @param id
          */
         refresh: function (id) {
-            const activeId = String(sessionStorage.getItem('tabsActiveId'));
-            let index = id || activeId;
-            tabs.change(this.config.elem, index);
+            this.reload(id);
         },
         tabIsExist: function (id) {
             let isExist = false;
@@ -310,8 +345,14 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
         },
 
         delSessionTabsAll: function () {
+            this.clearCache();
+        },
+
+        // 清空页签缓存（内存 + sessionStorage）
+        clearCache: function () {
             cachedTabsList = [];
             sessionStorage.removeItem('tabsList');
+            sessionStorage.removeItem('tabsActiveId');
         },
         // --- end ---
 

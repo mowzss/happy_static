@@ -1,10 +1,9 @@
 // admin.js
-layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], function (exports) {
+layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'], function (exports) {
     "use strict";
 
     const SELECTORS = {
         LAYOUT_ADMIN: '.layui-layout-admin',// 布局元素
-        NAV_ITEM_ICON: '.layui-nav-item i',// 导航图标
         CONTENT_WRAPPER: '#happy-content',// tabs 容器
         LOADING_MASK: '.loading-mask', // 加载遮罩
         DATA_OPEN: '[data-open]', // 全屏窗口打开
@@ -54,28 +53,12 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
 
             if (isMinified) {
                 // 展开菜单
-                $(SELECTORS.NAV_ITEM_ICON).css("left", 25);
                 $elem.removeClass(CSS_CLASSES.MINI_NAV);
                 sessionStorage.setItem(STORAGE_KEYS.MINI_MENU, 'false');
             } else {
                 // 收缩菜单
-                $(SELECTORS.NAV_ITEM_ICON).css("left", 20);
                 $elem.addClass(CSS_CLASSES.MINI_NAV);
                 sessionStorage.setItem(STORAGE_KEYS.MINI_MENU, 'true');
-            }
-        },
-
-        // --- 封装从 sessionStorage 初始化菜单状态的逻辑 ---
-        _initMenuState: function () {
-            const savedState = sessionStorage.getItem(STORAGE_KEYS.MINI_MENU);
-            const $elem = this._getLayoutElement();
-
-            if (savedState === 'true') {
-                $(SELECTORS.NAV_ITEM_ICON).css("left", 20);
-                $elem.addClass(CSS_CLASSES.MINI_NAV);
-            } else {
-                $(SELECTORS.NAV_ITEM_ICON).css("left", 25);
-                $elem.removeClass(CSS_CLASSES.MINI_NAV);
             }
         },
 
@@ -83,9 +66,6 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
         render: function (options) {
             this.showLoading();
             this.config = $.extend({}, this.config, options);
-
-            //  先渲染并初始化菜单状态
-            this._initMenuState();
 
             // 渲染各组件
             this.renderTabsDom();
@@ -160,6 +140,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
                     let url = othis.data('url');
                     layer.confirm('确认清理缓存？', () => {
                         sessionStorage.clear();
+                        layTabs.clearCache();
                         if (url) {
                             $.ajax({
                                 url: url,
@@ -234,7 +215,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
             // 通用 Tab 打开事件
             $body.on('click', SELECTORS.DATA_MENU_OPEN, (e) => {
                 e.preventDefault(); // 阻止默认行为，防止锚点跳转
-                let $target = $(e.target);
+                let $target = $(e.currentTarget);
                 let url = $target.data('menu-open');
                 let id = url.split('?')[0];
                 let title = $target.text().trim(); // 去除可能的空白字符
@@ -266,7 +247,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
 
             // 新窗口打开事件
             $body.on('click', SELECTORS.DATA_WIN_OPEN, (e) => {
-                let url = $(e.target).data('winOpen');
+                let url = $(e.currentTarget).data('winOpen');
                 window.open(url, '_blank');
             });
 
@@ -274,7 +255,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
             $body.on('click', SELECTORS.DATA_AJAX, (e) => {
                 e.preventDefault(); // 阻止默认行为
 
-                let $this = $(e.target);
+                let $this = $(e.currentTarget);
                 let index = layer.load(1);
 
                 let url = $this.data('ajax');
@@ -287,17 +268,20 @@ layui.define(['util', 'element', 'layer', 'jquery', 'layTabs', 'layMenu'], funct
                     success: (res) => {
                         layer.close(index);
                         layer.msg(res.msg, {icon: res.code === 1 ? 1 : 2});
+                        // 请求成功后再刷新当前页签，避免展示旧数据
+                        if (res.code === 1) {
+                            layTabs.reload();
+                        }
                     },
                     error: () => {
                         layer.close(index);
                         layer.msg('网络错误');
                     }
                 });
-                layTabs.refresh();
             });
             $body.on('click', SELECTORS.DATA_OPEN, (e) => {
                 e.preventDefault();
-                const $this = $(e.target);
+                const $this = $(e.currentTarget);
                 let url = $this.data('open');
                 let type = $this.data('type') || 'GET';
                 let title = $this.data('title') || $this.text().trim() || '窗口操作';

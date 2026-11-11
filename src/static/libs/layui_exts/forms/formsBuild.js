@@ -4,6 +4,9 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
     const MODULE_NAME = 'formsBuild';
     const form = layui.form, layer = layui.layer, layTabs = layui.layTabs, layTable = layui.layTable, $ = layui.jquery;
 
+    // inputTag 实例，按字段名保存
+    const tagInstances = {};
+
 
     /**
      * 表单构建
@@ -76,11 +79,20 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
         },
         checkboxSwitch: function (elem) {
             elem.find('[lay-skin="switch"]').each(function () {
+                if (this.dataset.happySwitchBound === '1') {
+                    return;
+                }
+                this.dataset.happySwitchBound = '1';
                 const filter = $(this).attr('lay-filter');
                 const inputName = this.dataset.input;
                 if (filter) {
                     form.on('switch(' + filter + ')', function (data) {
-                        $("[name=" + inputName + "]").val(data.elem.checked ? 1 : 0);
+                        const value = data.elem.checked ? 1 : 0;
+                        elem.find('[name="' + inputName + '"]').val(value);
+                        // 开关变化同样要触发表单联动
+                        if (typeof formsBuild._applyTrigger === 'function') {
+                            formsBuild._applyTrigger(inputName, value);
+                        }
                     })
                 }
             })
@@ -100,10 +112,9 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
         },
         tag: function (elem) {
             elem.find('[data-tag]').each(function () {
-                const that = this, name = $(this).attr('name'), $tag = "#" + $(this).attr('id'), value = $(this).val();
-                let inputTags;
+                const name = $(this).attr('name'), $tag = "#" + $(this).attr('id'), value = $(this).val();
                 layui.use(['inputTag'], function (inputTag) {
-                    inputTags[name] = inputTag.render({
+                    tagInstances[name] = inputTag.render({
                         elem: $tag,          // 绑定元素
                         value: value,
                     });
@@ -255,7 +266,7 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
         // 颜色选择器
         color: function (elem) {
             elem.find('[data-input-color]').each(function () {
-                let name = this.dataset.inputColor, $thisInput = $('[name=' + name + ']'),
+                let name = this.dataset.inputColor, $thisInput = elem.find('[name="' + name + '"]'),
                     value = $thisInput.val() || '#1C97F5', currentElem = this;
                 layui.use(['colorpicker'], function () {
                     let colorpicker = layui.colorpicker;
@@ -277,7 +288,10 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                 });
             });
             elem.find('[data-input-icon]').on('change', function () {
-                $(this).next().find('i').get(0).className = this.value;
+                const icon = $(this).next().find('i').get(0);
+                if (icon) {
+                    icon.className = this.value;
+                }
             }).each(function () {
                 $(this).trigger('change');
             });
@@ -318,11 +332,9 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
          * @param $form
          */
         triggers: function (triggers, $form) {
-
-
             // 转义选择器中的特殊字符
             function escapeSelector(selector) {
-                return selector.replace(/\[|\]/g, function (match) {
+                return String(selector).replace(/\[|\]/g, function (match) {
                     return "\\" + match;
                 });
             }
@@ -340,60 +352,73 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                 }
             }
 
-            // 处理依赖字段的显示/隐藏
-            function handleDependentFields(trigger, data) {
-                if (Array.isArray(trigger.values)) { // 确保 values 是一个数组
-                    // 获取所有可能的依赖字段
-                    let allDependentFields = new Set();
-                    trigger.values.forEach(function (valueConfig) {
-                        if (Array.isArray(valueConfig.field)) {
-                            valueConfig.field.forEach(function (field) {
-                                allDependentFields.add(field);
-                            });
+            // 显示/隐藏依赖字段，并同步移除/恢复必填校验
+            function toggleDependentItem(field, visible) {
+                const $item = $form.find('#item-' + escapeSelector(field));
+                if (!$item.length) {
+                    return;
+                }
+                $item.toggle(visible);
+                if (visible) {
+                    $item.find('[lay-verify]').each(function () {
+                        const $field = $(this);
+                        if ($field.data('happyVerify') !== undefined) {
+                            $field.attr('lay-verify', $field.data('happyVerify'));
                         }
                     });
-                    // 遍历所有依赖字段并隐藏它们
-                    allDependentFields.forEach(function (field) {
-                        let escapedField = escapeSelector(field);
-                        let dependentItem = $form.find('#item-' + escapedField);
-                        dependentItem.hide(); // 先隐藏所有依赖字段
-                    });
-
-                    // 根据当前选择的值，显示符合条件的依赖字段
-                    let shouldShow = false;
-                    trigger.values.forEach(function (valueConfig) {
-                        if (data.value === valueConfig.value) {
-                            shouldShow = true;
-
-                            if (Array.isArray(valueConfig.field)) { // 确保 field 是一个数组
-                                valueConfig.field.forEach(function (field) {
-                                    // 转义 field 以确保选择器有效
-                                    let escapedField = escapeSelector(field);
-                                    let dependentItem = $form.find('#item-' + escapedField);
-                                    dependentItem.show(); // 显示符合条件的依赖字段
-                                });
-                            }
-
-                            return false; // 终止 forEach 循环
+                } else {
+                    $item.find('[lay-verify]').each(function () {
+                        const $field = $(this);
+                        if ($field.data('happyVerify') === undefined) {
+                            $field.data('happyVerify', $field.attr('lay-verify'));
                         }
+                        $field.removeAttr('lay-verify');
                     });
                 }
             }
 
-            // 处理表单变化
-            function handleFormChange(data) {
+            // 处理依赖字段的显示/隐藏
+            function handleDependentFields(trigger, value) {
+                if (!Array.isArray(trigger.values)) {
+                    return;
+                }
+                // 先隐藏所有依赖字段
+                const allDependentFields = new Set();
+                trigger.values.forEach(function (valueConfig) {
+                    if (Array.isArray(valueConfig.field)) {
+                        valueConfig.field.forEach(function (field) {
+                            allDependentFields.add(field);
+                        });
+                    }
+                });
+                allDependentFields.forEach(function (field) {
+                    toggleDependentItem(field, false);
+                });
+
+                // 再显示与当前值匹配的依赖字段（数字/字符串统一比较）
+                const matched = trigger.values.find(function (valueConfig) {
+                    return String(valueConfig.value) === String(value);
+                });
+                if (matched && Array.isArray(matched.field)) {
+                    matched.field.forEach(function (field) {
+                        toggleDependentItem(field, true);
+                    });
+                }
+            }
+
+            // 根据字段名应用联动，供 change 事件与开关写值后复用
+            function applyTrigger(name, value) {
                 if (!Array.isArray(triggers) || triggers.length === 0) {
                     return;
                 }
-
-                $.each(triggers, function (index, trigger) {
-                    // 检查是否是同一个字段
-                    if (data.elem.getAttribute('name') === trigger.name) {
-                        // 处理依赖字段
-                        handleDependentFields(trigger, data);
+                triggers.forEach(function (trigger) {
+                    if (trigger.name === name) {
+                        handleDependentFields(trigger, value);
                     }
                 });
             }
+
+            formsBuild._applyTrigger = applyTrigger;
 
             // 初始化表单状态
             function initializeForm() {
@@ -401,28 +426,34 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
                     return;
                 }
                 // 根据当前字段的值来处理依赖字段
-                $.each(triggers, function (index, trigger) {
-                    // 转义 trigger.name 以确保选择器有效
+                triggers.forEach(function (trigger) {
                     let escapedTriggerName = escapeSelector(trigger.name);
                     let triggerField = $form.find('[name="' + escapedTriggerName + '"]');
                     let currentValue = getFieldValue(triggerField);
-
-                    // 处理依赖字段
-                    handleDependentFields(trigger, {elem: null, value: currentValue});
+                    handleDependentFields(trigger, currentValue);
                 });
             }
 
             if (Array.isArray(triggers) && triggers.length > 0) {
-                $form.find('input').on('change', function () {
-                    let data = {elem: this, value: $(this).val()};
-                    handleFormChange(data);
-                });
-                form.on('radio', function (data) {
-                    handleFormChange(data);
-                });
-                form.on('select', function (data) {
-                    handleFormChange(data);
-                });
+                if (!$form.data('happyTriggersBound')) {
+                    $form.data('happyTriggersBound', true);
+                    $form.on('change', 'input, textarea', function () {
+                        applyTrigger(this.getAttribute('name'), $(this).val());
+                    });
+                    // layui 控件事件用 * 通配所有 lay-filter
+                    form.on('radio(*)', function (data) {
+                        applyTrigger(data.elem.name, data.value);
+                    });
+                    form.on('select(*)', function (data) {
+                        applyTrigger(data.elem.name, data.value);
+                    });
+                    form.on('switch(*)', function (data) {
+                        applyTrigger(data.elem.name, data.elem.checked ? 1 : 0);
+                    });
+                    form.on('checkbox(*)', function (data) {
+                        applyTrigger(data.elem.name, data.elem.checked ? (data.elem.value || 1) : 0);
+                    });
+                }
                 // 初始化表单状态
                 initializeForm();
             }
