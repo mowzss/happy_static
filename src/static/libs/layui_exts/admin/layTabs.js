@@ -71,19 +71,23 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
         loadingTabs.add(id);
         try {
             const response = await _fetchContent(url);
-            $bodyItem.empty();
             if (response.type === 'json') {
                 if (response.data.info) layer.msg(response.data.info);
                 if (response.data.url) {
                     setTimeout(() => window.location.href = response.data.url, 1500);
                 }
-            } else if (response.type === 'html') {
-                $bodyItem.html(`<div class="${CLASS_NAMES.TAB_CONTENT} ${CLASS_NAMES.ANIMATION_IN}" style="display: block"
-                                 data-page-id="${id}"
-                                 data-src="${url}">
-                                ${response.data}
-                            </div>`);
+                return;
             }
+            // 请求期间页签已关闭或已切换到其它页签：丢弃本次结果，
+            // 避免多个页签同时保留页面 HTML（表格配置 id 等会相互干扰）
+            if (!$.contains(document, $headerItem[0]) || !$headerItem.hasClass('layui-this')) {
+                return;
+            }
+            $bodyItem.empty().html(`<div class="${CLASS_NAMES.TAB_CONTENT} ${CLASS_NAMES.ANIMATION_IN}" style="display: block"
+                             data-page-id="${id}"
+                             data-src="${url}">
+                            ${response.data}
+                        </div>`);
         } catch (error) {
             console.error('Failed to load content for tab:', error);
         } finally {
@@ -220,6 +224,17 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
 
         on: function () {
             let that = this;
+            tabs.on('beforeChange(' + that.config.elem + ')', function (data) {
+                // 点击的是当前页签时无需清理
+                if (data && data.to && data.to.headerItem && data.thisHeaderItem
+                    && data.to.headerItem[0] === data.thisHeaderItem[0]) {
+                    return;
+                }
+                // 切换前清空所有页签内容：同一时刻只保留当前页签的 HTML，
+                // 避免上一个页签的表格配置/DOM（如 #happy-table-config）被新页签读取
+                $(`#${that.config.elem} .layui-tabs-body > .layui-tabs-item`).empty();
+            });
+
             tabs.on('afterChange(' + that.config.elem + ')', function (data) {
                 let $thisHeaderItem = $(data.thisHeaderItem);
                 let $bodyItem = $(data.thisBodyItem);
@@ -264,7 +279,10 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 if (!that.tabIsExist(id)) {
                     tabs.add(that.config.elem, config);
                 }
-                tabs.change(that.config.elem, id);
+                // 恢复会话时非激活页签不切换，避免启动阶段依次加载所有页签
+                if (opt.active !== false) {
+                    tabs.change(that.config.elem, id);
+                }
                 that.updateSessionTabs(id, config);
             } finally {
                 that.hideLoadingBar()
