@@ -28,6 +28,9 @@ layui.define(['jquery', 'tinymce',], function (exports) {
         },
         // 设置图片上传的URL
         images_upload_url: images_upload_url,
+        // 直传签名 / 登记接口（后端为第三方存储时返回直传配置）
+        upload_sign_url: '/?s=/index/Upload/sign',
+        upload_register_url: '/?s=/index/Upload/register',
         images_upload_base_path: '',
         setup: function (editor) {
             editor.on('init', function () {
@@ -78,26 +81,92 @@ layui.define(['jquery', 'tinymce',], function (exports) {
         },
         initConfig: function (options) {
             var config = $.extend(true, {}, defaultConfig, options);
-            config.images_upload_handler = function (blobInfo, succFun, failFun) {
-                return new Promise((resolve, reject) => {
-                    // 确保 images_upload_url 已配置
+            var randomName = function () {
+                return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+            };
+
+            // 直传：取签名 -> 上传对象存储 -> 登记附件
+            var directUpload = function (blob, filename) {
+                return new Promise(function (resolve, reject) {
+                    $.ajax({url: config.upload_sign_url, type: 'POST', dataType: 'json'})
+                        .done(function (res) {
+                            if (!(res && res.code === 0 && res.data && res.data.mode === 'direct')) {
+                                reject(new Error('relay'));
+                                return;
+                            }
+                            var info = res.data;
+                            var ext = filename && filename.indexOf('.') > -1 ? filename.split('.').pop().toLowerCase() : '';
+                            if (info.allowExts && info.allowExts.length && info.allowExts.indexOf(ext) === -1) {
+                                reject(new Error('不允许的文件类型'));
+                                return;
+                            }
+                            if (info.maxSize && blob.size > info.maxSize) {
+                                reject(new Error('文件大小超过限制'));
+                                return;
+                            }
+
+                            var key = info.dir + randomName() + (ext ? '.' + ext : '');
+                            var formData = new FormData();
+                            if (info.driver === 'oss') {
+                                formData.append('key', key);
+                                formData.append('policy', info.policy);
+                                formData.append('OSSAccessKeyId', info.accessId);
+                                formData.append('signature', info.signature);
+                                formData.append('success_action_status', String(info.successActionStatus || 200));
+                            } else {
+                                formData.append('token', info.token);
+                                formData.append('key', key);
+                            }
+                            // 文件字段必须最后追加
+                            formData.append(config.file_field || 'file', blob, filename);
+
+                            var xhr = new XMLHttpRequest();
+                            xhr.onload = function () {
+                                if (xhr.status < 200 || xhr.status >= 300) {
+                                    reject(new Error('直传失败'));
+                                    return;
+                                }
+                                $.ajax({
+                                    url: info.registerUrl || config.upload_register_url,
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: {path: key, name: filename, size: blob.size, ext: ext}
+                                }).done(function (r) {
+                                    if (r && r.code === 0 && r.data && r.data.url) {
+                                        resolve(r.data.url);
+                                    } else {
+                                        reject(new Error((r && r.msg) || '上传失败'));
+                                    }
+                                }).fail(function () {
+                                    reject(new Error('上传登记失败'));
+                                });
+                            };
+                            xhr.onerror = function () {
+                                reject(new Error('直传失败'));
+                            };
+                            xhr.open('POST', info.host, true);
+                            xhr.send(formData);
+                        })
+                        .fail(function () {
+                            reject(new Error('relay'));
+                        });
+                });
+            };
+
+            // 回退：服务器中转上传
+            var relayUpload = function (blob, filename) {
+                return new Promise(function (resolve, reject) {
                     if (!config.images_upload_url) {
-                        failFun("上传接口未配置");
-                        console.error('images_upload_url未配置');
-                        reject("上传接口未配置");
+                        reject(new Error('上传接口未配置'));
                         return;
                     }
-
                     var formData = new FormData();
-                    formData.append(config.file_field || 'file', blobInfo.blob(), blobInfo.filename());
-
-                    // 添加额外的表单数据（如果有）
+                    formData.append(config.file_field || 'file', blob, filename);
                     if (config.form_data && typeof config.form_data === 'object') {
                         for (var key in config.form_data) {
                             formData.append(key, config.form_data[key]);
                         }
                     }
-
                     $.ajax({
                         url: config.images_upload_url,
                         dataType: 'json',
@@ -106,26 +175,36 @@ layui.define(['jquery', 'tinymce',], function (exports) {
                         processData: false,
                         contentType: false,
                         success: function (res) {
-                            try {
-                                if (res && res.code === 0 && res.data && res.data.url) {
-                                    succFun(res.data.url); // 成功时调用成功回调
-                                    resolve(res.data.url);
-                                } else {
-                                    failFun(res.msg || '上传失败，服务器响应异常');
-                                    reject(res.msg || '上传失败，服务器响应异常');
-                                }
-                            } catch (error) {
-                                failFun('解析服务器响应时出错：' + error.message);
-                                reject('解析服务器响应时出错：' + error.message);
+                            if (res && res.code === 0 && res.data && res.data.url) {
+                                resolve(res.data.url);
+                            } else {
+                                reject(new Error((res && res.msg) || '上传失败'));
                             }
                         },
-                        error: function (xhr, status, error) {
-                            var errorMessage = "网络错误：" + xhr.status + " " + (xhr.responseText ? (JSON.parse(xhr.responseText).msg || '未知错误') : error);
-                            failFun(errorMessage); // 网络错误时调用失败回调
-                            reject(errorMessage);
+                        error: function (xhr) {
+                            reject(new Error('网络错误：' + xhr.status));
                         }
                     });
                 });
+            };
+
+            config.images_upload_handler = function (blobInfo, succFun, failFun) {
+                var blob = blobInfo.blob();
+                var filename = blobInfo.filename();
+
+                return directUpload(blob, filename)
+                    .catch(function () {
+                        return relayUpload(blob, filename);
+                    })
+                    .then(function (url) {
+                        succFun(url);
+                        return url;
+                    })
+                    .catch(function (error) {
+                        var message = error && error.message ? error.message : '上传失败';
+                        failFun(message);
+                        throw new Error(message);
+                    });
             };
 
             return config;
