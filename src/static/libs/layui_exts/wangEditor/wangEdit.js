@@ -49,8 +49,9 @@ layui.define(['jquery', 'layer', 'wangEditor'], function (exports) {
             formData.append('token', info.token);
             formData.append('key', key);
         }
-        // 文件字段必须最后追加
-        formData.append('file', file, file.name);
+        // 文件字段必须最后追加；multipart 文件名用 ASCII 安全名（OSS 对象名由 key 决定）
+        const extMatch = key.match(/\.[A-Za-z0-9]+$/);
+        formData.append('file', file, 'upload_' + randomName() + (extMatch ? extMatch[0] : ''));
 
         const xhr = new XMLHttpRequest();
         xhr.onload = () => {

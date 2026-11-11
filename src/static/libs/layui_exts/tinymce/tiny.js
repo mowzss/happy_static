@@ -117,8 +117,8 @@ layui.define(['jquery', 'tinymce',], function (exports) {
                                 formData.append('token', info.token);
                                 formData.append('key', key);
                             }
-                            // 文件字段必须最后追加
-                            formData.append(config.file_field || 'file', blob, filename);
+                            // 文件字段必须最后追加；multipart 文件名用 ASCII 安全名（OSS 对象名由 key 决定）
+                            formData.append('file', blob, 'upload_' + randomName() + (ext ? '.' + ext : ''));
 
                             var xhr = new XMLHttpRequest();
                             xhr.onload = function () {
