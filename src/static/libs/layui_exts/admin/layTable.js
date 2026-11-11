@@ -1,10 +1,11 @@
-layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], function (exports) {
+layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', 'layModal'], function (exports) {
     let $ = layui.jquery;
     let table = layui.table;
     let treeTable = layui.treeTable; // 初始化为 null，稍后根据需要动态加载
     let layer = layui.layer;
     let fieldHandler = layui.fieldHandler;
     let form = layui.form;
+    let layModal = layui.layModal;
     const MODUME_NAME = 'layTable';
 
     // 已渲染表格的配置登记表：tableId / layFilter => settings
@@ -355,37 +356,10 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler'], 
             });
         },
         defaultSaveHandler: function (elem, url, callback) {
-            // 获取元素上的数据属性
-            let title = $(elem).text(),
-                customWidth = '800px', // 使用 || 提供默认值或保持为 undefined
-                screenWidth = $(window).width(),
-                screenHeight = $(window).height(),
-                modalHeight = screenHeight - 200,
-                modalWidth = screenWidth >= 1400 ? '800px' : '80%'; // 默认宽度
-            // 如果有自定义宽度，则使用它；否则使用默认宽度
-            if (customWidth) {
-                modalWidth = customWidth;
-            }
-
-            $.ajax({
-                url: url,
-                method: 'GET',
-                success: function (response) {
-                    if (response.code === 0) {
-                        return layer.msg(response.msg);
-                    }
-                    layer.open({
-                        type: 1,
-                        title: title,
-                        content: response,
-                        area: modalWidth, // 使用自定义高度或自动调整
-                        maxHeight: modalHeight
-                    });
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.error('Error:', textStatus, errorThrown);
-                    layer.msg('请求失败: ' + textStatus + ', ' + errorThrown, {icon: 5});
-                }
+            // 统一由 layModal 处理：成功判定 code === 1，失败只提示不弹层
+            layModal.open(url, {
+                title: $(elem).text(),
+                width: '800px'
             });
         }
     };

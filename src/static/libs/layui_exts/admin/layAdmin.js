@@ -1,5 +1,5 @@
 // admin.js
-layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'], function (exports) {
+layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu', 'layModal'], function (exports) {
     "use strict";
 
     const SELECTORS = {
@@ -32,6 +32,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
         tabs = layui.tabs,
         layTabs = layui.layTabs,
         layMenu = layui.layMenu,
+        layModal = layui.layModal,
         element = layui.element;
 
     const MODULE_NAME = 'layAdmin';
@@ -282,22 +283,11 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
             $body.on('click', SELECTORS.DATA_OPEN, (e) => {
                 e.preventDefault();
                 const $this = $(e.currentTarget);
-                let url = $this.data('open');
-                let type = $this.data('type') || 'GET';
-                let title = $this.data('title') || $this.text().trim() || '窗口操作';
-                $.ajax({
-                    url: url,
-                    type: type,
-                    success: (res) => {
-                        layer.open({
-                            type: '1',
-                            title: title,
-                            content: res,
-                            maxmin: true,
-                            area: ['80%', '80%'],
-                        })
-                    }
-                })
+                layModal.open($this.data('open'), {
+                    title: $this.data('title') || $this.text().trim() || '窗口操作',
+                    type: $this.data('type') || 'GET',
+                    width: $this.data('width')
+                });
             })
         },
 

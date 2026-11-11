@@ -1,8 +1,8 @@
 // formsbuild.js
-layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (exports) {
+layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs', 'layModal'], function (exports) {
     "use strict";
     const MODULE_NAME = 'formsBuild';
-    const form = layui.form, layer = layui.layer, layTabs = layui.layTabs, layTable = layui.layTable, $ = layui.jquery;
+    const form = layui.form, layer = layui.layer, layTabs = layui.layTabs, layTable = layui.layTable, layModal = layui.layModal, $ = layui.jquery;
 
     // inputTag 实例，按字段名保存
     const tagInstances = {};
@@ -56,22 +56,36 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs'], function (expor
             form.on('submit(' + (options.layFilter || '') + ')', function (data) {
                 let field = data.field;
                 let url = data.form.action;
+                let $btn = $(this);
+                // 防止重复提交
+                if ($btn.hasClass('layui-btn-disabled')) {
+                    return false;
+                }
+                $btn.addClass('layui-btn-disabled');
                 $.ajax({
-                    type: "POST", url: url, data: field, dataType: "json", success: function (response) {
+                    type: "POST",
+                    url: url,
+                    data: field,
+                    dataType: "json",
+                    success: function (response) {
                         if (response.code === 1) {
-                            layer.msg(response.msg, function () {
-                                layer.closeAll();
-                                //页面存在table 则不删除 仅刷新表格
-                                let $pageTable = $('.page-Table');
-                                if ($pageTable.length > 0) {
-                                    layTable.reload($pageTable.attr('id'));
-                                } else {
+                            layer.msg(response.msg, {icon: 1}, function () {
+                                // 只关闭当前表单所在弹层，避免误关其他层
+                                const inModal = layModal.closeByElem(data.form);
+                                // 页面存在表格则刷新当前页签内的表格，否则关闭当前页签
+                                if (!layTable.reloadByActiveTab() && !inModal) {
                                     layTabs.close();
                                 }
                             });
                         } else {
                             layer.alert(response.msg);
                         }
+                    },
+                    error: function () {
+                        layer.msg('提交失败，请稍后重试', {icon: 2});
+                    },
+                    complete: function () {
+                        $btn.removeClass('layui-btn-disabled');
                     }
                 });
                 return false; // 阻止默认 form 跳转

@@ -14,7 +14,7 @@ layui.config({
     layTable: "admin/layTable",
     fieldHandler: "admin/fieldHandler",
     layMenu: "admin/layMenu",
-    fullscreen: "admin/fullscreen",
+    layModal: "extends/layModal",
 
     cron: "cron/cron",
     xmSelect: "xm-select/xm-select",
@@ -41,8 +41,9 @@ layui.config({
     ueditor: "ueditor/ueditor",//配置
 
     uploads: `{/}${window.location.origin}/${APP_CONFIG.rootFile}/system/upload/index?`,
-}).use(['layer', 'jquery', 'popup', 'util'], function () {
+}).use(['layer', 'jquery', 'popup', 'util', 'layModal'], function () {
     let layer = layui.layer,
+        layModal = layui.layModal,
         $ = layui.jquery,
         $body = $('body');
     // data-image 预览图片
@@ -127,50 +128,8 @@ layui.config({
         }
     });
 
-//打开弹窗
-    $body.on("click", "[data-modal]", function (event) {
-        event.preventDefault(); // 阻止默认行为
-
-        // 获取元素上的数据属性
-        let url = this.dataset.modal,
-            title = $(this).text(),
-            customWidth = this.dataset.width || '800px', // 使用 || 提供默认值或保持为 undefined
-            customHeight = 'auto', // 同上
-            screenWidth = $(window).width(),
-            screenHeight = $(window).height(),
-            modalHeight = screenHeight - 200,
-            modalWidth = screenWidth >= 1400 ? '800px' : '80%'; // 默认宽度
-
-        // 如果有自定义宽度，则使用它；否则使用默认宽度
-        if (customWidth) {
-            modalWidth = customWidth;
-        }
-
-        $.ajax({
-            url: url,
-            method: 'GET',
-            success: function (response) {
-                if (response.code) {
-                    return layer.msg(response.msg);
-                }
-                layer.open({
-                    type: 1,
-                    title: title,
-                    content: response, maxmin: true,
-                    area: [modalWidth, customHeight], // 使用自定义高度或自动调整
-                    maxHeight: modalHeight
-                });
-                // 检查是否需要移除元素
-                if ($(event.target).data('removeAfterClick')) {
-                    $(event.target).remove();
-                }
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.error('Error:', textStatus, errorThrown);
-                layer.msg('请求失败: ' + textStatus + ', ' + errorThrown, {icon: 5});
-            }
-        });
-    });
+    // 打开弹窗（统一由 layModal 处理，成功判定 code === 1）
+    layModal.bind('[data-modal]');
 
     // 辅助函数：更新提示框的位置，并进行边界检查
     function updateTooltipPosition(event, $tooltip) {

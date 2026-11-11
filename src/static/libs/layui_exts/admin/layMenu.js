@@ -236,9 +236,9 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
     }
 
     function getBaseURL() {
-        // 优先使用 common.js 计算出的项目根地址，兼容后台部署在子目录的场景
+        // common.js 位于 /static/admin/js/ 下，appRoot 指向 /static/，去掉后即项目根
         if (window.appRoot) {
-            return window.appRoot.replace(/\/+$/, '');
+            return window.appRoot.replace(/\/+$/, '').replace(/\/static$/, '');
         }
         // 获取当前页面完整的URL
         let fullURL = window.location.href;
