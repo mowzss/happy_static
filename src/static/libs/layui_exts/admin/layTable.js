@@ -10,13 +10,17 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
 
     // 已渲染表格的配置登记表：tableId / layFilter => settings
     const tableRegistry = {};
+    // 已绑定过的 "layFilter:事件名"，避免页签重复渲染时监听器叠加
+    const boundEventKeys = {};
 
     // 快捷开关：模块加载时只注册一次，按开关所属表格派发请求
     form.on('switch(form-switch-edit)', function (obj) {
         const $view = $(obj.elem).closest('.layui-table-view');
-        const tableId = $view.attr('lay-id') || $view.attr('lay-filter');
-        const settings = tableRegistry[$view.attr('lay-id')] || tableRegistry[$view.attr('lay-filter')];
+        // layui 表格视图上记录表格 id 的属性是 lay-table-id
+        const tableId = $view.attr('lay-table-id') || $view.attr('lay-id');
+        const settings = tableRegistry[tableId];
         if (!settings || !settings.dataUrls || !settings.dataUrls.quick) {
+            revertSwitch(obj, $view);
             return;
         }
         const field = obj.elem.name;
@@ -55,12 +59,52 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
     // 撤销开关界面状态（只重渲染当前表格的开关）
     function revertSwitch(obj, $view) {
         obj.elem.checked = !obj.elem.checked;
-        const filter = $view.attr('lay-filter');
+        const filter = $view && $view.attr('lay-filter');
         if (filter) {
             form.render('checkbox', filter);
-        } else {
-            form.render('checkbox');
+            return;
         }
+        // 没有表单 filter 时只复位当前开关，避免整页重渲染
+        const $switch = $(obj.elem).next('.layui-form-switch');
+        if ($switch.length) {
+            const texts = String($(obj.elem).attr('lay-text') || '').split('|');
+            $switch.toggleClass('layui-form-onswitch', obj.elem.checked);
+            $switch.find('div').text(obj.elem.checked ? (texts[0] || '') : (texts[1] || ''));
+        }
+    }
+
+    // 清理已不在文档中的表格配置
+    function pruneRegistry() {
+        Object.keys(tableRegistry).forEach(function (key) {
+            const item = tableRegistry[key];
+            if (!item || typeof item.elem !== 'string' || !$(item.elem).length) {
+                delete tableRegistry[key];
+            }
+        });
+    }
+
+    // 按 layFilter 只绑定一次事件，处理器内部从登记表取最新配置，
+    // 避免页签反复渲染时 layui 事件监听器不断累加（一次操作触发多次请求）
+    function bindTableEvents(instance, settings) {
+        const filter = settings.layFilters;
+        Object.keys(settings.on || {}).forEach(function (event) {
+            if (typeof settings.on[event] !== 'function') {
+                return;
+            }
+            const key = filter + ':' + event;
+            if (boundEventKeys[key]) {
+                return;
+            }
+            boundEventKeys[key] = true;
+            instance.on(event + '(' + filter + ')', function (obj) {
+                const current = tableRegistry[filter];
+                const handler = current && current.on && current.on[event];
+                if (typeof handler !== 'function') {
+                    return false;
+                }
+                return handler.call(this, obj);
+            });
+        });
     }
 
     // 取当前行数据：兼容普通表格与 treeTable
@@ -77,6 +121,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
         // 初始化表格
         render: function (options) {
             let that = this;
+            options = options || {};
             // 默认选项（仅包含 layTable 特定的扩展逻辑）
             let defaults = {
                 elem: '#happyTable',
@@ -88,17 +133,19 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
                 // size: 'sm',
                 autoSort: false, // 默认禁用前端排序
                 tree: {}, // treeTable 特有的参数
-                limit: '20',
+                limit: 20,
                 limits: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150, 200],
                 response: {
                     statusCode: 1,
                 },
                 parseData: function (res) { // res 即为原始返回的数据
+                    res = res || {};
+                    const data = res.data || {};
                     return {
                         "code": res.code, // 解析接口状态
-                        "msg": res.msg, // 解析提示文本
-                        "count": res.data.total, // 解析数据长度
-                        "data": res.data.data // 解析数据列表
+                        "msg": res.msg || '', // 解析提示文本
+                        "count": data.total || 0, // 解析数据长度（异常响应时兜底为 0）
+                        "data": Array.isArray(data.data) ? data.data : [] // 解析数据列表
                     };
                 },
                 loading: true, // 加载条
@@ -112,22 +159,34 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
             // 合并用户提供的选项和默认选项
             let settings = $.extend(true, {}, defaults, options);
 
-            // 如果没有设置 toolbar，默认使用 elem + 'ToolbarTop'
-            if (!settings.toolbar) {
-                settings.toolbar = settings.elem + 'ToolbarTop';
+            // 表格元素必须存在，否则后续 toolbar/data-url 都会取不到
+            if (typeof settings.elem !== 'string' || !settings.elem || !$(settings.elem).length) {
+                console.error('layTable.render: 未找到表格元素', settings.elem);
+                return that;
             }
             if (!settings.layFilters) {
                 settings.layFilters = settings.elem.replace(/^#/, '');
+            }
+            // 显式传 toolbar: false 表示不启用工具栏；未设置时才使用约定模板
+            if (settings.toolbar !== false && !settings.toolbar) {
+                settings.toolbar = settings.elem + 'ToolbarTop';
             }
             // 从目标元素获取 data-url 属性
             if (!settings.url) {
                 settings.url = $(settings.elem).data('url');
             }
+            if (!settings.url) {
+                console.error('layTable.render: 表格缺少数据地址（url 或 data-url）', settings.elem);
+                return that;
+            }
             // 未开启分页且调用方没有显式指定 limit 时才使用大页容量
             if (!settings.page && !options.limit) {
                 settings.limit = 300;
             }
-            // 登记表格配置，供快捷开关按表格派发
+            // 没有操作地址时置空对象，避免工具栏/行内事件报错
+            settings.dataUrls = settings.dataUrls || {};
+            // 清理已关闭页签遗留的配置后登记当前表格
+            pruneRegistry();
             if (settings.id) {
                 tableRegistry[settings.id] = settings;
             }
@@ -139,11 +198,17 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
             let defaultToolbarHandlers = {
 
                 add: function (obj, callback, defaultHandler) {
-                    that.defaultSaveHandler(this, settings.dataUrls.add, function () {
-                        that.reload(obj.config.id); // 刷新表格
-                    });
+                    if (!settings.dataUrls.add) {
+                        layer.msg('未配置新增地址');
+                        return;
+                    }
+                    that.defaultSaveHandler(this, settings.dataUrls.add);
                 },
                 del: function (obj, callback, defaultHandler) {
+                    if (!settings.dataUrls.del) {
+                        layer.msg('未配置删除地址');
+                        return;
+                    }
                     let checkStatus = table.checkStatus(obj.config.id); // 获取选中行的状态
                     let data = checkStatus.data; // 获取选中的数据
                     if (!data.length) {
@@ -162,16 +227,22 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
             // 默认的行内工具事件处理程序
             let defaultToolHandlers = {
                 del: function (obj, callback, defaultHandler) {
+                    if (!settings.dataUrls.del) {
+                        layer.msg('未配置删除地址');
+                        return;
+                    }
                     let ids = obj.data.id; // 获得当前行数据
                     that.defaultDeleteHandler(settings.dataUrls.del, ids, function () {
                         that.reload(obj.config.id); // 刷新表格
                     });
                 },
                 edit: function (obj, callback, defaultHandler) {
+                    if (!settings.dataUrls.edit) {
+                        layer.msg('未配置编辑地址');
+                        return;
+                    }
                     let url = updateUrlParams(settings.dataUrls.edit, {id: obj.data.id});
-                    that.defaultSaveHandler(this, url, function () {
-                        that.reload(obj.config.id); // 刷新表格
-                    });
+                    that.defaultSaveHandler(this, url);
                 }
             };
 
@@ -243,6 +314,10 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
                     if (obj.config.layFilters !== settings.layFilters) { // 确保只处理对应表格的事件
                         return false;
                     }
+                    if (!settings.dataUrls.quick) {
+                        layer.msg('未配置快捷编辑地址');
+                        return obj.reedit();
+                    }
                     let load = layer.load();
                     let field = obj.field; // 得到修改的字段
                     let value = obj.value; // 得到修改后的值
@@ -282,26 +357,13 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
                     })
                 };
             }
-            // 如果是 treeTable 模式，动态加载 treeTable 模块
+            // 渲染表格；事件按 layFilter 只绑定一次，处理器内取最新配置
             if (settings.isTree) {
-                // 初始化 treeTable
                 treeTable.render(settings);
-                // 注册事件监听器
-                for (let event in settings.on) {
-                    if (settings.on.hasOwnProperty(event)) {
-                        treeTable.on(event + '(' + settings.layFilters + ')', settings.on[event]);
-                    }
-                }
+                bindTableEvents(treeTable, settings);
             } else {
-
-                // 初始化普通 table
                 table.render(settings);
-                // 注册事件监听器
-                for (let event in settings.on) {
-                    if (settings.on.hasOwnProperty(event)) {
-                        table.on(event + '(' + settings.layFilters + ')', settings.on[event]);
-                    }
-                }
+                bindTableEvents(table, settings);
             }
             // 返回渲染实例，以便后续操作
             return that;
@@ -311,16 +373,34 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
             if (elem === null || elem === undefined) {
                 return this.reloadByActiveTab(options);
             }
-
-            // 确定要使用的 table 实例
-            let instance;
-            if (treeTable && $('#' + elem).hasClass('layui-tree-table')) { // 如果是 treeTable
+            const id = String(elem).replace(/^#/, '');
+            // 优先按渲染时的配置判断，其次兼容 treeTable 视图类名
+            const settings = tableRegistry[id];
+            let instance = table;
+            if (settings && settings.isTree) {
                 instance = treeTable;
-            } else { // 否则使用普通的 table
-                instance = table;
+            } else if (!settings && treeTable && $('#' + id).hasClass('layui-tree-table')) {
+                instance = treeTable;
             }
-            // 调用相应的 reload 方法
-            instance.reload(elem, options);
+            return instance.reload(id, options);
+        },
+        // 清理指定表格在登记表中的配置
+        unregister: function (elem) {
+            if (!elem) {
+                return;
+            }
+            const target = String(elem).replace(/^#/, '');
+            Object.keys(tableRegistry).forEach(function (key) {
+                const item = tableRegistry[key];
+                const itemElem = item && typeof item.elem === 'string' ? item.elem.replace(/^#/, '') : '';
+                if (key === target || itemElem === target) {
+                    delete tableRegistry[key];
+                }
+            });
+        },
+        // 清理已不在文档中的表格配置
+        prune: function () {
+            pruneRegistry();
         },
         // 重载当前激活页签内的表格，返回是否找到表格
         reloadByActiveTab: function (options) {
@@ -341,7 +421,7 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
                         ids: ids, // 如果需要批量删除，这里应该是一个 ID 数组
                     },
                     success: function (res) {
-                        if (res.code === 1) { // 假设 0 为成功代码
+                        if (res.code === 1) { // code === 1 为成功
                             layer.msg('删除成功');
                             callback(); // 成功后调用回调函数
                         } else {
@@ -355,8 +435,9 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
                 layer.close(index);
             });
         },
-        defaultSaveHandler: function (elem, url, callback) {
-            // 统一由 layModal 处理：成功判定 code === 1，失败只提示不弹层
+        defaultSaveHandler: function (elem, url) {
+            // 统一由 layModal 处理：成功判定 code === 1，失败只提示不弹层；
+            // 保存成功后由表单提交逻辑关闭弹层并刷新表格
             layModal.open(url, {
                 title: $(elem).text(),
                 width: '800px'
@@ -371,36 +452,26 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
      * @returns {*}
      */
     function updateUrlParams(url, paramsObject) {
-        // 创建一个新的 URLSearchParams 对象来处理查询字符串
-        let params = new URLSearchParams();
-        // 检查 URL 是否包含查询字符串
-        let hasQuery = url.includes('?');
-        if (hasQuery) {
-            // 分割 URL 为路径部分和查询字符串部分
-            let [path, query] = url.split('?', 2);
-            // 解析现有的查询字符串
-            params = new URLSearchParams(query);
-            url = path;  // 更新 url 为路径部分
+        if (!url) {
+            return url;
         }
-        // 遍历参数对象并添加/更新查询参数
-        for (let param in paramsObject) {
-            if (paramsObject.hasOwnProperty(param)) {
-                let value = paramsObject[param];
-                if (params.has(param)) {
-                    params.set(param, value);
-                } else {
-                    params.append(param, value);
-                }
+        // 拆出 hash，避免 hash 参与参数拼接
+        const hashIndex = url.indexOf('#');
+        const hash = hashIndex >= 0 ? url.slice(hashIndex) : '';
+        const base = hashIndex >= 0 ? url.slice(0, hashIndex) : url;
+        // 拆出已有查询字符串
+        const queryIndex = base.indexOf('?');
+        const path = queryIndex >= 0 ? base.slice(0, queryIndex) : base;
+        const params = new URLSearchParams(queryIndex >= 0 ? base.slice(queryIndex + 1) : '');
+        // 覆盖或新增参数
+        Object.keys(paramsObject || {}).forEach(function (param) {
+            const value = paramsObject[param];
+            if (value !== undefined && value !== null) {
+                params.set(param, value);
             }
-        }
-        // 构建新的查询字符串
-        let queryString = params.toString();
-        // 如果有查询参数，则在 URL 后面加上 '?' 和查询字符串
-        if (queryString) {
-            url += (url.includes('?') ? '&' : '?') + queryString;
-        }
-        // 返回修改后的 URL
-        return url;
+        });
+        const queryString = params.toString();
+        return path + (queryString ? '?' + queryString : '') + hash;
     }
 
     exports(MODUME_NAME, layTable);

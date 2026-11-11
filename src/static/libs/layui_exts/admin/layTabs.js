@@ -252,6 +252,11 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 let index = data.index;
                 let id = $(data.container.header.items).eq(index).attr('lay-id');
                 that.delSessionTabs(id);
+                // 清理该页签内表格的登记配置（layTable 未加载时跳过）
+                const layTable = layui.layTable;
+                if (layTable && typeof layTable.prune === 'function') {
+                    layTable.prune();
+                }
             });
         },
         /**
