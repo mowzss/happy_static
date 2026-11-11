@@ -2,6 +2,14 @@
 layui.define([], function (exports) {
     // 定义字段处理函数
     function init(settings) {
+        // 深拷贝一层列配置，避免修改调用方传入的对象
+        if (Array.isArray(settings.cols)) {
+            settings.cols = settings.cols.map(function (row) {
+                return Array.isArray(row) ? row.map(function (col) {
+                    return col && typeof col === 'object' ? Object.assign({}, col) : col;
+                }) : row;
+            });
+        }
         // 确保 cols 是一个数组
         if (!Array.isArray(settings.cols) || !settings.cols.length) {
             settings.cols = [[]]; // 提供默认的空列定义数组
@@ -64,7 +72,10 @@ layui.define([], function (exports) {
 
                         col.templet = function (d) {
                             let currentValue = String(d[col.field]).trim();
-                            let isChecked = currentValue === onValue;
+                            // 只接受配置的 on/off 两个值，其它值保留原样提示，避免被误显示为关闭
+                            if (currentValue !== onValue && currentValue !== offValue) {
+                                return `<span class="layui-badge layui-bg-orange" title="未配置的状态值">${currentValue}</span>`;
+                            }
 
                             return `<input type="checkbox" 
                                name="${col.field}" 
@@ -72,7 +83,7 @@ layui.define([], function (exports) {
                                value="${currentValue}" 
                                lay-skin="switch" 
                                lay-text="${onText}|${offText}" 
-                               ${isChecked ? 'checked' : ''}>`;
+                               ${currentValue === onValue ? 'checked' : ''}>`;
                         };
 
                     } else {
@@ -119,10 +130,9 @@ layui.define([], function (exports) {
                     break;
 
                 default:
-                    if (!col?.templet?.startsWith('#')) {
-                        // 如果 templet 不是以 # 开头的字符串，可能是无效的模板选择器
-                        // console.warn('Invalid templet selector:', col.templet);
-                        col.templet = ''; // 清空无效的 templet
+                    if (typeof col.templet === 'string' && !col.templet.startsWith('#')) {
+                        // templet 不是以 # 开头的字符串，视为无效模板选择器
+                        col.templet = '';
                     }
                     break;
             }

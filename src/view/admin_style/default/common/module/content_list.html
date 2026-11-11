@@ -38,17 +38,23 @@
 <script type="text/html" id="{:get_lay_table_id()}Tool">
     {$right_button|default=""|raw}
 </script>
+<script type="application/json" id="happy-table-config">{:json_encode(['default_order' => $default_order ?? ['id' => 'desc'], 'where' => $where ?? [], 'cols' => $tables['fields'] ?? []])}</script>
 <script>
     layui.use(['layTable', 'dropdown', 'layer', 'jquery'], function () {
         let layTable = layui.layTable,
             layer = layui.layer,
             $ = layui.jquery,
-            order = JSON.parse('{$default_order|default=["id"=>"desc"]|raw|json_encode}'),
-            where = JSON.parse('{$where|default=[]|raw|json_encode}'),
-            opt = {
+            config = {},
+            configElem = document.getElementById('happy-table-config');
+        try {
+            config = JSON.parse(configElem.textContent);
+        } catch (e) {
+            console.error('表格配置解析失败', e);
+        }
+        let opt = {
                 elem: '#{:get_lay_table_id()}',
                 headers: {out: 'json'},
-                cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
+                cols: [config.cols || []],
                 page: true,
                 dataUrls: {
                     add: "{:urls('add',['mid'=>$request->param('mid',0)])}",
@@ -58,33 +64,35 @@
                 }
             }
         // 初始化 opt.where 为一个空对象，以防后续需要添加内容
-        opt.where = opt.where || {};
+        opt.where = {};
         // 如果 where 不为空，则将其内容合并到 opt.where 中
-        if (Object.keys(where).length > 0) {
-            Object.assign(opt.where, where);
+        if (config.where && Object.keys(config.where).length > 0) {
+            Object.assign(opt.where, config.where);
         }
         // 获取 order 对象的所有键并设置排序条件
-        Object.keys(order).forEach(key => {
-            if (order[key]) {
+        Object.keys(config.default_order || {}).forEach(key => {
+            if (config.default_order[key]) {
                 // 合并排序条件到 where 中
                 Object.assign(opt.where, {
                     _order: key,
-                    _by: order[key]
+                    _by: config.default_order[key]
                 });
             }
         });
         // 渲染表格
         layTable.render(opt);
-        $('#module_content_list').on('click', '[lay-ajax]', function () {
-            var $this = $(this);
-            $.ajax({
-                url: $this.attr('lay-ajax'),
-                type: 'post',
-                success: function (res) {
-                    $this.parents('.happy-tab-content ').html(res)
-                }
+        // 使用事件委托，页面内容被替换后仍能响应
+        $(document).off('click.happyTabAjax', '#module_content_list [lay-ajax]')
+            .on('click.happyTabAjax', '#module_content_list [lay-ajax]', function () {
+                var $this = $(this);
+                $.ajax({
+                    url: $this.attr('lay-ajax'),
+                    type: 'post',
+                    success: function (res) {
+                        $this.closest('.happy-tab-content').html(res);
+                    }
+                })
             })
-        })
     });
 </script>
 

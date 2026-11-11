@@ -3,12 +3,21 @@
 {include file=".././common/table_body" /}
 {/block}
 {block name="js"}
+<script type="application/json" id="happy-table-config">{:json_encode(['cols' => $tables['fields'] ?? [], 'is_tree' => $is_tree ?? false])}</script>
 <script>
-    layui.use(['layTable', 'uploads', 'popup'], function () {
-        let popup = layui.popup, layTable = layui.layTable, uploads = layui.uploads, opt = {
+    layui.use(['layTable', 'uploads', 'popup', 'jquery'], function () {
+        let popup = layui.popup, layTable = layui.layTable, uploads = layui.uploads, $ = layui.jquery,
+            config = {},
+            configElem = document.getElementById('happy-table-config');
+        try {
+            config = JSON.parse(configElem.textContent);
+        } catch (e) {
+            console.error('表格配置解析失败', e);
+        }
+        let opt = {
             elem: '#{:get_lay_table_id()}',
             headers: {out: 'json'},
-            cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
+            cols: [config.cols || []],
             page: true,
             dataUrls: {
                 add: "{:urls('add')}",
@@ -16,11 +25,10 @@
                 del: "{:urls('delete')}",
                 quick: "{:urls('quickEdit')}",
             },
-            isTree: JSON.parse('{$is_tree|default=false|json_encode}'),
-            toolTplData: JSON.parse('{$tables.right_button|default=[]|raw|json_encode}'),
+            isTree: config.is_tree,
             toolbarEvent: {
                 cleanDuplicates: function (obj) {
-                    var url = this.dataset.load; // 确保 this 指向触发事件的元素
+                    let url = $(obj.elem).data('load');
                     $.ajax({
                         url: url,
                         success: function (res) {

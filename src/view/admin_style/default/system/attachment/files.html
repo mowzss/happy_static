@@ -8,39 +8,42 @@
 </div>
 {/notempty}
 <div class="layui-card">
-    <div class="layui-card-header">
-        {foreach $types as $key=>$vo }
-
-        {/foreach}
-    </div>
     <div class="layui-card-body">
         <table class="layui-hide page-Table" id="{:get_lay_table_id()}" lay-filter="{:get_lay_table_id()}"
                data-url="{:urls('index')}"></table>
     </div>
 </div>
-<script type="text/html" id="{:get_lay_table_id()}-toolbarTop">
+<script type="text/html" id="{:get_lay_table_id()}ToolbarTop">
     <div class="layui-btn-container">
-        {notempty name="$tables.top_button"}
+        {notempty name="$top_button"}
+        {$top_button|raw}
         {else/}
         <button class="layui-btn layui-btn-sm" lay-event="add">添加</button>
-        <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">
-            删除
-        </button>
+        <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">删除</button>
         {/notempty}
     </div>
 </script>
-<script type="text/html" id="{:get_lay_table_id()}-tool">
+<script type="text/html" id="{:get_lay_table_id()}Tool">
     {$right_button|default=""|raw}
 </script>
 
 {/block}
 {block name="js"}
+<script type="application/json" id="happy-table-config">{:json_encode(['cols' => $tables['fields'] ?? [], 'is_tree' => $is_tree ?? false])}</script>
 <script>
-    layui.use(['layTable'], function () {
-        let layTable = layui.layTable, opt = {
+    layui.use(['layTable', 'uploads', 'popup', 'jquery'], function () {
+        let popup = layui.popup, layTable = layui.layTable, uploads = layui.uploads, $ = layui.jquery,
+            config = {},
+            configElem = document.getElementById('happy-table-config');
+        try {
+            config = JSON.parse(configElem.textContent);
+        } catch (e) {
+            console.error('表格配置解析失败', e);
+        }
+        let opt = {
             elem: '#{:get_lay_table_id()}',
             headers: {out: 'json'},
-            cols: [JSON.parse('{$tables.fields|raw|json_encode}')],
+            cols: [config.cols || []],
             page: true,
             dataUrls: {
                 add: "{:urls('add')}",
@@ -48,8 +51,19 @@
                 del: "{:urls('delete')}",
                 quick: "{:urls('quickEdit')}",
             },
-            isTree: JSON.parse('{$is_tree|default=false|json_encode}'),
-            toolTplData: JSON.parse('{$tables.right_button|default=[]|raw|json_encode}')
+            isTree: config.is_tree,
+            toolbarEvent: {
+                cleanDuplicates: function (obj) {
+                    let url = $(obj.elem).data('load');
+                    $.ajax({
+                        url: url,
+                        success: function (res) {
+                            popup.success(res.msg);
+                            layTable.reload(obj.config.id); // 重新加载表格
+                        }
+                    });
+                }
+            }
         }
         if (opt.isTree) {
             opt.tree = {
