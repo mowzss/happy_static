@@ -272,22 +272,64 @@
       .layui-nav {
         width: 60px;
 
+        // 浮层弹出：鼠标悬停根级菜单项（= 本 li 就是 .layui-nav-itemed）时
         .layui-nav-item.admin-nav-hover {
-          .layui-nav-itemed {
-            > .layui-nav-child {
-              display: block
+          // 根级 li 本身：保持收起态（侧栏 60px 宽内不展开）
+          // 它的直接子 .layui-nav-child 被提到外面当浮层
+        }
+
+        // 真正的浮层：直接子 .layui-nav-child
+        .layui-nav-item.admin-nav-hover > .layui-nav-child {
+          display: block !important;
+          position: fixed !important;
+          left: 64px !important;            // 侧栏 60px + 4px 间隙（侧栏右边缘对齐）
+          right: auto !important;
+          bottom: auto !important;
+          background: #24262f !important;
+          min-width: 200px;
+          z-index: 1001;
+          padding: 6px 0;
+          box-shadow: 2px 2px 10px rgba(0, 0, 0, .35);
+
+          // 浮层内：所有子项恢复正常显示
+          li {
+            display: block !important;
+            padding: 0;
+            line-height: 38px;
+
+            a {
+              display: block;
+              padding: 0 20px;
+              height: 38px;
+              line-height: 38px;
+              overflow: visible;
+
+              .happy-nav-title {
+                display: inline !important;
+              }
+
+              .layui-nav-more {
+                display: none !important;
+              }
+            }
+
+            a:hover {
+              background: rgba(255, 255, 255, .08);
+              color: #fff;
             }
           }
+        }
 
-          > .layui-nav-child {
-            display: inline-block;
-            position: fixed;
-            top: 105px;
-            left: 65px;
-            background: #24262f !important;
-            min-width: 200px;
-            z-index: 1001
-          }
+        // 收缩态下所有非 hover 的 layui-nav-child 必须走侧栏内收起逻辑
+        // （layui 原生是 display:none；position / left / top 清掉避免残留内联样式污染）
+        .layui-nav-item:not(.admin-nav-hover) > .layui-nav-child {
+          display: none !important;
+          position: static !important;
+          left: auto !important;
+          right: auto !important;
+          top: auto !important;
+          bottom: auto !important;
+          margin: 0 !important;
         }
 
         .layui-nav-item {
@@ -305,7 +347,7 @@
         }
 
         .layui-nav-itemed {
-          .layui-nav-child {
+          > .layui-nav-child {
             display: none
           }
         }

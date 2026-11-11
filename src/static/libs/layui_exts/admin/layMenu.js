@@ -26,6 +26,12 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
                 }
                 let title = $this.find(".happy-nav-title").text();
                 let id = $this.attr("lay-id");
+
+                // 收缩导航下，点击浮层内的子项后移除悬停类（让浮层收起）
+                if ($(".happy-admin-layout").find('.layui-layout-admin').hasClass('mini-nav')) {
+                    $this.closest('.admin-nav-hover').removeClass('admin-nav-hover');
+                }
+
                 // 添加新标签页
                 layTabs.add({
                     id: id,
@@ -35,6 +41,102 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
                 });
             });
 
+            // 收缩导航：悬停根级菜单项弹出子菜单浮层
+            this.initMiniNavHover();
+        },
+        // 收缩导航悬停弹出：绑定一次事件，mini-nav 状态下生效
+        initMiniNavHover: function () {
+            let LAYOUT = '.happy-admin-layout .layui-layout-admin';
+            let ROOT_ITEM = '#menu-container .side-menu-container > li';
+            let CHILDREN = '#menu-container .side-menu-container .layui-nav-child';
+
+            // 清理所有根级项的内联 style（收缩/展开切换时 DOM 上会残留 top 等）
+            function cleanupInlineStyles() {
+                $(CHILDREN).each(function () {
+                    let $c = $(this);
+                    if ($c.attr('style')) {
+                        // 只移除我们自己写的 top / left / position，其他不动
+                        let style = $c.attr('style')
+                            .replace(/\btop\s*:[^;]+;?/gi, '')
+                            .replace(/\bleft\s*:[^;]+;?/gi, '')
+                            .replace(/\bposition\s*:[^;]+;?/gi, '');
+                        style = style.trim().replace(/;+$/, '');
+                        if (style) {
+                            $c.attr('style', style);
+                        } else {
+                            $c.removeAttr('style');
+                        }
+                    }
+                });
+            }
+
+            $(document).on('mouseenter', ROOT_ITEM, function () {
+                let $layout = $(LAYOUT);
+                if (!$layout.hasClass('mini-nav')) return;
+
+                $(ROOT_ITEM).removeClass('admin-nav-hover');
+                cleanupInlineStyles();
+
+                let $li = $(this);
+                let $child = $li.children('.layui-nav-child').first();
+                if (!$child.length) return;
+
+                $li.addClass('admin-nav-hover');
+
+                // 视口坐标：offset() 文档坐标 - scrollTop() 滚动量 → top
+                let top = Math.max(0, $li.offset().top - $(window).scrollTop() - 2);
+                let sideH = $('.layui-side').outerHeight() || 600;
+                let childH = $child.outerHeight() || 200;
+                // 超出底部就贴底，避免被裁掉
+                let maxTop = Math.max(0, $(window).innerHeight() - childH - 8);
+                $child.css('top', Math.min(top, maxTop) + 'px');
+            });
+
+            $(document).on('mouseleave', ROOT_ITEM, function () {
+                let $layout = $(LAYOUT);
+                if (!$layout.hasClass('mini-nav')) return;
+
+                let $li = $(this);
+                setTimeout(function () {
+                    if ($(':hover').closest('.admin-nav-hover').length === 0) {
+                        $li.removeClass('admin-nav-hover');
+                        // 收起时同步清掉 top 内联
+                        let $child = $li.children('.layui-nav-child').first();
+                        if ($child.length) $child.css('top', '');
+                    }
+                }, 120);
+            });
+
+            // 浮层内子项点击后关闭浮层
+            $(document).on('click', '#menu-container .admin-nav-hover .layui-nav-child a', function () {
+                setTimeout(function () {
+                    $('#menu-container .admin-nav-hover').removeClass('admin-nav-hover');
+                    cleanupInlineStyles();
+                }, 0);
+            });
+
+            // 用 MutationObserver 监测 mini-nav class 切换，可靠清理残留内联 style
+            let _observer = new MutationObserver(function () {
+                let $layout = $(LAYOUT);
+                if (!$layout.hasClass('mini-nav')) {
+                    cleanupInlineStyles();
+                }
+            });
+            $(function () {
+                let target = document.querySelector(LAYOUT);
+                if (target) {
+                    _observer.observe(target, {attributes: true, attributeFilter: ['class']});
+                }
+            });
+
+            // 菜单数据加载后（DOM 重建），也清理一次
+            // （layMenu.renderAllSideNavs → element.init 后 DOM 可能换了节点）
+            let _origRender = layMenu.renderAllSideNavs;
+            layMenu.renderAllSideNavs = function () {
+                _origRender.apply(this, arguments);
+                // 菜单 DOM 构建完，清理下可能的残留
+                setTimeout(cleanupInlineStyles, 50);
+            };
         },
         // 加载所有菜单数据
         loadAllMenuData: function (url) {
