@@ -283,6 +283,10 @@ layui.define(["tabs", "layer", "jquery", 'dropdown'], function (exports) {
                 }, opt);
                 if (!that.tabIsExist(id)) {
                     tabs.add(that.config.elem, config);
+                    // layui 的 tabs.add 内部切换页签时会跳过 beforeChange 事件，
+                    // 导致“打开/切换页签时清空其他页签内容”的规则不生效。
+                    // 这里手动执行一次，保证 data-menu-open 与菜单 lay-url 链路行为一致。
+                    $(`#${that.config.elem} .layui-tabs-body > .layui-tabs-item`).empty();
                 }
                 // 恢复会话时非激活页签不切换，避免启动阶段依次加载所有页签
                 if (opt.active !== false) {
