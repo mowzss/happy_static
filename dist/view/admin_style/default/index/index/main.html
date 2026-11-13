@@ -1,29 +1,143 @@
-<div class="happy-container"><div class="layui-row layui-col-space10"><div class="layui-col-md12"><div class="layui-card"><div class="layui-card-header"> 运行状态</div><div class="layui-card-body"><table><colgroup><col width="100"></col><col width="80"></col><col width="40"></col><col></col></colgroup><tr><td>当前运行状态:</td><td> {notempty name="$is_debug"} <button class="layui-btn layui-btn-xs layui-bg-red">调试模式</button> {else/} <button class="layui-btn layui-btn-xs">线上模式</button> {/notempty}</td><td> <button class="layui-btn layui-btn-xs layui-btn-primary" id="run_mode" data-status="{$is_debug?0:1}">切换模式</button></td><td></td></tr></table></div></div></div><div class="layui-col-md8"><div class="layui-row layui-col-space10"><div class="layui-col-md6"><div class="layui-card"><div class="layui-card-header"> 快捷菜单</div><div class="layui-card-body"><div class="layui-row layui-col-space10"><div class="layui-col-md3 layui-col-sm3 layui-col-xs3"><div class="shortcut-menu" data-id="home1" data-title="主页" data-url="http://www.bing.com"><i class="layui-icon layui-icon-home"></i></div> <span class="shortcut-menu-label">主页</span></div><div class="layui-col-md3 layui-col-sm3 layui-col-xs3"><div class="shortcut-menu" data-id="home2" data-title="弹层" data-url="http://www.bing.com"><i class="layui-icon layui-icon-camera"></i></div> <span class="shortcut-menu-label">弹层</span></div><div class="layui-col-md3 layui-col-sm3 layui-col-xs3"><div class="shortcut-menu" data-id="home2" data-title="聊天" data-url="http://www.bing.com"><i class="layui-icon layui-icon-star"></i></div> <span class="shortcut-menu-label">聊天</span></div><div class="layui-col-md3 layui-col-sm3 layui-col-xs3"><div class="shortcut-menu" data-id="home3" data-title="相机" data-url="http://www.bing.com"><i class="layui-icon layui-icon-camera"></i></div> <span class="shortcut-menu-label">相机</span></div><div class="layui-col-md3 layui-col-sm3 layui-col-xs3"><div class="shortcut-menu" data-id="home4" data-title="表单" data-url="http://www.bing.com"><i class="layui-icon layui-icon-console"></i></div> <span class="shortcut-menu-label">表单</span></div><div class="layui-col-md3 layui-col-sm3 layui-col-xs3"><div class="shortcut-menu" data-id="home5" data-title="安全" data-url="http://www.bing.com"><i class="layui-icon layui-icon-auz"></i></div> <span class="shortcut-menu-label">安全</span></div><div class="layui-col-md3 layui-col-sm3 layui-col-xs3"><div class="shortcut-menu" data-id="home6" data-title="公告" data-url="http://www.bing.com"><i class="layui-icon layui-icon-cart"></i></div> <span class="shortcut-menu-label">公告</span></div><div class="layui-col-md3 layui-col-sm3 layui-col-xs3"><div class="shortcut-menu" data-id="home7" data-title="更多" data-url="http://www.bing.com"><i class="layui-icon layui-icon-app"></i></div> <span class="shortcut-menu-label">更多</span></div></div></div></div></div><div class="layui-col-md6"><div class="layui-card"><div class="layui-card-header"> 代办任务</div><div class="layui-card-body"><div class="layui-row layui-col-space10"><div class="layui-col-md6 layui-col-sm6 layui-col-xs6"><div class="deputy"><div class="deputy-label">待审评论</div><div class="deputy-count">21</div></div></div><div class="layui-col-md6 layui-col-sm6 layui-col-xs6"><div class="deputy"><div class="deputy-label">待审帖子</div><div class="deputy-count">32</div></div></div><div class="layui-col-md6 layui-col-sm6 layui-col-xs6"><div class="deputy"><div class="deputy-label">待审文章</div><div class="deputy-count">14</div></div></div><div class="layui-col-md6 layui-col-sm6 layui-col-xs6"><div class="deputy"><div class="deputy-label">待审用户</div><div class="deputy-count">63</div></div></div></div></div></div></div><div class="layui-col-md12"> {notempty name="$happy_modules"}<div class="layui-card"><div class="layui-card-header">已安装模块包</div><div class="layui-card-body"><table class="layui-table" lay-filter="happy-module"><thead><tr><th lay-data="{field:'name', width:'180'}">名称</th><th lay-data="{field:'description'}">描述</th><th lay-data="{field:'version', width:'100'}">版本</th></tr></thead><tbody> {volist name="happy_modules" id="vo"}<tr><td>{$vo.name}</td><td>{$vo.description}</td><td>{$vo.version}</td></tr> {/volist}</tbody></table></div></div> {/notempty} {notempty name="$system_modules"}<div class="layui-card"><div class="layui-card-header">项目依赖</div><div class="layui-card-body"><table class="layui-table" lay-filter="happy-libs"><thead><tr><th lay-data="{field:'name', width:180}">名称</th><th lay-data="{field:'type', width:80}">类型</th><th lay-data="{field:'description'}">描述</th><th lay-data="{field:'license', width:100}">开源协议</th><th lay-data="{field:'version', width:80}">版本</th><th lay-data="{field:'homepage', width:180}">项目主页</th></tr></thead><tbody> {volist name="system_modules" id="vo"}<tr><td>{$vo.name}</td><td>{$vo.type}</td><td>{$vo.description}</td><td> {if is_array($vo.license)} {volist name="$vo.license" id="vs"} {$vs} {/volist} {else} {$vo.license} {/if}</td><td>{$vo.version}</td><td>{$vo.homepage}</td></tr> {/volist}</tbody></table></div></div> {/notempty}</div></div></div><div class="layui-col-md4"><div class="layui-card"><div class="layui-card-header">系统信息</div><div class="layui-card-body"><table class="layui-table"><colgroup><col width="100"><col></colgroup><tbody class="layui-table-body"><tr><td>服务器:</td><td>{$system.info}</td></tr><tr><td>服务器IP:</td><td>{$system.ip}</td></tr><tr><td>运行环境</td><td>{$system.php_os}</td></tr><tr><td>运行模式</td><td>{$system.php_sapi}</td></tr><tr><td>ThinkPHP版本</td><td>{$system.think_version}</td></tr><tr><td>php版本</td><td>{$system.php_version}</td></tr><tr><td>mysql版本:</td><td>{$system.mysql_version}</td></tr></tbody></table></div></div><div class="layui-card"><div class="layui-card-header">php扩展信息</div><div class="layui-card-body"><table class="layui-table"><colgroup><col width="100"><col></colgroup><tbody class="layui-table-body"> {foreach $php_ext as $key=>$vo }<tr><td>{$key}:</td><td><span class="{eq name='$vo' value='on'}layui-font-green{else/}layui-font-red{/eq}">{eq name='$vo' value='on'}✅️ 已安装{else/}❌️ 未安装{/eq}</span></td></tr> {/foreach}</tbody></table></div></div></div></div></div><script>
-    layui.use(['layer', 'layTabs', 'table'], function () {
-        const $ = layui.jquery, layTabs = layui.layTabs,
-            layer = layui.layer, table = layui.table;
+<style>
+    .dash-metric { position: relative; padding: 16px 18px 14px; border-radius: 6px; color: #fff; overflow: hidden; }
+    .dash-metric__label { font-size: 13px; opacity: .85; margin-bottom: 4px; }
+    .dash-metric__value { font-size: 28px; font-weight: 600; letter-spacing: .5px; line-height: 1.1; }
+    .dash-metric__hint  { font-size: 12px; opacity: .8; margin-top: 6px; }
+    .dash-metric__icon  { position: absolute; right: 14px; top: 14px; font-size: 34px; opacity: .35; }
+    .dash-metric--blue   { background: linear-gradient(135deg,#4e7fef,#2f5dd0); }
+    .dash-metric--green  { background: linear-gradient(135deg,#22c55e,#15803d); }
+    .dash-metric--purple { background: linear-gradient(135deg,#7c4dff,#5b21b6); }
+    .dash-metric--amber  { background: linear-gradient(135deg,#f59e0b,#b45309); }
+
+    .dash-quick { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .dash-quick__item { text-align: center; padding: 12px 6px; border-radius: 6px; transition: background .15s; color: #333; }
+    .dash-quick__item:hover { background: #f3f4f6; }
+    .dash-quick__icon { font-size: 24px; color: #4e7fef; margin-bottom: 4px; display: block; }
+    .dash-quick__text { font-size: 12px; color: #555; }
+
+    .dash-ext-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+    .dash-ext-item { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+    .dash-ext-item__badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; line-height: 18px; }
+    .dash-ext-item__badge--ok  { background: #ecfdf5; color: #15803d; }
+    .dash-ext-item__badge--bad { background: #fef2f2; color: #b91c1c; }
+
+    .dash-bar-row { display: flex; align-items: center; font-size: 13px; margin: 8px 0; gap: 10px; }
+    .dash-bar-row__label { width: 56px; color: #555; flex-shrink: 0; }
+    .dash-bar-row__track { flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+    .dash-bar-row__fill { height: 100%; background: linear-gradient(90deg,#7c4dff,#4e7fef); border-radius: 4px; }
+    .dash-bar-row__val  { width: 78px; text-align: right; color: #1e293b; font-variant-numeric: tabular-nums; }
+
+    .dash-log-row { font-size: 12px; }
+    .dash-log-row__time { color: #94a3b8; margin-right: 8px; }
+    .dash-log-row__spider { display: inline-block; padding: 0 6px; background: #eef2ff; color: #4e7fef; border-radius: 3px; margin-right: 6px; }
+    .dash-log-row__url { color: #475569; word-break: break-all; }
+    .dash-log-row__meta { color: #94a3b8; margin-left: 6px; }
+</style><div class="happy-container"><div class="layui-row layui-col-space10"><div class="layui-col-md3 layui-col-sm6 layui-col-xs6"><div class="dash-metric dash-metric--blue"><span class="layui-icon layui-icon-chart dash-metric__icon"></span><div class="dash-metric__label">今日蜘蛛抓取</div><div class="dash-metric__value">{$overview.today_spider}</div><div class="dash-metric__hint">独立 {$overview.today_unique} 条 URL · {$spider.status.base_label|default='今日'}</div></div></div><div class="layui-col-md3 layui-col-sm6 layui-col-xs6"><div class="dash-metric dash-metric--green"><span class="layui-icon layui-icon-read dash-metric__icon"></span><div class="dash-metric__label">站点总内容</div><div class="dash-metric__value">{$overview.content_total}</div><div class="dash-metric__hint">个模块累计发布</div></div></div><div class="layui-col-md3 layui-col-sm6 layui-col-xs6"><div class="dash-metric dash-metric--purple"><span class="layui-icon layui-icon-website dash-metric__icon"></span><div class="dash-metric__label">已安装模块</div><div class="dash-metric__value">{$overview.module_count}</div><div class="dash-metric__hint">{$overview.menu_count} 个菜单节点 · {$overview.nav_count} 条导航</div></div></div><div class="layui-col-md3 layui-col-sm6 layui-col-xs6"><div class="dash-metric dash-metric--amber"><span class="layui-icon layui-icon-file dash-metric__icon"></span><div class="dash-metric__label">附件资源</div><div class="dash-metric__value">{$overview.attachment}</div><div class="dash-metric__hint">运行内存 {$system.php_run_memory}</div></div></div></div><div class="layui-row layui-col-space10" style="margin-top:10px;"><div class="layui-col-md8"><div class="layui-card"><div class="layui-card-header"> 蜘蛛抓取趋势 {notempty name="spider.status.last_log_ago"} <span style="float:right;font-size:12px;color:#94a3b8;">最近一次：{$spider.status.last_log_time}（{$spider.status.last_log_ago}）</span> {/notempty}</div><div class="layui-card-body"><div id="dash-spider-trend" style="height:260px;"></div></div></div><div class="layui-row layui-col-space10"><div class="layui-col-md6"><div class="layui-card"><div class="layui-card-header">快捷入口</div><div class="layui-card-body"> {notempty name="quick_links"}<div class="dash-quick"> {volist name="quick_links" id="vo"}<a class="dash-quick__item" data-menu-open="{$vo.url}" href="javascript:;"><i class="dash-quick__icon {$vo.icon}"></i> <span class="dash-quick__text">{$vo.title}</span></a> {/volist}</div> {else/}<div style="color:#94a3b8;font-size:13px;padding:10px 0;">暂无可用的菜单项</div> {/notempty}</div></div></div><div class="layui-col-md6"><div class="layui-card"><div class="layui-card-header">最近抓取</div><div class="layui-card-body" style="padding-top:0;"> {notempty name="spider.logs"}<ul class="layui-timeline" style="margin:0;padding-top:10px;"> {volist name="spider.logs" id="log"}<li class="layui-timeline-item"> <i class="layui-icon layui-timeline-axis">&#xe63f;</i><div class="layui-timeline-content layui-text"><div class="dash-log-row"> <span class="dash-log-row__time">{$log.time_text}</span> <span class="dash-log-row__spider">{$log.label}</span> <span class="dash-log-row__meta">{$log.module_text} · {$log.device_text}</span></div><div class="dash-log-row__url" title="{$log.url_full}">{$log.url}</div></div></li> {/volist}</ul> {else/}<div style="color:#94a3b8;font-size:13px;padding:10px 0;">暂无抓取记录</div> {/notempty}</div></div></div></div></div><div class="layui-col-md4"><div class="layui-card"><div class="layui-card-header">运行状态</div><div class="layui-card-body" style="padding:12px 16px;"><div style="display:flex;align-items:center;justify-content:space-between;"><div> 当前模式： {notempty name="$is_debug"} <button class="layui-btn layui-btn-xs layui-btn-danger">调试模式</button> {else/} <button class="layui-btn layui-btn-xs layui-btn-normal">线上模式</button> {/notempty}</div> <button class="layui-btn layui-btn-xs layui-btn-primary" id="run_mode" data-status="{$is_debug?0:1}"> 切换</button></div></div></div><div class="layui-card"><div class="layui-card-header">模块内容统计</div><div class="layui-card-body"> {notempty name="content.items"} {volist name="content.items" id="row"}<div class="dash-bar-row"> <span class="dash-bar-row__label">{$row.label}</span><div class="dash-bar-row__track"><div class="dash-bar-row__fill" style="width:{if $content.max > 0}{:round($row.total / $content.max * 100, 1)}{else/}0{/if}%;"></div></div> <span class="dash-bar-row__val">{$row.text}</span></div> {/volist} {else/}<div style="color:#94a3b8;font-size:13px;padding:10px 0;">暂无可统计内容</div> {/notempty}</div></div><div class="layui-card"><div class="layui-card-header">系统信息</div><div class="layui-card-body" style="padding:0;"><table class="layui-table" lay-skin="line" style="margin-bottom:0;"><tbody><tr><td style="width:86px;">服务器</td><td>{$system.info}</td></tr><tr><td>IP 地址</td><td>{$system.ip}</td></tr><tr><td>运行环境</td><td>{$system.php_os} · {$system.php_sapi}</td></tr><tr><td>ThinkPHP</td><td>{$system.think_version}</td></tr><tr><td>PHP</td><td>{$system.php_version}</td></tr><tr><td>MySQL</td><td>{$system.mysql_version}</td></tr><tr><td>服务器时间</td><td>{$system.server_time}（{$system.timezone}）</td></tr></tbody></table></div></div><div class="layui-card"><div class="layui-card-header">PHP 扩展</div><div class="layui-card-body"> {notempty name="php_ext"}<div class="dash-ext-list"> {volist name="php_ext" id="ext"}<div class="dash-ext-item"> <span>{$ext.label}</span> <span class="dash-ext-item__badge dash-ext-item__badge--{$ext.class}">{$ext.text}</span></div> {/volist}</div> {else/}<div style="color:#94a3b8;font-size:13px;">无法读取扩展信息</div> {/notempty}</div></div></div></div><div class="layui-row layui-col-space10" style="margin-top:10px;"><div class="layui-col-md12"> {notempty name="composer.happy_modules"}<div class="layui-card"><div class="layui-card-header">已安装模块包</div><div class="layui-card-body" style="padding:0;"><table class="layui-table" lay-filter="happy-module" lay-skin="line" style="margin-bottom:0;"><thead><tr><th lay-data="{field:'name', width:'220'}">名称</th><th lay-data="{field:'description'}">描述</th><th lay-data="{field:'version', width:'120'}">版本</th></tr></thead><tbody> {volist name="composer.happy_modules" id="vo"}<tr><td>{$vo.name}</td><td>{$vo.description}</td><td>{$vo.version}</td></tr> {/volist}</tbody></table></div></div> {/notempty} {notempty name="composer.system_modules"}<div class="layui-card"><div class="layui-card-header">项目依赖</div><div class="layui-card-body" style="padding:0;"><table class="layui-table" lay-filter="happy-libs" lay-skin="line" style="margin-bottom:0;"><thead><tr><th lay-data="{field:'name', width:'220'}">名称</th><th lay-data="{field:'type', width:'100'}">类型</th><th lay-data="{field:'description'}">描述</th><th lay-data="{field:'license', width:'120'}">开源协议</th><th lay-data="{field:'version', width:'120'}">版本</th><th lay-data="{field:'homepage', width:'180'}">项目主页</th></tr></thead><tbody> {volist name="composer.system_modules" id="vo"}<tr><td>{$vo.name}</td><td>{$vo.type}</td><td>{$vo.description}</td><td> {if is_array($vo.license)} {$vo.license|implode=',',###}|default='—' {else} {$vo.license|default='—'} {/if}</td><td>{$vo.version}</td><td>{$vo.homepage|default='—'}</td></tr> {/volist}</tbody></table></div></div> {/notempty}</div></div></div><!-- JS 所需的后端数据统一放在此处，避免在 <script> 中出现模板标签导致 IDE 语法提示错误。
+    type="application/json" 的 script 块浏览器不会执行，仅作为数据容器。
+-->
+<script id="dash-trend-labels" type="application/json">{empty name="spider.trend.labels"}[]{else/}{:json_encode($spider.trend.labels)}{/empty}</script><script id="dash-trend-series" type="application/json">{empty name="spider.trend.series"}[]{else/}{:json_encode($spider.trend.series)}{/empty}</script><div id="dash-flags" style="display:none;" data-run-mode-url="{:urls('runMode')}" data-happy-module="{notempty name='composer.happy_modules'}1{else/}0{/notempty}" data-system-module="{notempty name='composer.system_modules'}1{else/}0{/notempty}" data-has-trend="{notempty name='spider.trend.labels'}1{else/}0{/notempty}"></div><script>
+    layui.use(['layer', 'layTabs', 'table', 'echarts', 'jquery'], function () {
+        var $ = layui.jquery,
+            layTabs = layui.layTabs,
+            layer = layui.layer,
+            table = layui.table,
+            echarts = layui.echarts;
+
+        // 读取后端注入的数据（script type=application/json + 隐藏 div data-*）
+        var trendLabels = safeJsonLoad('dash-trend-labels');
+        var trendSeries = safeJsonLoad('dash-trend-series');
+        var flags = $('#dash-flags');
+        var runModeUrl = flags.data('run-mode-url');
+        var hasHappyModule = flags.data('happy-module') === '1';
+        var hasSystemModule = flags.data('system-module') === '1';
+        var hasTrend = flags.data('has-trend') === '1';
+
+        // 运行模式切换（保留原有逻辑）
         $('#run_mode').on('click', function () {
-            let status = $(this).attr('data-status');
+            var status = $(this).attr('data-status');
             $.ajax({
-                url: "{:urls('runMode')}",
+                url: runModeUrl,
                 type: 'post',
                 data: {status: status},
                 dataType: 'json',
                 success: function (res) {
-                    if (res.code === 1) {
-                        layer.msg(res.msg, {icon: 1, time: 1000}, function () {
-                            layTabs.refresh()
-                        })
-                    } else {
-                        layer.msg(res.msg, {icon: 2, time: 1000}, function () {
-                            layTabs.refresh()
-                        })
-                    }
+                    layer.msg(res.msg, {icon: res.code === 1 ? 1 : 2, time: 1000}, function () {
+                        layTabs.refresh();
+                    });
                 }
+            });
+        });
 
-            })
-        })
-        const LibsTable = table.init('happy-libs', {even: true})
-        const ModuleTable = table.init('happy-module', {even: true})
+        // 初始化 Composer 依赖表格
+        if (hasHappyModule) {
+            table.init('happy-module', {even: true});
+        }
+        if (hasSystemModule) {
+            table.init('happy-libs', {even: true});
+        }
+
+        // 蜘蛛趋势图
+        if (hasTrend && trendLabels.length && typeof echarts !== 'undefined') {
+            (function () {
+                var dom = document.getElementById('dash-spider-trend');
+                if (!dom) return;
+
+                var chart = echarts.init(dom);
+                var palette = ['#4e7fef', '#22c55e', '#f59e0b', '#ef4444', '#7c4dff', '#0ea5e9', '#94a3b8'];
+
+                chart.setOption({
+                    tooltip: { trigger: 'axis' },
+                    legend: { top: 0, right: 0, textStyle: { fontSize: 12 } },
+                    grid: { left: 36, right: 16, top: 36, bottom: 28 },
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: trendLabels,
+                        axisLine: { lineStyle: { color: '#e2e8f0' } },
+                        axisLabel: { color: '#64748b', fontSize: 11 }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLine: { show: false },
+                        splitLine: { lineStyle: { color: '#f1f5f9' } },
+                        axisLabel: { color: '#94a3b8', fontSize: 11 }
+                    },
+                    series: trendSeries.map(function (s, i) {
+                        var color = palette[i % palette.length];
+                        return {
+                            name: s.name,
+                            type: 'line',
+                            smooth: true,
+                            showSymbol: false,
+                            lineStyle: { width: 2, color: color },
+                            itemStyle: { color: color },
+                            areaStyle: { opacity: 0.08, color: color },
+                            data: s.data
+                        };
+                    })
+                });
+
+                window.addEventListener('resize', function () { chart.resize(); });
+            })();
+        }
     });
+
+    /**
+     * 安全地从 <script type="application/json"> 节点加载 JSON。
+     * 节点不存在、内容为空或 JSON 语法错误时均返回空数组。
+     *
+     * @param {string} id script 元素的 id
+     * @returns {Array|Object}
+     */
+    function safeJsonLoad(id) {
+        var el = document.getElementById(id);
+        if (!el) return [];
+        var text = (el.textContent || '').trim();
+        if (!text) return [];
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            return [];
+        }
+    }
 </script>
