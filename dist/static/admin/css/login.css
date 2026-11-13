@@ -1,1 +1,422 @@
-body{width:100vw;height:100vh;display:flex;flex-direction:row;flex-wrap:nowrap;justify-content:center;align-items:center;background:linear-gradient(270deg,#e14e4e,#3b93f3,#e3b268,#8ada33);background-size:800% 800%;animation:GradientBackground 15s ease infinite}@keyframes GradientBackground{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}.login{gap:160px;width:100%;max-width:1200px;padding:60px;background:linear-gradient(360deg,rgba(255,255,255,.3),rgba(222,222,222,.1));backdrop-filter:blur(20px);box-shadow:rgba(52,52,52,.2) 2px 2px 9px 5px;border-radius:40px;display:flex;flex-direction:row;flex-wrap:nowrap;justify-content:center;align-items:center}@media screen and (max-width:765px){.login{flex-direction:column;box-sizing:border-box;padding:0;border-radius:0;box-shadow:none;background:0 0}}.login-bg{width:600px;padding:40px}@media screen and (max-width:1200px){.login-bg{display:none}}.login-bg img{width:100%;min-width:500px}.login-container{box-shadow:rgba(255,255,255,.2) 2px 2px 9px 5px;height:auto;width:380px;padding:40px 40px 80px;border-radius:10px;background:rgba(0,0,0,.3);backdrop-filter:blur(20px)}@media screen and (max-width:765px){.login-container{width:calc(100% - 80px);margin:20px;padding:40px 20px}}.login-container .logo{width:60px;height:60px;padding:10px;background:rgba(255,255,255,.8);border-radius:8px;margin:0 auto}.login-container .logo img{width:60px;height:60px;border-radius:4px}.login-container .title{color:rgba(51,51,51,.9);line-height:60px;height:60px;font-size:22px;font-weight:bolder;margin-bottom:20px}.title{font-size:18px;font-weight:bolder;line-height:60px;height:60px;text-align:center}.login-other .layui-icon{position:relative;display:inline-block;margin:0 2px;top:2px;font-size:26px}
+* {
+    box-sizing: border-box
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: #fff;
+    overflow: hidden
+}
+
+body {
+    background: radial-gradient(ellipse at 20% 20%, rgba(124, 77, 255, .35) 0, transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, .25) 0, transparent 55%), linear-gradient(135deg, #0f0c29 0, #302b63 50%, #24243e 100%);
+    background-attachment: fixed;
+    position: relative
+}
+
+.lg-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: .55;
+    pointer-events: none;
+    z-index: 0;
+    animation: lg-blob-drift 24s ease-in-out infinite
+}
+
+.lg-blob--1 {
+    width: 560px;
+    height: 560px;
+    background: radial-gradient(circle, #7c4dff 0, transparent 70%);
+    top: -120px;
+    left: -120px;
+    animation-delay: 0s
+}
+
+.lg-blob--2 {
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle, #3b82f6 0, transparent 70%);
+    bottom: -80px;
+    right: -80px;
+    animation-delay: -8s
+}
+
+.lg-blob--3 {
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, #ec4899 0, transparent 70%);
+    top: 55%;
+    left: 45%;
+    animation-delay: -16s
+}
+
+@keyframes lg-blob-drift {
+    0%, 100% {
+        transform: translate(0, 0) scale(1)
+    }
+    33% {
+        transform: translate(60px, -40px) scale(1.08)
+    }
+    66% {
+        transform: translate(-50px, 50px) scale(.92)
+    }
+}
+
+.lg-root {
+    position: relative;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch
+}
+
+.lg-brand {
+    flex: 0 0 52%;
+    position: relative;
+    padding: 60px 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(124, 77, 255, .12) 0, rgba(59, 130, 246, .08) 100%);
+    backdrop-filter: blur(8px);
+    border-right: 1px solid rgba(255, 255, 255, .08);
+    overflow: hidden
+}
+
+.lg-brand__header {
+    display: flex;
+    align-items: center;
+    gap: 14px
+}
+
+.lg-brand__logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .12);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, .2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #fff;
+    overflow: hidden
+}
+
+.lg-brand__logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain
+}
+
+.lg-brand__name {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    color: rgba(255, 255, 255, .95)
+}
+
+.lg-brand__name--small {
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, .5);
+    margin-top: 2px
+}
+
+.lg-brand__center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 520px
+}
+
+.lg-brand__tagline {
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -.5px;
+    background: linear-gradient(135deg, #fff 0, rgba(255, 255, 255, .65) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 24px
+}
+
+.lg-brand__desc {
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, .7)
+}
+
+.lg-brand__feat {
+    margin-top: 36px;
+    display: grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap: 14px 28px
+}
+
+.lg-brand__feat-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, .7);
+    line-height: 1.5
+}
+
+.lg-brand__feat-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c4dff 0, #9f6bff 100%);
+    margin-top: 7px;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(124, 77, 255, .6)
+}
+
+.lg-brand__footer {
+    font-size: 12px;
+    color: rgba(255, 255, 255, .5)
+}
+
+.lg-brand::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 10% 80%, rgba(124, 77, 255, .28) 0, transparent 40%), radial-gradient(circle at 90% 10%, rgba(59, 130, 246, .22) 0, transparent 35%);
+    pointer-events: none;
+    z-index: 0
+}
+
+.lg-brand > * {
+    position: relative;
+    z-index: 1
+}
+
+.lg-form-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+    z-index: 1
+}
+
+.lg-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 48px 44px 40px;
+    position: relative;
+    background: rgba(255, 255, 255, .08);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, .35), 0 2px 8px rgba(0, 0, 0, .2), inset 0 1px 0 rgba(255, 255, 255, .15);
+    overflow: hidden
+}
+
+.lg-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .45), transparent)
+}
+
+.lg-card::after {
+    content: '';
+    position: absolute;
+    top: -80px;
+    left: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124, 77, 255, .35) 0, transparent 65%);
+    pointer-events: none
+}
+
+.lg-card__logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .15);
+    border: 1px solid rgba(255, 255, 255, .22);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    overflow: hidden
+}
+
+.lg-card__logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain
+}
+
+.lg-card__title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px
+}
+
+.lg-card__sub {
+    font-size: 13px;
+    color: rgba(255, 255, 255, .55);
+    margin-bottom: 32px
+}
+
+.lg-card .layui-form-item {
+    margin-bottom: 18px
+}
+
+.lg-card .layui-input-wrap {
+    position: relative
+}
+
+.lg-card .layui-input {
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 12px;
+    padding: 0 14px 0 42px;
+    height: 46px;
+    line-height: 46px;
+    color: #fff;
+    font-size: 14px;
+    transition: border-color .15s, background .15s, box-shadow .15s
+}
+
+.lg-card .layui-input::placeholder {
+    color: rgba(255, 255, 255, .45)
+}
+
+.lg-card .layui-input-wrap.layui-input-wrap-focus .layui-input, .lg-card .layui-input:focus {
+    background: rgba(255, 255, 255, .12);
+    border-color: rgba(255, 255, 255, .4);
+    box-shadow: 0 0 0 3px rgba(124, 77, 255, .25);
+    color: #fff
+}
+
+.lg-card .layui-input-prefix {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center
+}
+
+.lg-card .layui-input-prefix .layui-icon {
+    font-size: 18px;
+    color: rgba(255, 255, 255, .65)
+}
+
+.lg-btn-primary {
+    width: 100%;
+    height: 46px;
+    background: linear-gradient(135deg, #7c4dff 0, #9f6bff 100%);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    box-shadow: 0 6px 20px rgba(124, 77, 255, .45), inset 0 1px 0 rgba(255, 255, 255, .2);
+    cursor: pointer;
+    transition: transform .1s, box-shadow .15s
+}
+
+.lg-btn-primary:hover {
+    box-shadow: 0 8px 28px rgba(124, 77, 255, .6), inset 0 1px 0 rgba(255, 255, 255, .25);
+    transform: translateY(-1px)
+}
+
+.lg-btn-primary:active {
+    transform: translateY(0)
+}
+
+.lg-btn-ghost {
+    width: 100%;
+    height: 42px;
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, .8);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s
+}
+
+.lg-btn-ghost:hover {
+    background: rgba(255, 255, 255, .12);
+    border-color: rgba(255, 255, 255, .3);
+    color: #fff
+}
+
+.lg-divider {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent);
+    margin: 22px 0
+}
+
+.lg-card .layui-form-item hr {
+    display: none
+}
+
+.lg-card .layui-input-wrap .layui-affix span.layui-icon {
+    color: rgba(255, 255, 255, .5)
+}
+
+.lg-card .layui-form-error {
+    color: #fca5a5
+}
+
+@media screen and (max-width: 960px) {
+    .lg-brand {
+        display: none
+    }
+
+    .lg-form-wrap {
+        padding: 24px
+    }
+
+    .lg-card {
+        max-width: 100%;
+        padding: 40px 28px 32px;
+        border-radius: 16px
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .lg-form-wrap {
+        padding: 12px
+    }
+
+    .lg-card {
+        padding: 32px 20px 24px;
+        border-radius: 14px
+    }
+
+    .lg-card__title {
+        font-size: 20px
+    }
+}
