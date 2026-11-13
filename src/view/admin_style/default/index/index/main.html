@@ -41,10 +41,13 @@
         gap: 10px;
         margin-top: 10px;
     }
+    /* flex 子项默认 min-width:auto，内容最小宽度会把列撑过 flex-basis，
+       两列加 gap 后超过 100% 触发 wrap 换行，故必须显式归零 */
     .dash-main-row > [class^="layui-col-"] {
         float: none;
         display: flex;
         flex-direction: column;
+        min-width: 0;
     }
     .dash-main-row > .layui-col-md8 { flex: 0 0 calc(66.66% - 5px); }
     .dash-main-row > .layui-col-md4 { flex: 0 0 calc(33.33% - 5px); }
@@ -60,6 +63,7 @@
         float: none;
         display: flex;
         flex-direction: column;
+        min-width: 0;
     }
     .dash-left-inner > .layui-col-md6 { flex: 0 0 calc(50% - 5px); }
     .dash-left-inner > [class^="layui-col-"] > .layui-card {
