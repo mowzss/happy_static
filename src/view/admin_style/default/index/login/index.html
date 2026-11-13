@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -18,48 +18,101 @@
     </script>
 </head>
 <body>
-<div class="login">
-    <div class="login-bg">
-        <img src="__STATIC__/admin/svg/login_bg.svg?v={:sys_config('static_version',date('md'))}"></img>
-    </div>
-    <div class="login-container">
-        {notempty name=":sys_config('square_logo')"}
-        <div class="logo">
-            <img src="{:sys_config('square_logo')}" alt="login">
+
+<!-- 背景光斑（液态感核心，由 login.less @keyframes 驱动浮动） -->
+<div class="lg-blob lg-blob--1"></div>
+<div class="lg-blob lg-blob--2"></div>
+<div class="lg-blob lg-blob--3"></div>
+
+<div class="lg-root">
+
+    <!-- ==================== 左屏：品牌展示区 ==================== -->
+    <div class="lg-brand">
+        <div class="lg-brand__header">
+            <div class="lg-brand__logo">
+                {notempty name=":sys_config('square_logo')"}
+                <img src="{:sys_config('square_logo')}" alt="品牌">
+                {else/}
+                <i class="layui-icon layui-icon-console"></i>
+                {/notempty}
+            </div>
+            <div>
+                <div class="lg-brand__name">{:sys_config('site_name','Happy Admin')}</div>
+                <div class="lg-brand__name--small">管理后台 · Dashboard</div>
+            </div>
         </div>
-        {/notempty}
-        <div class="title">{:sys_config('site_name','网站')}</div>
-        <form class="layui-form">
-            <div class="layui-form-item">
-                <div class="layui-input-wrap">
-                    <div class="layui-input-prefix">
-                        <i class="layui-icon layui-icon-username"></i>
-                    </div>
-                    <input type="text" name="username" value="" lay-verify="required" placeholder="用户名"
-                           lay-reqtext="请填写用户名" autocomplete="off" class="layui-input" lay-affix="clear">
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <div class="layui-input-wrap">
-                    <div class="layui-input-prefix">
-                        <i class="layui-icon layui-icon-password"></i>
-                    </div>
-                    <input type="password" name="password" value="" lay-verify="required" placeholder="密   码"
-                           lay-reqtext="请填写密码" autocomplete="off" class="layui-input" lay-affix="eye">
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <hr>
-            </div>
-            <div class="layui-form-item">
-                <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="login">立即登录</button>
+
+        <div class="lg-brand__center">
+            <div class="lg-brand__tagline">欢迎回来，<br>请登录您的账户</div>
+            <div class="lg-brand__desc">
+                一站式站点管理平台，支持多模块内容管理 + 多模型设计
             </div>
 
-        </form>
-        <div class="layui-form-item">
-            <button class="layui-btn layui-btn-fluid layui-bg-black" id="back">返回首页</button>
+            <div class="lg-brand__feat">
+                <div class="lg-brand__feat-item"><span class="lg-brand__feat-dot"></span><span>多模块统一架构</span>
+                </div>
+                <div class="lg-brand__feat-item"><span class="lg-brand__feat-dot"></span><span>可视化权限配置</span>
+                </div>
+                <div class="lg-brand__feat-item"><span class="lg-brand__feat-dot"></span><span>蜘蛛实时监控</span></div>
+                <div class="lg-brand__feat-item"><span class="lg-brand__feat-dot"></span><span>SEO 结构化数据</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg-brand__footer">© {:date('Y')} {:sys_config('site_name','Happy Admin')} · All rights reserved.
         </div>
     </div>
+
+    <!-- ==================== 右屏：登录表单液态玻璃卡片 ==================== -->
+    <div class="lg-form-wrap">
+        <div class="lg-card">
+            <div class="lg-card__logo">
+                {notempty name=":sys_config('square_logo')"}
+                <img src="{:sys_config('square_logo')}" alt="登录">
+                {else/}
+                <i class="layui-icon layui-icon-console" style="font-size:26px;color:#fff;"></i>
+                {/notempty}
+            </div>
+            <div class="lg-card__title">账户登录</div>
+            <div class="lg-card__sub">请输入您的管理后台账户</div>
+
+            <form class="layui-form">
+                <div class="layui-form-item">
+                    <div class="layui-input-wrap">
+                        <div class="layui-input-prefix">
+                            <i class="layui-icon layui-icon-username"></i>
+                        </div>
+                        <input type="text" name="username" value=""
+                               lay-verify="required" lay-reqtext="请填写用户名"
+                               placeholder="用户名" autocomplete="off"
+                               class="layui-input" lay-affix="clear">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-wrap">
+                        <div class="layui-input-prefix">
+                            <i class="layui-icon layui-icon-password"></i>
+                        </div>
+                        <input type="password" name="password" value=""
+                               lay-verify="required" lay-reqtext="请填写密码"
+                               placeholder="密　码" autocomplete="off"
+                               class="layui-input" lay-affix="eye">
+                    </div>
+                </div>
+
+                <hr class="lg-divider">
+
+                <div class="layui-form-item">
+                    <button type="submit" class="lg-btn-primary" lay-submit lay-filter="login">立即登录</button>
+                </div>
+            </form>
+
+            <div class="layui-form-item" style="margin-bottom:0;">
+                <button type="button" class="lg-btn-ghost" id="back">返回站点首页</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 
@@ -72,6 +125,7 @@
         let $ = layui.jquery;
         let encrypt = layui.encrypt;
         let layer = layui.layer;
+
         // 登 录 提 交
         form.on('submit(login)', function (data) {
             $.ajax({
@@ -94,11 +148,11 @@
             })
             return false;
         });
+
         $("#back").on('click', function () {
             location.href = "{:hurl('index/index/index')}"
         })
     })
 </script>
 </body>
-
 </html>
