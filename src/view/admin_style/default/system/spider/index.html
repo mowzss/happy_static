@@ -1,297 +1,850 @@
 {extend name="../layout" /}
 {block name="css"}
 <style>
+    /* ==================== 蜘蛛统计看板 ==================== */
+    .spider-dash {
+        font-size: 13px;
+        color: #1D2129;
+    }
+
+    .spider-dash .layui-card {
+        border-radius: 6px;
+    }
+
+    .spider-dash .layui-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #1D2129;
+    }
+
+    .spider-dash .sd-sub {
+        font-size: 12px;
+        font-weight: 400;
+        color: #86909C;
+    }
+
+    .spider-dash .sd-muted {
+        color: #86909C;
+        font-size: 12px;
+    }
+
+    /* ---------- 数据状态条 ---------- */
+    .sd-status {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 16px;
+        padding: 10px 16px;
+        margin-bottom: 15px;
+        background: #F7F8FA;
+        border: 1px solid #E5E6EB;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #4E5969;
+    }
+
+    .sd-status__left {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sd-status__dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #00B42A;
+        box-shadow: 0 0 0 3px rgba(0, 180, 42, .12);
+    }
+
+    .sd-status--warn {
+        background: #FFF7E8;
+        border-color: #FFE4BA;
+        color: #B25E00;
+    }
+
+    .sd-status--warn .sd-status__dot {
+        background: #FF7D00;
+        box-shadow: 0 0 0 3px rgba(255, 125, 0, .12);
+    }
+
+    .sd-tag {
+        display: inline-block;
+        padding: 0 8px;
+        height: 20px;
+        line-height: 20px;
+        border-radius: 4px;
+        font-size: 12px;
+        background: rgba(255, 125, 0, .12);
+        color: #B25E00;
+    }
+
+    /* ---------- KPI ---------- */
+    .sd-kpi .layui-card-body {
+        padding: 18px 20px;
+    }
+
+    .sd-kpi__label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #86909C;
+    }
+
+    .sd-kpi__label em {
+        font-style: normal;
+        font-size: 12px;
+        color: #C9CDD4;
+    }
+
+    .sd-kpi__value {
+        margin: 6px 0 8px;
+        font-size: 28px;
+        font-weight: 600;
+        line-height: 1.2;
+        color: #1D2129;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sd-kpi__foot {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #86909C;
+    }
+
+    .sd-trend {
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sd-trend--up {
+        color: #00B42A;
+    }
+
+    .sd-trend--down {
+        color: #F53F3F;
+    }
+
+    .sd-trend--flat {
+        color: #86909C;
+    }
+
+    /* ---------- 图表 ---------- */
+    .sd-chart {
+        width: 100%;
+        height: 320px;
+    }
+
+    .sd-chart--tall {
+        height: 340px;
+    }
+
+    /* ---------- 表格 ---------- */
+    .sd-table {
+        margin: 0;
+        font-size: 13px;
+    }
+
+    .sd-table thead th {
+        padding: 9px 12px;
+        background: #F7F8FA;
+        border-color: #F2F3F5;
+        font-weight: 500;
+        color: #4E5969;
+        white-space: nowrap;
+    }
+
+    .sd-table td {
+        padding: 10px 12px;
+        border-color: #F2F3F5;
+        color: #1D2129;
+    }
+
+    .sd-table .sd-num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sd-empty {
+        padding: 24px 0 !important;
+        text-align: center;
+        color: #C9CDD4;
+    }
+
+    .sd-badge {
+        display: inline-block;
+        padding: 0 8px;
+        height: 22px;
+        line-height: 22px;
+        border-radius: 11px;
+        background: #F2F3F5;
+        color: #4E5969;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    /* 占比条 */
+    .sd-share {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 110px;
+    }
+
+    .sd-share__bar {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        background: #F2F3F5;
+        overflow: hidden;
+    }
+
+    .sd-share__bar i {
+        display: block;
+        height: 100%;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #7C4DFF, #B388FF);
+    }
+
+    .sd-share em {
+        min-width: 40px;
+        font-style: normal;
+        font-size: 12px;
+        color: #86909C;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- 最新记录 ---------- */
+    .sd-link-more {
+        font-size: 12px;
+        font-weight: 400;
+        color: #165DFF;
+    }
+
+    .sd-cell-url {
+        max-width: 300px;
+    }
+
+    .sd-cell-url a {
+        display: block;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        color: #165DFF;
+    }
+
+    .sd-cell-ip,
+    .sd-cell-time {
+        white-space: nowrap;
+    }
+
+    .sd-cell-ip .sd-muted {
+        max-width: 180px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    /* ---------- 抓取构成 ---------- */
+    .sd-section-title {
+        margin: 0 0 10px;
+        font-size: 12px;
+        color: #86909C;
+    }
+
+    .sd-section-title + .sd-bars {
+        margin-bottom: 18px;
+    }
+
+    .sd-bar + .sd-bar {
+        margin-top: 12px;
+    }
+
+    .sd-bar__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-size: 13px;
+        color: #4E5969;
+    }
+
+    .sd-bar__head em {
+        font-style: normal;
+        font-size: 12px;
+        color: #86909C;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .sd-bar__track {
+        height: 8px;
+        border-radius: 4px;
+        background: #F2F3F5;
+        overflow: hidden;
+    }
+
+    .sd-bar__track i {
+        display: block;
+        height: 100%;
+        border-radius: 4px;
+        background: #7C4DFF;
+    }
+
+    .sd-bar--alt .sd-bar__track i {
+        background: #14C9C9;
+    }
+
+    /* ---------- 分时工具栏 ---------- */
+    .sd-hourly-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+    }
+
+    .sd-hourly-toolbar__label {
+        font-size: 13px;
+        color: #86909C;
+    }
+
+    .sd-hourly-toolbar .layui-input-inline {
+        margin: 0;
+        width: 140px;
+    }
+
+    @media (max-width: 768px) {
+        .sd-kpi__value {
+            font-size: 24px;
+        }
+
+        .sd-cell-url {
+            max-width: 160px;
+        }
+    }
 </style>
 {/block}
 {block name="content"}
-<!-- 饼图 -->
-<div class="layui-row layui-col-space15">
-    <div class="layui-col-md6">
-        <div class="layui-card">
-            <div class="layui-card-header">今日蜘蛛爬取数据占比</div>
-            <div class="layui-card-body">
-                <div id="pieChart" style="height:400px;"></div>
-            </div>
+<div class="spider-dash">
+
+    <!-- 数据状态 -->
+    <div class="sd-status {if condition="!$dashboard.status.is_today"}sd-status--warn{/if}">
+        <div class="sd-status__left">
+            <span class="sd-status__dot"></span>
+            <span>数据基准日 <b>{$dashboard.status.base_date}</b></span>
+            {if condition="!$dashboard.status.is_today"}
+            <span class="sd-tag">今日暂无采集，以下为最近有数据的一天</span>
+            {/if}
+        </div>
+        <div class="sd-status__right">
+            最后采集：{$dashboard.status.last_log_time}（{$dashboard.status.last_log_ago}）
         </div>
     </div>
 
-    <!-- 柱状图 -->
-    <div class="layui-col-md6">
-        <div class="layui-card">
-            <div class="layui-card-header">昨日与今日各蜘蛛爬取对比</div>
-            <div class="layui-card-body">
-                <div id="barChart" style="height:400px;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="layui-row layui-col-space15">
-    <div class="layui-col-md6">
-        <div class="layui-card">
-            <div class="layui-card-header">
-                <a class="layui-font-blue" href="javascript:"
-                   data-menu-open="{:urls('system/spider_logs/index')}">蜘蛛访问明细</a>
-            </div>
-            <div class="layui-card-body">
-                <table class="layui-table layui-table-sm">
-                    <thead>
-                    <tr>
-                        <th>蜘蛛名称</th>
-                        <th>IP地址</th>
-                        <th>归属地</th>
-                        <th>时间</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {volist name="logs_list" id="log"}
-                    <tr>
-                        <td>{$log.name}</td>
-                        <td>{$log.ip}</td>
-                        <td>{$log.isp|default='未知'}</td>
-                        <td>{$log.create_time}</td>
-                    </tr>
-                    {/volist}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="layui-col-md6">
-        <div class="layui-card">
-            <div class="layui-card-header">最近七天趋势</div>
-            <div class="layui-card-body">
-                <div id="lineChart" style="height:440px;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- 每小时趋势对比 -->
-<div class="layui-row layui-col-space15">
-    <div class="layui-col-md12">
-        <div class="layui-card">
-            <div class="layui-card-header">分时数据</div>
-            <div class="layui-card-body">
-                <!-- 蜘蛛选择器 -->
-                <div class="layui-form" style="margin:10px;">
-                    <label class="layui-form-label">选择蜘蛛</label>
-                    <div class="layui-input-inline">
-                        <select id="spiderSelector" lay-filter="spiderSelector">
-                            <!-- 动态填充蜘蛛名称 -->
-                        </select>
+    <!-- 核心指标 -->
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md3 layui-col-sm6">
+            <div class="layui-card sd-kpi">
+                <div class="layui-card-body">
+                    <div class="sd-kpi__label">基准日抓取量<em>{$dashboard.status.base_label}</em></div>
+                    <div class="sd-kpi__value">{$dashboard.overview.base_total_text}</div>
+                    <div class="sd-kpi__foot">
+                        <span class="sd-trend sd-trend--{$dashboard.overview.change_class}">{$dashboard.overview.change_text}</span>
+                        <span>较 {$dashboard.status.prev_label}（{$dashboard.overview.prev_total_text}）</span>
                     </div>
                 </div>
-                <div id="hourlyChart" style="height:400px;"></div>
+            </div>
+        </div>
+        <div class="layui-col-md3 layui-col-sm6">
+            <div class="layui-card sd-kpi">
+                <div class="layui-card-body">
+                    <div class="sd-kpi__label">前一日抓取量<em>{$dashboard.status.prev_label}</em></div>
+                    <div class="sd-kpi__value">{$dashboard.overview.prev_total_text}</div>
+                    <div class="sd-kpi__foot">
+                        <span>共 {$dashboard.ranking|count} 个蜘蛛有记录</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md3 layui-col-sm6">
+            <div class="layui-card sd-kpi">
+                <div class="layui-card-body">
+                    <div class="sd-kpi__label">近 7 日累计<em>含基准日</em></div>
+                    <div class="sd-kpi__value">{$dashboard.overview.seven_total_text}</div>
+                    <div class="sd-kpi__foot">
+                        <span>日均 {$dashboard.overview.day_avg_text}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md3 layui-col-sm6">
+            <div class="layui-card sd-kpi">
+                <div class="layui-card-body">
+                    <div class="sd-kpi__label">基准日独立 URL<em>去重</em></div>
+                    <div class="sd-kpi__value">{$dashboard.overview.base_unique_text}</div>
+                    <div class="sd-kpi__foot">
+                        <span>占抓取量 {$dashboard.overview.unique_rate}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 趋势 + 占比 -->
+    <div class="layui-row layui-col-space15" style="margin-top:15px;">
+        <div class="layui-col-md8">
+            <div class="layui-card">
+                <div class="layui-card-header">近 7 天抓取趋势<span class="sd-sub">按蜘蛛分组</span></div>
+                <div class="layui-card-body">
+                    <div id="sdTrendChart" class="sd-chart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4">
+            <div class="layui-card">
+                <div class="layui-card-header">蜘蛛占比<span class="sd-sub">近 7 天</span></div>
+                <div class="layui-card-body">
+                    <div id="sdShareChart" class="sd-chart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 对比 + 排行 -->
+    <div class="layui-row layui-col-space15" style="margin-top:15px;">
+        <div class="layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header">抓取量对比<span class="sd-sub">{$dashboard.status.base_label} / {$dashboard.status.prev_label}</span></div>
+                <div class="layui-card-body">
+                    <div id="sdCompareChart" class="sd-chart sd-chart--tall"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header">蜘蛛排行<span class="sd-sub">按近 7 日抓取量排序</span></div>
+                <div class="layui-card-body">
+                    <table class="layui-table sd-table">
+                        <thead>
+                        <tr>
+                            <th>蜘蛛</th>
+                            <th class="sd-num">基准日</th>
+                            <th class="sd-num">环比</th>
+                            <th class="sd-num">近 7 日</th>
+                            <th>占比</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {volist name="dashboard.ranking" id="vo"}
+                        <tr>
+                            <td><span class="sd-badge">{$vo.label}</span></td>
+                            <td class="sd-num">{$vo.base_text}</td>
+                            <td class="sd-num">
+                                <span class="sd-trend sd-trend--{$vo.change_class}">{$vo.change_text}</span>
+                            </td>
+                            <td class="sd-num">{$vo.seven_text}</td>
+                            <td>
+                                <div class="sd-share">
+                                    <span class="sd-share__bar"><i style="width:{$vo.share}%"></i></span>
+                                    <em>{$vo.share_text}</em>
+                                </div>
+                            </td>
+                        </tr>
+                        {/volist}
+                        {empty name="dashboard.ranking"}
+                        <tr>
+                            <td class="sd-empty" colspan="5">暂无蜘蛛抓取记录</td>
+                        </tr>
+                        {/empty}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分时趋势 -->
+    <div class="layui-row layui-col-space15" style="margin-top:15px;">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">分时抓取趋势<span class="sd-sub">按小时统计</span></div>
+                <div class="layui-card-body">
+                    <div class="sd-hourly-toolbar">
+                        <span class="sd-hourly-toolbar__label">选择蜘蛛</span>
+                        <div class="layui-form">
+                            <div class="layui-input-inline">
+                                <select id="sdSpiderSelector" lay-filter="sdSpiderSelector"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="sdHourlyChart" class="sd-chart sd-chart--tall"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最新记录 + 抓取构成 -->
+    <div class="layui-row layui-col-space15" style="margin-top:15px;">
+        <div class="layui-col-md8">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <span>最新抓取记录</span>
+                    <a class="sd-link-more" href="javascript:"
+                       data-menu-open="{:urls('system/spider_logs/index')}">查看全部明细</a>
+                </div>
+                <div class="layui-card-body">
+                    <table class="layui-table sd-table">
+                        <thead>
+                        <tr>
+                            <th>蜘蛛</th>
+                            <th>设备</th>
+                            <th>频道</th>
+                            <th>抓取页面</th>
+                            <th>IP / 归属地</th>
+                            <th>时间</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {volist name="dashboard.logs" id="vo"}
+                        <tr>
+                            <td><span class="sd-badge">{$vo.label}</span></td>
+                            <td>{$vo.device_text}</td>
+                            <td>{$vo.module_text}</td>
+                            <td class="sd-cell-url">
+                                <a href="{$vo.url_full|htmlentities}" target="_blank" rel="noopener"
+                                   title="{$vo.url_full|htmlentities}">{$vo.url}</a>
+                            </td>
+                            <td class="sd-cell-ip">
+                                <div>{$vo.ip}</div>
+                                <div class="sd-muted">{$vo.isp}</div>
+                            </td>
+                            <td class="sd-cell-time">
+                                <div>{$vo.time_text}</div>
+                                <div class="sd-muted">{$vo.ago}</div>
+                            </td>
+                        </tr>
+                        {/volist}
+                        {empty name="dashboard.logs"}
+                        <tr>
+                            <td class="sd-empty" colspan="6">暂无抓取记录</td>
+                        </tr>
+                        {/empty}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4">
+            <div class="layui-card">
+                <div class="layui-card-header">抓取构成<span class="sd-sub">{$dashboard.status.base_date}</span></div>
+                <div class="layui-card-body">
+                    <div class="sd-section-title">设备分布</div>
+                    <div class="sd-bars">
+                        {volist name="dashboard.composition.device" id="vo"}
+                        <div class="sd-bar">
+                            <div class="sd-bar__head">
+                                <span>{$vo.label}</span>
+                                <em>{$vo.total_text} · {$vo.percent}%</em>
+                            </div>
+                            <div class="sd-bar__track">
+                                <i style="width:{$vo.percent}%"></i>
+                            </div>
+                        </div>
+                        {/volist}
+                        {empty name="dashboard.composition.device"}
+                        <div class="sd-muted">暂无数据</div>
+                        {/empty}
+                    </div>
+
+                    <div class="sd-section-title">频道 Top 6</div>
+                    <div class="sd-bars">
+                        {volist name="dashboard.composition.module" id="vo"}
+                        <div class="sd-bar sd-bar--alt">
+                            <div class="sd-bar__head">
+                                <span>{$vo.label}</span>
+                                <em>{$vo.total_text} · {$vo.percent}%</em>
+                            </div>
+                            <div class="sd-bar__track">
+                                <i style="width:{$vo.percent}%"></i>
+                            </div>
+                        </div>
+                        {/volist}
+                        {empty name="dashboard.composition.module"}
+                        <div class="sd-muted">暂无数据</div>
+                        {/empty}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div id="chartData" class="layui-hide">{$chartData|raw}</div>
+<div id="sdCharts" class="layui-hide">{$charts|raw}</div>
 {/block}
 {block name="js"}
 <script type="text/javascript">
-    layui.use(['echarts', 'jquery'], function () {
+    layui.use(['echarts', 'jquery', 'form'], function () {
         const $ = layui.jquery;
-        const chartData = JSON.parse($('#chartData').text());
         const echarts = layui.echarts;
-        // 使用ECharts绘制漏斗图
-        let chart = echarts.init(document.getElementById('pieChart'));
-        const pieChartData = chartData.today_pie_chart;
-        const pieChartOptions = {
+        const data = JSON.parse($('#sdCharts').text());
 
-            tooltip: {
-                trigger: 'item',
-                formatter: '{a} <br/>{b}: {c} ({d}%)'
-            },
-            legend: {
-                type: 'scroll',
-                orient: 'vertical',
-                left: 10,
-                top: 20,
-                bottom: 20,
-                data: pieChartData.map(function (item) {
-                    return item.name;
-                })
-            },
-            series: [
-                {
-                    name: '蜘蛛来源',
+        const PALETTE = ['#7C4DFF', '#14C9C9', '#FFB400', '#F53F3F', '#165DFF', '#00B42A', '#86909C'];
+        const AXIS_COLOR = '#C9CDD4';
+        const TEXT_COLOR = '#86909C';
+        const SPLIT_COLOR = '#F2F3F5';
+
+        const charts = [];
+        const fmt = (value) => Number(value || 0).toLocaleString('en-US');
+
+        function initChart(id, option) {
+            const dom = document.getElementById(id);
+            if (!dom) {
+                return;
+            }
+            const chart = echarts.init(dom);
+            chart.setOption(option);
+            charts.push(chart);
+        }
+
+        function emptyOption(text) {
+            return {
+                graphic: [{
+                    type: 'text',
+                    left: 'center',
+                    top: 'middle',
+                    style: {text: text || '暂无数据', fill: '#C9CDD4', fontSize: 14}
+                }]
+            };
+        }
+
+        function axisOption(extra) {
+            return $.extend(true, {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {type: 'line', lineStyle: {color: '#E5E6EB'}},
+                    valueFormatter: fmt
+                },
+                legend: {
+                    top: 0,
+                    icon: 'roundRect',
+                    itemWidth: 10,
+                    itemHeight: 10,
+                    itemGap: 14,
+                    textStyle: {color: TEXT_COLOR, fontSize: 12}
+                },
+                grid: {left: 10, right: 20, top: 44, bottom: 6, containLabel: true},
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    axisLine: {lineStyle: {color: '#E5E6EB'}},
+                    axisTick: {show: false},
+                    axisLabel: {color: TEXT_COLOR, fontSize: 12}
+                },
+                yAxis: {
+                    type: 'value',
+                    splitLine: {lineStyle: {color: SPLIT_COLOR, type: 'dashed'}},
+                    axisLabel: {color: TEXT_COLOR, fontSize: 12, formatter: (value) => value >= 10000 ? (value / 10000) + 'w' : value}
+                }
+            }, extra || {});
+        }
+
+        // ---------- 近 7 天趋势 ----------
+        (function renderTrend() {
+            const trend = data.trend;
+            if (!trend.series.length) {
+                initChart('sdTrendChart', emptyOption());
+                return;
+            }
+            initChart('sdTrendChart', axisOption({
+                xAxis: {data: trend.dates},
+                series: trend.series.map((item, index) => ({
+                    name: item.name,
+                    type: 'line',
+                    smooth: true,
+                    showSymbol: false,
+                    symbolSize: 6,
+                    lineStyle: {width: 2},
+                    areaStyle: index === 0 ? {opacity: 0.08} : undefined,
+                    data: item.data
+                })),
+                color: PALETTE
+            }));
+        })();
+
+        // ---------- 蜘蛛占比 ----------
+        (function renderShare() {
+            const share = data.share;
+            if (!share.length) {
+                initChart('sdShareChart', emptyOption());
+                return;
+            }
+            const total = share.reduce((sum, item) => sum + item.value, 0);
+
+            initChart('sdShareChart', {
+                color: PALETTE,
+                tooltip: {
+                    trigger: 'item',
+                    formatter: (params) => params.name + '<br/>' + fmt(params.value) + ' 次（' + params.percent + '%）'
+                },
+                legend: {
+                    bottom: 0,
+                    type: 'scroll',
+                    icon: 'circle',
+                    itemWidth: 8,
+                    itemHeight: 8,
+                    itemGap: 12,
+                    textStyle: {color: TEXT_COLOR, fontSize: 12}
+                },
+                title: {
+                    text: fmt(total),
+                    subtext: '7 日抓取总量',
+                    left: 'center',
+                    top: '33%',
+                    textAlign: 'center',
+                    textStyle: {fontSize: 20, fontWeight: 600, color: '#1D2129'},
+                    subtextStyle: {fontSize: 12, color: TEXT_COLOR}
+                },
+                series: [{
                     type: 'pie',
-                    radius: ['40%', '70%'],
-                    avoidLabelOverlap: false,
-                    itemStyle: {
-                        borderRadius: 4,
-                        borderColor: '#FFFFFF',
-                        borderWidth: 1
-                    },
-                    label: {
-                        position: 'center',
-                        show: false,
-                        formatter: function (params) {
-                            // params.percent 也是可用的，等同于 {d}
-                            return `${params.name}: ${params.percent}%`;
-                        }
-                    },
+                    radius: ['48%', '68%'],
+                    center: ['50%', '44%'],
+                    avoidLabelOverlap: true,
+                    itemStyle: {borderColor: '#FFFFFF', borderWidth: 2, borderRadius: 4},
+                    label: {show: false},
+                    labelLine: {show: false},
                     emphasis: {
                         label: {
                             show: true,
-                            fontSize: 20,
-                            fontWeight: 'bold'
+                            formatter: '{b}\n{d}%',
+                            fontSize: 12,
+                            lineHeight: 18,
+                            color: '#1D2129'
                         }
                     },
-                    labelLine: {
-                        show: false
-                    },
-                    data: pieChartData
-                }
-            ]
-        }
-        chart.setOption(pieChartOptions);
-        // 使用ECharts绘制柱状图：蜘蛛为X轴，每组显示今日/昨日柱子
-        let barChart = echarts.init(document.getElementById('barChart'));
-
-        // 准备数据
-        let xAxisData = [];
-        let todayData = [];
-        let yesterdayData = [];
-
-        chartData.yesterday_today_compare.forEach(function (item) {
-            xAxisData.push(item.name);
-            yesterdayData.push(item.yesterday);
-            todayData.push(item.today);
-        });
-
-        barChart.setOption({
-            tooltip: {
-                trigger: 'axis'
-            },
-            legend: {
-                data: ['昨日', '今日']
-            },
-            xAxis: {
-                type: 'category',
-                data: xAxisData
-            },
-            yAxis: {
-                type: 'value'
-            },
-            series: [
-                {
-                    name: '昨日',
-                    type: 'bar',
-                    data: yesterdayData
-                },
-                {
-                    name: '今日',
-                    type: 'bar',
-                    data: todayData
-                }
-            ]
-        });
-
-        // 使用ECharts绘制折线图（保持不变）
-        let lineChart = echarts.init(document.getElementById('lineChart'));
-        let seriesLine = [];
-        for (let name in chartData.seven_days_trend.data) {
-            seriesLine.push({
-                name: name,
-                type: 'line',
-                data: chartData.seven_days_trend.data[name]
+                    data: share
+                }]
             });
-        }
-        lineChart.setOption({
-            tooltip: {
-                trigger: 'axis'
-            },
-            legend: {
-                data: Object.keys(chartData.seven_days_trend.data)
-            },
-            xAxis: {
-                type: 'category',
-                data: chartData.seven_days_trend.dates
-            },
-            yAxis: {
-                type: 'value'
-            },
-            series: seriesLine
-        });
-        // 初始化图表
-        let hourlyChart = echarts.init(document.getElementById('hourlyChart'));
+        })();
 
-        // 渲染指定蜘蛛的数据（折线图）
-        function renderHourlyChart(spiderName) {
-            let spiderItem = chartData.hourly_trend_by_spider.spiderData.find(s => s.name === spiderName);
-            if (!spiderItem) return;
+        // ---------- 基准日 vs 前一日 ----------
+        (function renderCompare() {
+            const compare = data.compare;
+            if (!compare.names.length) {
+                initChart('sdCompareChart', emptyOption());
+                return;
+            }
 
-            let option = {
-                tooltip: {
-                    trigger: 'axis'
-                },
-                legend: {
-                    data: ['今日', '昨日']
-                },
+            initChart('sdCompareChart', axisOption({
+                tooltip: {axisPointer: {type: 'shadow'}},
+                color: ['#7C4DFF', '#C9CDD4'],
                 xAxis: {
-                    type: 'category',
-                    data: chartData.hourly_trend_by_spider.hours,
-                    axisLabel: {
-                        rotate: 45 // 避免标签重叠
-                    }
-                },
-                yAxis: {
-                    type: 'value'
+                    boundaryGap: true,
+                    data: compare.names,
+                    axisLabel: {color: TEXT_COLOR, fontSize: 12, interval: 0}
                 },
                 series: [
                     {
-                        name: '今日',
-                        type: 'line',
-                        data: spiderItem.today,
-                        smooth: true, // 平滑曲线
-                        itemStyle: {color: '#409EFF'}, // 深蓝色
-                        lineStyle: {width: 2}
+                        name: data.base_label,
+                        type: 'bar',
+                        barWidth: 16,
+                        barGap: '20%',
+                        itemStyle: {borderRadius: [4, 4, 0, 0]},
+                        data: compare.base
                     },
                     {
-                        name: '昨日',
-                        type: 'line',
-                        data: spiderItem.yesterday,
-                        smooth: true,
-                        itemStyle: {color: '#AAAAAA'}, // 浅灰色
-                        lineStyle: {width: 1.5}
+                        name: data.prev_label,
+                        type: 'bar',
+                        barWidth: 16,
+                        itemStyle: {borderRadius: [4, 4, 0, 0]},
+                        data: compare.prev
                     }
-                ],
-                grid: {
-                    bottom: 80
-                }
-            };
+                ]
+            }));
+        })();
 
-            hourlyChart.setOption(option, true);
-        }
+        // ---------- 分时趋势 ----------
+        const hourly = data.hourly;
+        const hourlyChart = (function () {
+            const dom = document.getElementById('sdHourlyChart');
+            if (!dom) {
+                return null;
+            }
+            const chart = echarts.init(dom);
+            charts.push(chart);
+            return chart;
+        })();
 
-        // 初始化下拉菜单
-        function initSpiderSelector() {
-            let selector = $('#spiderSelector');
-            let spiderList = chartData.hourly_trend_by_spider.spiderData;
-
-            spiderList.forEach(function (spider) {
-                selector.append(`<option value="${spider.name}">${spider.name}</option>`);
-            });
-
-            // 默认渲染第一个蜘蛛
-            if (spiderList.length > 0) {
-                renderHourlyChart(spiderList[0].name);
+        function renderHourly(spiderName) {
+            if (!hourlyChart) {
+                return;
+            }
+            const spider = hourly.spiderData.find((item) => item.name === spiderName) || hourly.spiderData[0];
+            if (!spider) {
+                hourlyChart.setOption(emptyOption(), true);
+                return;
             }
 
-            layui.form.render('select'); // 刷新下拉菜单样式
+            hourlyChart.setOption(axisOption({
+                color: ['#7C4DFF', '#C9CDD4'],
+                xAxis: {
+                    data: hourly.hours,
+                    axisLabel: {color: TEXT_COLOR, fontSize: 12, interval: 3}
+                },
+                series: [
+                    {
+                        name: data.base_label,
+                        type: 'line',
+                        smooth: true,
+                        showSymbol: false,
+                        lineStyle: {width: 2},
+                        areaStyle: {opacity: 0.1},
+                        data: spider.base
+                    },
+                    {
+                        name: data.prev_label,
+                        type: 'line',
+                        smooth: true,
+                        showSymbol: false,
+                        lineStyle: {width: 1.5, type: 'dashed'},
+                        data: spider.prev
+                    }
+                ]
+            }), true);
         }
 
-        // 监听下拉框变化
-        layui.form.on('select(spiderSelector)', function (obj) {
-            renderHourlyChart(obj.value);
+        (function initSelector() {
+            const $selector = $('#sdSpiderSelector');
+            hourly.spiderData.forEach((spider) => {
+                $selector.append($('<option>').val(spider.name).text(spider.name));
+            });
+
+            if (!hourly.spiderData.length) {
+                renderHourly('');
+                return;
+            }
+
+            renderHourly(hourly.spiderData[0].name);
+            layui.form.render('select');
+        })();
+
+        layui.form.on('select(sdSpiderSelector)', function (obj) {
+            renderHourly(obj.value);
         });
-        // 页面加载时初始化
-        $(function () {
-            initSpiderSelector();
+
+        $(window).off('resize.sdSpiderDash').on('resize.sdSpiderDash', function () {
+            charts.forEach((chart) => chart.resize());
         });
     });
-
 </script>
 {/block}

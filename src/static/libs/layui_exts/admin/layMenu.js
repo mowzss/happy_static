@@ -1,7 +1,8 @@
-layui.define(['jquery', 'element', 'layTabs'], function (exports) {
+layui.define(['jquery', 'element', 'layTabs', 'encrypt'], function (exports) {
     const MODULE_NAME = 'layMenu';
     let $ = layui.jquery,
         layTabs = layui.layTabs,
+        encrypt = layui.encrypt,
         element = layui.element;
 
     let layMenu = {
@@ -150,11 +151,11 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
                 url: fullUrl,
                 method: 'GET',
                 success: function (response) {
-                    if (response && response.length > 0) {
+                    if (response && response.data.length > 0) {
                         // 缓存所有菜单数据
-                        layMenu.allMenuData = response;
+                        layMenu.allMenuData = response.data;
                         // 分离顶级导航和子导航
-                        let separatedData = layMenu.separateMenuData(response);
+                        let separatedData = layMenu.separateMenuData(response.data);
                         layMenu.topNavItems = separatedData.topNavItems;
                         layMenu.sideNavItems = separatedData.sideNavItems;
 
@@ -318,7 +319,7 @@ layui.define(['jquery', 'element', 'layTabs'], function (exports) {
                     html += '</li>';
                 } else if (item.type === 1) { // 叶子节点菜单
                     html += '<li class="layui-nav-item">';
-                    html += '<a href="javascript:" lay-url="' + escapeHtml(item.href) + '" lay-id="' + escapeHtml(item.id) + '">';
+                    html += '<a href="javascript:" lay-url="' + escapeHtml(item.href) + '" lay-id="' + encrypt.md5(escapeHtml(item.href)) + '">';
                     html += '<span class="happy-nav-title">' + escapeHtml(item.title) + '</span>';
                     html += '</a>';
                     html += '</li>';

@@ -1,5 +1,5 @@
 // admin.js
-layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu', 'layModal'], function (exports) {
+layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu', 'layModal','encrypt'], function (exports) {
     "use strict";
 
     const SELECTORS = {
@@ -33,6 +33,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
         layTabs = layui.layTabs,
         layMenu = layui.layMenu,
         layModal = layui.layModal,
+        encrypt = layui.encrypt,
         element = layui.element;
 
     const MODULE_NAME = 'layAdmin';
@@ -90,7 +91,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
             tabsList.forEach((tab) => {
                 // 首页地址由后端 aurl() 生成，修正历史缓存里可能缺少后台入口的地址
                 if (tab.id === 'home' && this.config.homeUrl) {
-                    tab.url = this.config.homeUrl;
+                    tab.url = this.config.homeUrl || '/index/index/main';
                 }
                 if (tab.id !== activeId) {
                     tab.active = false;
@@ -222,7 +223,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
                 e.preventDefault(); // 阻止默认行为，防止锚点跳转
                 let $target = $(e.currentTarget);
                 let url = $target.data('menu-open');
-                let id = url.split('?')[0];
+                let id = encrypt.md5(url.split('?')[0]);
                 let title = $target.text().trim(); // 去除可能的空白字符
                 // 检测url如果非内部链接则新标签跳转
                 if (url.startsWith('http://') || url.startsWith('https://')) {

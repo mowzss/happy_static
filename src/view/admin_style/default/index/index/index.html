@@ -3,8 +3,8 @@
 <head>
     <title>{:sys_config('site_name','管理后台')}</title>
     <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport">
-    <meta content="noindex, nofollow" name="robots">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="robots" content="noindex, nofollow">
     <link href="__STATIC__/libs/layui/css/layui.css?v={:sys_config('static_version',date('md'))}" rel="stylesheet"/>
     <link href="__STATIC__/admin/css/base.css?v={:sys_config('static_version',date('md'))}" rel="stylesheet"/>
     {volist name=":fun('system','systemIcon','getShowIcon')" id="vo"}
@@ -96,8 +96,7 @@
     layui.use(['layAdmin', 'jquery', 'popup'], function () {
         const layAdmin = layui.layAdmin;
         layAdmin.render({
-            menuUrl: "{:aurl('index/index/menu')}",
-            homeUrl: "{:aurl('index/index/main')}"
+            menuUrl: "{:urls('index/index/menu')}",
         });
     })
 </script>
