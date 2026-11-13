@@ -1,156 +1,285 @@
-<div class="layui-panel layui-padding-3">
+<style>
+    /* 权限组信息卡 */
+    .auth-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+    }
+    .auth-header--manage { background: linear-gradient(135deg,#7c4dff,#5b21b6); color:#fff; }
+    .auth-header--user   { background: #f1f5f9; color:#334155; }
+    .auth-header__title { font-size: 18px; font-weight: 600; }
+    .auth-header__meta  { font-size: 13px; opacity: .85; margin-top: 4px; }
+    .auth-header__badge {
+        padding: 2px 10px; border-radius: 10px; font-size: 12px; line-height: 18px;
+    }
+    .auth-header--manage .auth-header__badge { background: rgba(255,255,255,.2); }
+    .auth-header--user   .auth-header__badge { background: #e2e8f0; color:#475569; }
+
+    /* 模块分组 */
+    .auth-module fieldset {
+        border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px 14px;
+        margin-bottom: 12px;
+    }
+    .auth-module legend {
+        padding: 0 10px; font-weight: 600; font-size: 14px; color: #1e293b;
+    }
+    .auth-controller {
+        padding: 8px 10px; border-radius: 4px; margin: 6px 0 4px;
+    }
+    .auth-controller:hover { background: #f8fafc; }
+    .auth-leaf {
+        padding: 3px 0 3px 32px;
+        display: inline-flex; margin-right: 14px;
+    }
+    .auth-leaf--menu .auth-leaf__title::after  { content: " [菜单]"; color:#0ea5e9; font-size:11px; }
+    .auth-leaf--login .auth-leaf__title::after { content: " [需登录]"; color:#64748b; font-size:11px; }
+
+    /* 筛选条 */
+    .auth-filter {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+        padding: 10px 14px; background: #f8fafc; border-radius: 6px; margin-bottom: 12px;
+    }
+    .auth-filter .layui-btn { margin: 0; }
+    .auth-filter__count { margin-left: auto; color:#64748b; font-size:12px; }
+</style>
+
+<div class="happy-container auth-module">
+
+    <!-- 权限组头部卡片 -->
+    <div class="auth-header {if !empty($info.is_authorize)}auth-header--manage{else/}auth-header--user{/if}">
+        <div>
+            <div class="auth-header__title">{$info.title|default='未命名权限组'}</div>
+            {notempty name="$info.desc"}
+            <div class="auth-header__meta">{$info.desc}</div>
+            {/notempty}
+        </div>
+        <span class="auth-header__badge">
+            {if !empty($info.is_authorize)}管理组 · 可授权{else/}用户组 · 不可授权{/if}
+        </span>
+    </div>
+
+    <!-- 筛选条 -->
+    <div class="auth-filter">
+        <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" id="btn-toggle-all">全选</button>
+        <button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="btn-invert">反选</button>
+        <button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="btn-only-menu">仅菜单节点</button>
+        <button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="btn-only-login">仅登录节点</button>
+        <button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="btn-show-only-unauth">只看未授权</button>
+        <span class="auth-filter__count" id="auth-count-tip">已选 0 / 0</span>
+    </div>
+
     <form class="layui-form" action="{:urls('rule')}" method="post" id="ruleForm">
-        {foreach $nodes as $rs=>$one}
+        {volist name="tree" id="module" key="moduleKey"}
         <fieldset class="layui-elem-field">
-            <legend>{$one.node}</legend>
+            <legend>{$module.title|default=$moduleKey}</legend>
             <div class="layui-field-box">
-                <div class="layui-form-item">
-                    {notempty name="$one.sub"}
-                    <div class="layui-input-wrap">
-                        {foreach $one.sub as $v =>$two }
-                        <div class="layui-input-wrap child-group">
-                            {if in_array($two.node,$info.nodes)}
-                            <input type="checkbox" class="child-checkbox" name="nodes[]"
-                                   title="{$two.title|default=''}-({$two.node})"
-                                   value="{$two.node}" lay-filter="demo-checkbox-filter" checked>
-                            {else}
-                            <input type="checkbox" class="child-checkbox" name="nodes[]"
-                                   title="{$two.title|default=''}-({$two.node})"
-                                   value="{$two.node}" lay-filter="demo-checkbox-filter">
-                            {/if}
+                {volist name="module.sub" id="ctrl" key="ctrlKey"}
 
-                            {notempty name="$two.sub"}
-                            <div class="layui-input-wrap sub-child-group" style="padding-left:40px">
-                                {foreach $two.sub as $k => $three }
-                                {notempty name="$three.is_auth"}
-                                {if in_array($three.node,$info.nodes)}
-                                <input type="checkbox" class="sub-child-checkbox" name="nodes[]"
-                                       title="{$three.title|default=''}-({$three.node})" value="{$three.node}"
-                                       lay-filter="demo-checkbox-filter" checked>
-                                {else/}
-                                <input type="checkbox" class="sub-child-checkbox" name="nodes[]"
-                                       title="{$three.title|default=''}-({$three.node})" value="{$three.node}"
-                                       lay-filter="demo-checkbox-filter">
-                                {/if}
-                                {/notempty}
+                {notempty name="ctrl.sub"}
+                <div class="auth-controller">
+                    <!-- 控制器级 checkbox：勾选 → 该控制器下所有方法全选；全选 → 自动勾上 -->
+                    <input type="checkbox"
+                           data-role="controller"
+                           data-node="{$ctrl.node}"
+                           title="{$ctrl.title|default=$ctrlKey}"
+                           lay-filter="auth-filter"
+                           lay-skin="primary"
+                           lay-submit>
 
-                                {/foreach}
-                            </div>
-                            {/notempty}
-                        </div>
-                        <hr>
-                        {/foreach}
-                    </div>
+                    <!-- 方法叶子节点（仅渲染 is_auth=true 的） -->
+                    {volist name="ctrl.sub" id="leaf" key="leafKey"}
+                    {notempty name="leaf.is_auth"}
+                    <span class="auth-leaf
+                        {notempty name="leaf.is_menu"}auth-leaf--menu{/notempty}
+                        {notempty name="leaf.is_login"}auth-leaf--login{/notempty}">
+                        <input type="checkbox"
+                               name="nodes[]"
+                               class="auth-leaf-input"
+                               data-role="leaf"
+                               data-controller="{$ctrl.node}"
+                               data-menu="{notempty name='leaf.is_menu'}1{else/}0{/notempty}"
+                               data-login="{notempty name='leaf.is_login'}1{else/}0{/notempty}"
+                               value="{$leaf.node}"
+                               title="{$leaf.title|default=$leafKey}"
+                               lay-filter="auth-filter"
+                               lay-skin="primary"
+                               {if isset($checkMap[$leaf.node])}checked{/if}>
+                    </span>
                     {/notempty}
+                    {/volist}
                 </div>
+                {/notempty}
+
+                <hr style="margin:6px 0;border-color:#f1f5f9;">
+                {/volist}
             </div>
         </fieldset>
-        {/foreach}
+        {/volist}
+
         <div class="layui-form-item">
             <div class="layui-input-block">
                 <input type="hidden" name="id" value="{$info.id}">
-                <button class="layui-btn" lay-submit lay-filter="formDemo">提交</button>
-                <button type="button" id="toggleAll" class="layui-btn layui-btn-primary">全选</button>
+                <button type="submit" class="layui-btn" lay-submit lay-filter="auth-submit">保存授权</button>
+                <button type="reset"  class="layui-btn layui-btn-primary">重置</button>
             </div>
         </div>
     </form>
 </div>
+
+<!-- 后端数据（application/json 容器，IDE 不按 JS 校验） -->
+<script id="auth-flags" type="application/json">{"action":"{:urls('rule')}","groupId":{$info.id}}</script>
+
 <script>
+    // 裸 URL 访问 main.html 时全局 layui 不存在 → 跳过所有初始化，避免 console 报错
+    if (typeof layui !== 'undefined') {
     layui.use(['form', 'layer'], function () {
-        var $ = layui.jquery, layer = layui.layer, form = layui.form;
+        var $ = layui.jquery, form = layui.form, layer = layui.layer;
 
-        // 渲染表单
-        form.render();
+        // ========= 辅助函数 =========
 
-        // 更新全选/全部取消按钮文本
-        function updateToggleAllText() {
-            var allChecked = $('.child-checkbox, .sub-child-checkbox').length === $('.child-checkbox:checked, .sub-child-checkbox:checked').length;
-            $('#toggleAll').text(allChecked ? '全部取消' : '全选');
+        /** 叶子节点集合（带 role=leaf 的才是真正会提交的节点） */
+        function allLeafs() { return $('input[data-role="leaf"]'); }
+        function checkedLeafs() { return $('input[data-role="leaf"]:checked'); }
+
+        function updateControllerStates() {
+            // 控制器 checkbox：当它的叶子全选中时自动勾上，有未选中时取消
+            $('input[data-role="controller"]').each(function () {
+                var ctrlNode = $(this).data('node');
+                var leafs  = $('input[data-role="leaf"][data-controller="' + ctrlNode + '"]');
+                var total  = leafs.length;
+                var sel    = leafs.filter(':checked').length;
+                $(this).prop('checked', total > 0 && sel === total);
+                $(this).prop('indeterminate', sel > 0 && sel < total);
+            });
+            form.render('checkbox');
+            updateCount();
         }
 
-        // 监听全选/全部取消按钮
-        $('#toggleAll').on('click', function () {
-            var checked = !$('.child-checkbox, .sub-child-checkbox').is(':checked');
+        function updateCount() {
+            var total = allLeafs().length;
+            var sel   = checkedLeafs().length;
+            $('#auth-count-tip').text('已选 ' + sel + ' / ' + total);
+        }
 
-            // 使用 jQuery 设置所有复选框的状态
-            $('.child-checkbox, .sub-child-checkbox').prop('checked', checked);
+        /** 设置 leaf 的 checked 状态并同步控制器 */
+        function setLeafChecked($leafs, bool) {
+            $leafs.prop('checked', bool);
+            updateControllerStates();
+        }
 
-            // 重新渲染并更新表单值
-            form.render('checkbox');
-            updateToggleAllText(); // 更新按钮文本
+        // ========= 级联：控制器 ↔ 叶子 =========
+
+        form.on('checkbox(auth-filter)', function (data) {
+            var $el     = $(data.elem);
+            var role    = $el.data('role');
+            var ctrlKey = $el.data('controller') || $el.data('node');
+            var checked = data.elem.checked;
+
+            if (role === 'controller') {
+                // 控制器勾选 → 全选/取消该控制器下所有叶子
+                var $children = $('input[data-role="leaf"][data-controller="' + ctrlKey + '"]');
+                setLeafChecked($children, checked);
+            } else if (role === 'leaf') {
+                // 叶子变化 → 联动其父级控制器的全选状态
+                var ctrlNode = $el.data('controller');
+                var $ctrl    = $('input[data-role="controller"][data-node="' + ctrlNode + '"]');
+                var siblings = $('input[data-role="leaf"][data-controller="' + ctrlNode + '"]');
+                var allOn    = siblings.length > 0 && siblings.filter(':checked').length === siblings.length;
+                $ctrl.prop('checked', allOn);
+                $ctrl.prop('indeterminate', siblings.filter(':checked').length > 0 && !allOn);
+                form.render('checkbox');
+                updateCount();
+            }
         });
 
-        // 使用 Layui 原生事件监听器监听复选框变化
-        form.on('checkbox(demo-checkbox-filter)', function (data) {
-            var elem = data.elem; // 获得 checkbox 原始 DOM 对象
-            var checked = elem.checked; // 获得 checkbox 选中状态
-            var value = elem.value; // 获得 checkbox 值
-            var othis = data.othis; // 获得 checkbox 元素被替换后的 jQuery 对象
+        // ========= 顶部按钮 =========
 
-            // 处理子级复选框逻辑
-            if ($(elem).hasClass('child-checkbox')) {
-                var subChildGroup = $(elem).closest('.child-group').find('.sub-child-checkbox');
-                subChildGroup.prop('checked', checked); // 设置所有孙级复选框的状态
-            }
+        var lastToggleState = null; // 记住当前是"全选"还是"全不选"
 
-            // 处理孙级复选框逻辑
-            if ($(elem).hasClass('sub-child-checkbox')) {
-                var parentCheckbox = $(elem).closest('.sub-child-group').prev('.child-checkbox');
-                var subChildGroup = $(elem).closest('.sub-child-group').find('.sub-child-checkbox');
-                var allChecked = subChildGroup.length === subChildGroup.filter(':checked').length;
-
-                // 更新父级复选框的状态
-                parentCheckbox.prop('checked', allChecked);
-            }
-
-            // 重新渲染并更新表单值
-            form.render('checkbox');
-            updateToggleAllText(); // 更新按钮文本
-
-            // 显示选中状态提示
-            // layer.msg('checked 状态: ' + checked);
+        $('#btn-toggle-all').on('click', function () {
+            // 智能切换：第一次按"全选"，再按"全不选"，交替
+            var next = lastToggleState === true ? false : true;
+            setLeafChecked(allLeafs(), next);
+            lastToggleState = next;
+            $(this).text(next ? '全部取消' : '全选');
         });
 
-        // 监听表单提交事件
-        form.on('submit(formDemo)', function (data) {
-            // 阻止默认提交行为
-            event.preventDefault();
+        $('#btn-invert').on('click', function () {
+            allLeafs().each(function () {
+                $(this).prop('checked', !this.checked);
+            });
+            updateControllerStates();
+        });
 
-            // 获取表单数据
-            var formData = data.field;
+        $('#btn-only-menu').on('click', function () {
+            setLeafChecked(allLeafs().filter(function () {
+                return $(this).data('menu') === 1;
+            }), true);
+        });
 
-            // 获取表单的 action 和 method
-            var formAction = $('#ruleForm').attr('action');
-            var formMethod = $('#ruleForm').attr('method').toUpperCase();
+        $('#btn-only-login').on('click', function () {
+            setLeafChecked(allLeafs().filter(function () {
+                return $(this).data('login') === 1;
+            }), true);
+        });
 
-            // 使用 jQuery 的 $.ajax() 方法提交表单数据
-            $.ajax({
-                url: formAction, // 提交地址
-                type: formMethod, // 提交方法
-                data: formData, // 表单数据
-                dataType: 'json', // 期望返回的数据类型
-                success: function (response) {
-                    // 如果提交成功
-                    if (response.code === 1) {
-                        layer.msg('提交成功', {icon: 1}, function () {
-                            // 提交成功后可以重置表单或其他操作
-
-                        });
-                    } else {
-                        // 如果提交失败
-                        layer.msg('提交失败: ' + response.msg, {icon: 2});
-                    }
-                },
-                error: function (xhr, status, error) {
-                    // 如果请求出错
-                    layer.msg('请求出错: ' + error, {icon: 2});
+        var showingOnlyUnauth = false;
+        $('#btn-show-only-unauth').on('click', function () {
+            showingOnlyUnauth = !showingOnlyUnauth;
+            allLeafs().each(function () {
+                var $c = $(this).closest('.auth-controller, .auth-leaf');
+                if (showingOnlyUnauth) {
+                    $c.toggle(!this.checked);
+                } else {
+                    $c.show();
                 }
             });
-
-            return false; // 阻止表单默认提交
+            $(this).text(showingOnlyUnauth ? '显示全部' : '只看未授权');
         });
 
-        // 初始化时检查并设置全选/全部取消按钮的文本
-        updateToggleAllText();
+        // ========= 提交 =========
+
+        form.on('submit(auth-submit)', function (data) {
+            var raw = data.field;
+            // layui 会把没勾选的 checkbox 也以 key="" 带出来，需要过滤
+            var nodes = [];
+            $.each(raw, function (k, v) {
+                if (k.indexOf('nodes[') === 0 && v !== '') nodes.push(v);
+            });
+            var postData = { id: raw.id, nodes: nodes };
+
+            $.ajax({
+                url: $('#ruleForm').attr('action'),
+                type: 'POST',
+                data: postData,
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code === 1) {
+                        layer.msg('保存成功', {icon: 1}, function () {
+                            updateControllerStates(); // 重新对齐级联状态
+                        });
+                    } else {
+                        layer.msg('保存失败：' + res.msg, {icon: 2});
+                    }
+                },
+                error: function (xhr) {
+                    var msg = '请求出错';
+                    try { msg = JSON.parse(xhr.responseText).msg || msg; } catch (e) {}
+                    layer.msg(msg, {icon: 2});
+                }
+            });
+            return false;
+        });
+
+        // 页面载入时先对齐一次（后端返回的已选节点可能不是某控制器全部选中状态）
+        updateControllerStates();
     });
+    } // end typeof layui guard
+
+    /**
+     * 递归保存后回到这里做什么？不做，AuthLogic::save 已经处理完后端。
+     */
 </script>
