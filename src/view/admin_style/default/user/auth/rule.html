@@ -18,22 +18,51 @@
     .auth-header--manage .auth-header__badge { background: rgba(255,255,255,.2); }
     .auth-header--user   .auth-header__badge { background: #e2e8f0; color:#475569; }
 
-    /* 模块分组 */
-    .auth-module fieldset {
-        border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px 14px;
-        margin-bottom: 12px;
+    /* 模块分组：白色卡片，避免与页面底色同色 */
+    .auth-module .layui-elem-field {
+        background: #fff;
+        border: 1px solid #e6eaf0; border-radius: 8px;
+        padding: 6px 18px 16px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, .06);
+        margin-bottom: 14px;
+        transition: box-shadow .2s;
     }
-    .auth-module legend {
-        padding: 0 10px; font-weight: 600; font-size: 14px; color: #1e293b;
+    .auth-module .layui-elem-field:hover {
+        box-shadow: 0 3px 10px rgba(15, 23, 42, .09);
     }
+    .auth-module .layui-elem-field > legend {
+        width: auto; padding: 3px 12px; margin-left: 4px;
+        background: #eef2ff; color: #4338ca;
+        border: 1px solid #e0e7ff; border-radius: 20px;
+        font-weight: 600; font-size: 13px; line-height: 20px;
+    }
+    .auth-module .layui-field-box { padding: 2px 0 0; }
+    .auth-module .layui-field-box > hr { border-color: #f1f5f9; margin: 10px 0 2px; }
+
+    /* 控制器分组 */
     .auth-controller {
-        padding: 8px 10px; border-radius: 4px; margin: 6px 0 4px;
+        background: #f8fafc; border: 1px solid #eef2f7; border-radius: 6px;
+        padding: 10px 12px; margin: 8px 0;
+        transition: border-color .2s, background .2s;
     }
-    .auth-controller:hover { background: #f8fafc; }
+    .auth-controller:hover { background: #fbfdff; border-color: #dbe4ff; }
+    .auth-controller__head {
+        display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+        min-height: 30px;
+    }
+    .auth-controller__node {
+        font-family: Consolas, Monaco, monospace; font-size: 12px; color: #94a3b8;
+    }
+    .auth-controller__count {
+        margin-left: auto; font-size: 12px; color: #64748b;
+        background: #eef2f7; border-radius: 10px; padding: 1px 9px;
+    }
+    .auth-leaves { padding: 4px 0 0 2px; }
     .auth-leaf {
-        padding: 3px 0 3px 32px;
-        display: inline-flex; margin-right: 14px;
+        padding: 4px 0; display: inline-flex; margin-right: 16px;
+        vertical-align: top;
     }
+    .auth-leaf__full { color: #b91c1c; font-size: 11px; margin-left: 8px; }
     .auth-leaf--menu .auth-leaf__title::after  { content: " [菜单]"; color:#0ea5e9; font-size:11px; }
     .auth-leaf--login .auth-leaf__title::after { content: " [需登录]"; color:#64748b; font-size:11px; }
 
@@ -44,6 +73,18 @@
     }
     .auth-filter .layui-btn { margin: 0; }
     .auth-filter__count { margin-left: auto; color:#64748b; font-size:12px; }
+    .auth-filter__count b { color:#1d4ed8; }
+
+    /* 底部操作条：长列表滚动时始终可见 */
+    .auth-actions {
+        position: sticky; bottom: 0;
+        display: flex; align-items: center; gap: 10px;
+        padding: 12px 16px; margin-top: 4px;
+        background: #fff; border: 1px solid #e6eaf0; border-radius: 8px;
+        box-shadow: 0 -2px 8px rgba(15, 23, 42, .06);
+    }
+    .auth-actions .layui-btn { margin: 0; }
+    .auth-actions__tip { color:#94a3b8; font-size:12px; margin-left: auto; }
 </style>
 
 <div class="happy-container auth-module">
@@ -80,16 +121,20 @@
 
                 {notempty name="ctrl.sub"}
                 <div class="auth-controller">
-                    <!-- 控制器级 checkbox：勾选 → 该控制器下所有方法全选；全选 → 自动勾上 -->
-                    <input type="checkbox"
-                           data-role="controller"
-                           data-node="{$ctrl.node}"
-                           title="{$ctrl.title|default=$ctrlKey}"
-                           lay-filter="auth-filter"
-                           lay-skin="primary"
-                           lay-submit>
+                    <div class="auth-controller__head">
+                        <!-- 控制器级 checkbox：勾选 → 该控制器下所有方法全选；全选 → 自动勾上 -->
+                        <input type="checkbox"
+                               data-role="controller"
+                               data-node="{$ctrl.node}"
+                               title="{$ctrl.title|default=$ctrlKey}"
+                               lay-filter="auth-filter"
+                               lay-skin="primary">
+                        <span class="auth-controller__node">{$ctrl.node}</span>
+                        <span class="auth-controller__count" data-controller-count="{$ctrl.node}"></span>
+                    </div>
 
                     <!-- 方法叶子节点（仅渲染 is_auth=true 的） -->
+                    <div class="auth-leaves">
                     {volist name="ctrl.sub" id="leaf" key="leafKey"}
                     {notempty name="leaf.is_auth"}
                     <span class="auth-leaf
@@ -110,21 +155,21 @@
                     </span>
                     {/notempty}
                     {/volist}
+                    </div>
                 </div>
                 {/notempty}
 
-                <hr style="margin:6px 0;border-color:#f1f5f9;">
+                <hr>
                 {/volist}
             </div>
         </fieldset>
         {/volist}
 
-        <div class="layui-form-item">
-            <div class="layui-input-block">
-                <input type="hidden" name="id" value="{$info.id}">
-                <button type="submit" class="layui-btn" lay-submit lay-filter="auth-submit">保存授权</button>
-                <button type="reset"  class="layui-btn layui-btn-primary">重置</button>
-            </div>
+        <div class="auth-actions">
+            <input type="hidden" name="id" value="{$info.id}">
+            <button type="submit" class="layui-btn" id="btn-save" lay-submit lay-filter="auth-submit">保存授权</button>
+            <button type="button" class="layui-btn layui-btn-primary" id="btn-reset">重置为已保存状态</button>
+            <span class="auth-actions__tip">勾选即授权，控制器全选后会自动勾上</span>
         </div>
     </form>
 </div>
@@ -153,15 +198,18 @@
                 var sel    = leafs.filter(':checked').length;
                 $(this).prop('checked', total > 0 && sel === total);
                 $(this).prop('indeterminate', sel > 0 && sel < total);
+                // 控制器右侧显示「已选/总数」，避免逐个核对
+                $('[data-controller-count="' + ctrlNode + '"]').text(sel + '/' + total);
             });
             form.render('checkbox');
             updateCount();
+            if (showingOnlyUnauth) applyUnauthFilter();
         }
 
         function updateCount() {
             var total = allLeafs().length;
             var sel   = checkedLeafs().length;
-            $('#auth-count-tip').text('已选 ' + sel + ' / ' + total);
+            $('#auth-count-tip').html('已选 <b>' + sel + '</b> / ' + total);
         }
 
         /** 设置 leaf 的 checked 状态并同步控制器 */
@@ -227,48 +275,74 @@
         });
 
         var showingOnlyUnauth = false;
+
+        /** 按「只看未授权」状态过滤叶子（只影响显示，不影响提交） */
+        function applyUnauthFilter() {
+            allLeafs().each(function () {
+                $(this).closest('.auth-leaf').toggle(showingOnlyUnauth ? !this.checked : true);
+            });
+        }
+
         $('#btn-show-only-unauth').on('click', function () {
             showingOnlyUnauth = !showingOnlyUnauth;
-            allLeafs().each(function () {
-                var $c = $(this).closest('.auth-controller, .auth-leaf');
-                if (showingOnlyUnauth) {
-                    $c.toggle(!this.checked);
-                } else {
-                    $c.show();
-                }
-            });
+            applyUnauthFilter();
             $(this).text(showingOnlyUnauth ? '显示全部' : '只看未授权');
         });
 
         // ========= 提交 =========
 
-        form.on('submit(auth-submit)', function (data) {
-            var raw = data.field;
-            // layui 会把没勾选的 checkbox 也以 key="" 带出来，需要过滤
+        // 记录载入时（即数据库里已保存）的勾选状态，供「重置」还原
+        var initialChecked = snapshotChecked();
+
+        function snapshotChecked() {
+            var map = {};
+            allLeafs().each(function () { if (this.checked) map[this.value] = 1; });
+            return map;
+        }
+
+        $('#btn-reset').on('click', function () {
+            allLeafs().each(function () { this.checked = initialChecked[this.value] === 1; });
+            showingOnlyUnauth = false;
+            $('#btn-show-only-unauth').text('只看未授权');
+            applyUnauthFilter();
+            updateControllerStates();
+        });
+
+        form.on('submit(auth-submit)', function () {
+            // 直接从 DOM 收集已勾选的叶子节点。
+            // 不能用 layui 的 data.field：同名 nodes[] 会被聚合成一个数组，
+            // 再 push 进 nodes 就成了二维数组，PHP 端 trim((string)$node) 会抛
+            // "Array to string conversion"（即之前保存失败的根因）。
             var nodes = [];
-            $.each(raw, function (k, v) {
-                if (k.indexOf('nodes[') === 0 && v !== '') nodes.push(v);
-            });
-            var postData = { id: raw.id, nodes: nodes };
+            checkedLeafs().each(function () { nodes.push(this.value); });
+
+            var $btn = $('#btn-save');
+            $btn.addClass('layui-btn-disabled').prop('disabled', true).text('保存中…');
 
             $.ajax({
                 url: $('#ruleForm').attr('action'),
                 type: 'POST',
-                data: postData,
+                // 不能用 traditional:true —— 那样会序列化成 nodes=a&nodes=b，
+                // PHP 对重复键只保留最后一个值，后端只能收到一个节点。
+                // 默认序列化为 nodes[]=a&nodes[]=b，PHP 才会解析成索引数组。
+                data: { id: $('#ruleForm input[name="id"]').val(), nodes: nodes },
                 dataType: 'json',
                 success: function (res) {
-                    if (res.code === 1) {
-                        layer.msg('保存成功', {icon: 1}, function () {
-                            updateControllerStates(); // 重新对齐级联状态
-                        });
+                    if (res && res.code === 1) {
+                        initialChecked = snapshotChecked(); // 保存成功即成为新基线
+                        updateControllerStates();           // 重新对齐级联状态
+                        layer.msg('保存成功', {icon: 1});
                     } else {
-                        layer.msg('保存失败：' + res.msg, {icon: 2});
+                        layer.msg('保存失败：' + ((res && res.msg) || '未知错误'), {icon: 2});
                     }
                 },
                 error: function (xhr) {
                     var msg = '请求出错';
                     try { msg = JSON.parse(xhr.responseText).msg || msg; } catch (e) {}
                     layer.msg(msg, {icon: 2});
+                },
+                complete: function () {
+                    $btn.removeClass('layui-btn-disabled').prop('disabled', false).text('保存授权');
                 }
             });
             return false;
