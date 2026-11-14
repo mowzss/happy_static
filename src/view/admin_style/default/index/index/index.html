@@ -55,6 +55,7 @@
                     <dd><a data-modal="{:urls('user/info/edit',['id'=>$user.id])}" href="javascript:;">修改资料</a></dd>
                     <dd><a data-modal="{:urls('user/info/password',['id'=>$user.id])}" href="javascript:;">修改密码</a>
                     </dd>
+                    <dd><a data-menu-open="{:urls('user/totp/index')}" href="javascript:;">二次验证</a></dd>
                     <dd><a data-href="{:urls('logout')}" href="javascript:;" lay-header-event="logout">安全退出</a></dd>
                 </dl>
             </li>

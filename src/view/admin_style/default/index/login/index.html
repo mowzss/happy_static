@@ -88,7 +88,7 @@
                                class="layui-input" lay-affix="clear">
                     </div>
                 </div>
-                <div class="layui-form-item">
+<div class="layui-form-item">
                     <div class="layui-input-wrap">
                         <div class="layui-input-prefix">
                             <i class="layui-icon layui-icon-password"></i>
@@ -97,6 +97,18 @@
                                lay-verify="required" lay-reqtext="请填写密码"
                                placeholder="密　码" autocomplete="off"
                                class="layui-input" lay-affix="eye">
+                    </div>
+                </div>
+
+                <!-- 二次验证：仅在账号已绑定 TOTP 时显示 -->
+                <div class="layui-form-item" id="totp-item" style="display:none;">
+                    <div class="layui-input-wrap">
+                        <div class="layui-input-prefix">
+                            <i class="layui-icon layui-icon-vercode"></i>
+                        </div>
+                        <input type="text" name="totp" value=""
+                               placeholder="动态验证码（6 位）" autocomplete="one-time-code"
+                               maxlength="6" class="layui-input">
                     </div>
                 </div>
 
@@ -126,24 +138,38 @@
         let encrypt = layui.encrypt;
         let layer = layui.layer;
 
-        // 登 录 提 交
+// 登 录 提 交
         form.on('submit(login)', function (data) {
+            var post = {
+                username: data.field.username,
+                password: encrypt.md5(data.field.password),
+            };
+            // 已绑定二次验证时一并提交动态验证码
+            if (data.field.totp) {
+                post.totp = $.trim(data.field.totp);
+            }
             $.ajax({
                 type: "POST",
                 url: "{:urls()}",
-                data: {
-                    username: data.field.username,
-                    password: encrypt.md5(data.field.password),
-                },
+                data: post,
                 dataType: "json",
-                success: function (data) {
-                    if (data.code === 1) {
+                success: function (res) {
+                    if (res.code === 1) {
                         layer.msg("登录成功", function () {
-                            location.href = data.url
+                            location.href = res.url
                         });
-                    } else {
-                        layer.msg(data.msg)
+                        return;
                     }
+                    // 服务端要求二次验证时展开输入框并聚焦
+                    var extra = {};
+                    try {
+                        extra = typeof res.data === 'string' ? JSON.parse(res.data || '{}') : (res.data || {});
+                    } catch (e) {}
+                    if (extra && extra.need_totp) {
+                        $('#totp-item').show();
+                        $('input[name="totp"]').trigger('focus');
+                    }
+                    layer.msg(res.msg)
                 }
             })
             return false;
