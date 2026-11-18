@@ -12,6 +12,8 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
     const tableRegistry = {};
     // 已绑定过的 "layFilter:事件名"，避免页签重复渲染时监听器叠加
     const boundEventKeys = {};
+    // 进行中的写入请求标记，key = tableId + rowId + field，防止连点重复提交
+    const pendingWrites = {};
 
     // 快捷开关：模块加载时只注册一次，按开关所属表格派发请求
     form.on('switch(form-switch-edit)', function (obj) {
@@ -30,14 +32,27 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
             layer.msg('未获取到当前行数据');
             return;
         }
-        const value = obj.elem.checked ? 1 : 0;
+        // 读取列配置中声明的真实 on/off 值，默认 1/0，保持与后端字段类型一致
+        const $elem = $(obj.elem);
+        const onValue = $elem.attr('data-on-value') ?? '1';
+        const offValue = $elem.attr('data-off-value') ?? '0';
+        const value = obj.elem.checked ? onValue : offValue;
         const url = updateUrlParams(settings.dataUrls.quick, {id: rowData.id});
+        const pendingKey = [tableId, rowData.id, field].join(':');
+        if (pendingWrites[pendingKey]) {
+            revertSwitch(obj, $view);
+            return;
+        }
+        pendingWrites[pendingKey] = true;
         $.ajax({
             url: url,
             type: 'POST',
             data: {
                 field: field,
                 value: value
+            },
+            complete: function () {
+                delete pendingWrites[pendingKey];
             },
             success: function (res) {
                 if (res && res.code === 1) {
@@ -318,16 +333,21 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
                         layer.msg('未配置快捷编辑地址');
                         return obj.reedit();
                     }
-                    let load = layer.load();
                     let field = obj.field; // 得到修改的字段
                     let value = obj.value; // 得到修改后的值
                     let data = obj.data; // 得到所在行所有键值
-                    let url = updateUrlParams(settings.dataUrls.quick, {id: data.id});
                     // 值的校验
                     if (String(value).replace(/\s/g, '') === '') {
                         layer.tips('值不能为空', this, {tips: 1});
                         return obj.reedit(); // 重新编辑 -- v2.8.0 新增
                     }
+                    const pendingKey = [settings.layFilters, data.id, field].join(':');
+                    if (pendingWrites[pendingKey]) {
+                        return obj.reedit();
+                    }
+                    pendingWrites[pendingKey] = true;
+                    let load = layer.load();
+                    let url = updateUrlParams(settings.dataUrls.quick, {id: data.id});
                     $.ajax({
                         url: url,
                         type: 'POST',
@@ -338,14 +358,14 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
                         },
                         success: function (res) {
                             layer.close(load);
-                            if (res.code === 1) {
+                            if (res && res.code === 1) {
                                 layer.msg(res.msg || '更新成功', {icon: 1});
                                 // 更新当前缓存数据
                                 let update = {};
                                 update[field] = value;
                                 obj.update(update, true); // 参数 true 为 v2.7 新增功能，即同步更新其他包含自定义模板并可能存在关联的列视图
                             } else {
-                                layer.msg(res.msg || '更新失败', {icon: 2});
+                                layer.msg((res && res.msg) || '更新失败', {icon: 2});
                                 obj.reedit(); // 失败时回到编辑态，避免界面与数据不一致
                             }
                         },
@@ -353,6 +373,9 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
                             layer.close(load);
                             layer.msg('网络请求失败', {icon: 2});
                             obj.reedit();
+                        },
+                        complete: function () {
+                            delete pendingWrites[pendingKey];
                         }
                     })
                 };
@@ -394,6 +417,14 @@ layui.define(['jquery', 'table', 'layer', 'treeTable', 'form', 'fieldHandler', '
                 const item = tableRegistry[key];
                 const itemElem = item && typeof item.elem === 'string' ? item.elem.replace(/^#/, '') : '';
                 if (key === target || itemElem === target) {
+                    // 同步清理事件绑定标记，避免同 filter 重建后新 handler 无法绑定
+                    if (item && item.layFilters) {
+                        Object.keys(boundEventKeys).forEach(function (eventKey) {
+                            if (eventKey.indexOf(item.layFilters + ':') === 0) {
+                                delete boundEventKeys[eventKey];
+                            }
+                        });
+                    }
                     delete tableRegistry[key];
                 }
             });
