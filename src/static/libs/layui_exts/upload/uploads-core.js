@@ -1,10 +1,9 @@
-// 上传组件 - 核心组装层：构造/初始化/上传唤起/替换处理，调用 happyUpload 统一内核。
+// 上传组件 - 核心组装层：构造/初始化/文件选择/粘贴/上传唤起，调用 happyUpload 统一内核。
 // 模板层 uploads.js 注入动态配置后重新导出为 'uploads'，保持 new uploads(config) 接口不变。
-layui.define(['jquery', 'upload', 'layer', 'element', 'sortable', 'happyUpload', 'uploadsView', 'uploadsState'], function (exports) {
+layui.define(['jquery', 'layer', 'element', 'sortable', 'happyUpload', 'uploadsView', 'uploadsState'], function (exports) {
     "use strict";
 
-    var upload = layui.upload,
-        sortable = layui.sortable,
+    var sortable = layui.sortable,
         layer = layui.layer,
         happyUpload = layui.happyUpload,
         $ = layui.$;
@@ -24,11 +23,54 @@ layui.define(['jquery', 'upload', 'layer', 'element', 'sortable', 'happyUpload',
         extra: false
     };
 
+    // 全局粘贴路由：每个上传组件只注册一次 document 事件，按「点过/聚焦过的组件」分发。
+    // 这样空状态（没有已上传图片）时也能直接 Ctrl+V，且不会劫持输入框/富文本编辑器的粘贴。
+    var pasteManager = {
+        bound: false,
+        active: null,
+        bind: function () {
+            if (this.bound) return;
+            this.bound = true;
+            var self = this;
+
+            $(document).on('click.uploadPasteActive', function (e) {
+                var $target = $(e.target);
+                var $holder = $target.closest('[data-upload-holder]');
+                if ($holder.length) {
+                    self.active = $holder.data('uploadInstance') || null;
+                    return;
+                }
+                if ($target.closest('input, textarea, [contenteditable="true"]').length) {
+                    self.active = null;
+                }
+            });
+
+            $(document).on('focusin.uploadPasteActive', function (e) {
+                var $holder = $(e.target).closest('[data-upload-holder]');
+                if ($holder.length) self.active = $holder.data('uploadInstance') || null;
+            });
+
+            $(document).on('paste.uploadPasteGlobal', function (e) {
+                var $target = $(e.target);
+                // 输入框/富文本编辑器自己的粘贴不接管
+                if ($target.closest('input, textarea, [contenteditable="true"]').length) return;
+
+                var $holder = $target.closest('[data-upload-holder]');
+                var inst = $holder.length ? $holder.data('uploadInstance') : self.active;
+                if (!inst || inst.config.type !== 'images' || !$.isFunction(inst.handlePasteEvent)) return;
+                // 组件所在弹窗已关闭时忽略
+                if (!$.contains(document.body, $(inst.elem)[0])) return;
+                inst.handlePasteEvent(e);
+            });
+        }
+    };
+
     function Uploads(options, callback) {
         this.config = $.extend(true, {}, DEFAULTS, this.defaults, options);
         this.elem = options.elem;
         this.callback = callback;
         this.replaceTarget = null; // 待替换的旧 url（点击替换按钮时记录）
+        this.$fileInput = null;
         this.init();
     }
 
@@ -39,14 +81,19 @@ layui.define(['jquery', 'upload', 'layer', 'element', 'sortable', 'happyUpload',
     Uploads.prototype.init = function () {
         this.config.field = $(this.elem).find('input').attr('name');
         this.initView();
-        this.initUploader();
+        this.bindEvents();
         if (this.config.multiple && this.config.sort) {
             this.initSortable();
         }
         this.renderPreviews();
         this.preview();
+        this.initPaste();
+    };
 
+    // 交互事件绑定（文件上传与直传统一走自建 file input，行为一致）
+    Uploads.prototype.bindEvents = function () {
         var that = this;
+
         $(this.elem).off('click.uploadDel').on('click.uploadDel', '.layui-images-show-item .del, .layui-files-show-item .del', function (e) {
             e.stopPropagation();
             that.deleteItem(e.currentTarget);
@@ -56,63 +103,80 @@ layui.define(['jquery', 'upload', 'layer', 'element', 'sortable', 'happyUpload',
             that.editFileName(e.currentTarget);
         });
         // 替换：记录目标 url 后唤起文件选择（仅图片）
-        $(this.elem).off('click.uploadReplace').on('click.uploadReplace', '.layui-images-show-item .replace', function (e) {
-            e.stopPropagation();
+        $(this.elem).off('click.uploadReplace').on('click.uploadReplace', '.layui-images-show-item:not([data-upload]) .replace', function (e) {
+            e.stopImmediatePropagation();
             var oldUrl = $(this).closest('[data-files-url]').attr('data-files-url');
             that.replaceTarget = oldUrl || null;
-            that.getFileInput().click();
+            that.pickFile();
         });
-        // 粘贴截图上传（仅图片组件；富文本编辑器各有自己的实现，不走这里）
-        this.initPaste();
+        // 卡片上的粘贴按钮：聚焦容器并提示 Ctrl+V，粘贴时替换该卡片
+        $(this.elem).off('click.uploadPasteBtn').on('click.uploadPasteBtn', '.layui-images-show-item:not([data-upload]) .paste', function (e) {
+            e.stopImmediatePropagation();
+            var $card = $(this).closest('[data-files-url]');
+            that.replaceTarget = $card.length ? $card.attr('data-files-url') : null;
+            $(that.elem).trigger('focus');
+            layer.tips('按 Ctrl+V 粘贴截图替换此图', this, {tips: 1, time: 3000});
+        });
+        // 空上传框上的粘贴按钮：不唤起文件选择，仅聚焦容器提示粘贴（新增图片）
+        $(this.elem).off('click.uploadPasteEmpty').on('click.uploadPasteEmpty', '[data-upload] .paste', function (e) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+            that.replaceTarget = null;
+            $(that.elem).trigger('focus');
+            layer.tips('按 Ctrl+V 粘贴截图上传', this, {tips: 1, time: 3000});
+        });
+        // 点击上传入口：新增模式，唤起文件选择
+        $(this.elem).off('click.uploadPick').on('click.uploadPick', '[data-upload]', function (e) {
+            if ($(e.target).closest('.paste').length) return;
+            e.preventDefault();
+            that.replaceTarget = null;
+            that.pickFile();
+        });
     };
 
-    // 粘贴截图上传：容器可聚焦后接收 paste，从剪贴板提取图片文件
+    // 标记粘贴接收容器；真正的 paste 事件由 pasteManager 在 document 上统一处理
     Uploads.prototype.initPaste = function () {
-        if (this.config.type !== 'images') return; // 文件类型不接粘贴
-        var that = this;
-        $(that.elem)
+        if (this.config.type !== 'images') return;
+        $(this.elem)
             .attr('tabindex', '0')
             .attr('title', '点击选中后可粘贴截图（Ctrl+V）直接上传')
-            .off('paste.uploadPaste')
-            .on('paste.uploadPaste', function (e) {
-                var items = (e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.items) || [];
-                var imageFiles = [];
-                for (var i = 0; i < items.length; i++) {
-                    var item = items[i];
-                    if (item.kind === 'file' && /^image\//.test(item.type || '')) {
-                        var file = item.getAsFile && item.getAsFile();
-                        if (!file) continue;
-                        // 剪贴板图片通常无文件名，补一个带扩展名的名字供内核判断 ext/path
-                        if (!file.name) {
-                            var ext = (file.type.split('/')[1] || 'png').replace('jpeg', 'jpg').replace('+xml', '');
-                            try {
-                                file = new File([file], 'pasted_' + Date.now() + '.' + ext, { type: file.type });
-                            } catch (err) { /* 老浏览器不支持 File 构造时保持原样 */ }
-                        }
-                        imageFiles.push(file);
-                    }
-                }
-                if (!imageFiles.length) return;
-                e.preventDefault();
-                that.replaceTarget = null;
-                imageFiles.forEach(function (file) { that.handleFile(file); });
-            });
+            .attr('data-upload-holder', '')
+            .data('uploadInstance', this);
+        pasteManager.bind();
     };
 
-    // 根据直传开关选择初始化方式
-    Uploads.prototype.initUploader = function () {
-        if (!this.config.direct) {
-            this.initUpload();
-        } else {
-            this.initDirect();
-        }
-    };
-
-    // 复用隐藏的文件选择框
-    Uploads.prototype.getFileInput = function () {
+    // 从剪贴板提取图片文件并上传
+    Uploads.prototype.handlePasteEvent = function (e) {
         var that = this;
-        if (that.$fileInput) return that.$fileInput;
+        var items = (e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.items) || [];
+        var imageFiles = [];
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (item.kind === 'file' && /^image\//.test(item.type || '')) {
+                var file = item.getAsFile && item.getAsFile();
+                if (!file) continue;
+                // 剪贴板图片通常无文件名，补一个带扩展名的名字供内核判断 ext/path
+                if (!file.name) {
+                    var ext = (file.type.split('/')[1] || 'png').replace('jpeg', 'jpg').replace('+xml', '');
+                    try {
+                        file = new File([file], 'pasted_' + Date.now() + '.' + ext, { type: file.type });
+                    } catch (err) { /* 老浏览器不支持 File 构造时保持原样 */ }
+                }
+                imageFiles.push(file);
+            }
+        }
+        if (!imageFiles.length) return;
+        e.preventDefault();
+        var replacingUrl = that.replaceTarget;
+        that.replaceTarget = null;
+        imageFiles.forEach(function (file, idx) {
+            that.handleFile(file, idx === 0 ? replacingUrl : null);
+        });
+    };
 
+    // 创建隐藏文件选择框；change 后清空 value，允许重复选同一文件
+    Uploads.prototype.createFileInput = function () {
+        var that = this;
         var accept = '';
         if (that.config.type === 'images') {
             accept = 'image/*';
@@ -120,60 +184,67 @@ layui.define(['jquery', 'upload', 'layer', 'element', 'sortable', 'happyUpload',
             accept = '.' + String(that.config.exts).split('|').join(',.');
         }
 
-        var $input = $('<input type="file" style="display:none">');
+        var $input = $('<input type="file" style="display:none">').attr('data-upload-input', '');
         if (that.config.multiple) $input.attr('multiple', 'multiple');
         if (accept) $input.attr('accept', accept);
 
+        // 阻止 input 的 click 冒泡回容器，避免与委托事件互相干扰
+        $input.on('click', function (e) { e.stopPropagation(); });
         $input.on('change', function () {
             var files = Array.prototype.slice.call(this.files || []);
             this.value = '';
-            files.forEach(function (file) { that.handleFile(file); });
+            var replacingUrl = that.replaceTarget;
+            that.replaceTarget = null;
+            files.forEach(function (file, idx) {
+                var error = that.validateFile(file);
+                if (error) {
+                    layer.msg(error);
+                    return;
+                }
+                that.handleFile(file, idx === 0 ? replacingUrl : null);
+            });
         });
 
-        that.$fileInput = $input.appendTo(that.elem);
+        $input.appendTo(that.elem);
         return $input;
     };
 
-    // 直传模式：点击上传入口唤起文件选择
-    Uploads.prototype.initDirect = function () {
+    // 每次唤起都换一个新的 input：浏览器对「取消后再次 click 同一个 file input」会丢弃触发
+    Uploads.prototype.pickFile = function () {
         var that = this;
-        $(that.elem).off('click.directUpload').on('click.directUpload', '[data-upload]', function (event) {
-            event.preventDefault();
-            that.replaceTarget = null; // 新增模式
-            that.getFileInput().click();
-        });
-        that.getFileInput();
+        if (that.$fileInput) {
+            that.$fileInput.off().remove();
+            that.$fileInput = null;
+        }
+        that.$fileInput = that.createFileInput();
+        // 取消文件框后焦点仍在组件上，可直接 Ctrl+V 粘贴
+        $(that.elem).trigger('focus');
+        that.$fileInput[0].click();
     };
 
-    // 中转模式（local 驱动）：沿用 layui.upload 组件
-    Uploads.prototype.initUpload = function () {
-        var that = this;
-        upload.render({
-            elem: $(that.elem).find('[data-upload]'),
-            url: that.config.severUrl,
-            multiple: that.config.multiple,
-            accept: that.config.type,
-            exts: that.config.exts,
-            before: function () { layer.load(); },
-            done: function (res) {
-                layer.closeAll('loading');
-                if (res.code === 0) {
-                    that.applyUploaded(res.data);
-                } else {
-                    layer.msg(res.msg || '上传失败');
-                }
-            },
-            error: function () {
-                layer.closeAll('loading');
-                layer.msg('上传失败');
+    // 自建输入框后的类型校验（原 layui.upload 的 accept/exts 校验由这里接管）
+    Uploads.prototype.validateFile = function (file) {
+        var cfg = this.config;
+        var name = file.name || '';
+        var ext = name.indexOf('.') > -1 ? name.split('.').pop().toLowerCase() : '';
+        if (cfg.type === 'images' && !/^image\//.test(file.type || '') && !/^(jpg|jpeg|png|gif|webp|bmp|svg)$/.test(ext)) {
+            return '仅支持上传图片';
+        }
+        if (cfg.exts) {
+            var allowed = String(cfg.exts).toLowerCase().split('|').map(function (s) {
+                return s.trim();
+            }).filter(Boolean);
+            if (allowed.length && ext && allowed.indexOf(ext) === -1) {
+                return '不支持的文件类型';
             }
-        });
+        }
+        return null;
     };
 
     // 处理一个选中文件：就地进度卡 + 统一内核上传；替换模式成功后走替换逻辑
-    Uploads.prototype.handleFile = function (file) {
+    Uploads.prototype.handleFile = function (file, replacingUrl) {
         var that = this;
-        var replacingUrl = that.replaceTarget;
+        if (replacingUrl === undefined) replacingUrl = that.replaceTarget;
         that.replaceTarget = null;
 
         if (that.config.directMaxSize && file.size > that.config.directMaxSize) {
@@ -206,6 +277,7 @@ layui.define(['jquery', 'upload', 'layer', 'element', 'sortable', 'happyUpload',
             $list.empty();
         }
         $list.append($card);
+        that.syncUploadEntry();
 
         happyUpload.upload(file, {
             signUrl: that.config.signUrl,
@@ -220,7 +292,7 @@ layui.define(['jquery', 'upload', 'layer', 'element', 'sortable', 'happyUpload',
             that.applyUploaded(data, replacingUrl);
         }).catch(function (err) {
             that.removeProgressCard($card);
-            // 单图非替换：进度卡失败后补回上传入口由 addItem 逻辑接管（入口在 list 外，无需重建）
+            that.syncUploadEntry();
             layer.msg((err && err.message) || '上传失败');
         });
     };

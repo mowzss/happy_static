@@ -11,8 +11,9 @@ layui.define(['layer'], function (exports) {
         if (that.config.type === 'images') {
             viewHtml = '<div class="layui-images-show">' +
                 '<div class="layui-images-show-list"></div>' +
-                '<div class="layui-images-show-item" data-upload>' +
+                '<div class="layui-images-show-item" data-upload title="点击选择图片，或按 Ctrl+V 粘贴截图">' +
                 '<em class="layui-icon layui-icon-upload"></em>' +
+                '<span class="paste" title="粘贴截图 (Ctrl+V)"><em class="layui-icon layui-icon-edit"></em></span>' +
                 '</div>' +
                 '</div>';
         } else {
@@ -27,20 +28,19 @@ layui.define(['layer'], function (exports) {
     }
 
     // 获取项模板
+    // 图片卡片四角布局：左上拖拽(仅多图)/右上删除/左下替换/右下粘贴；点击图片本身预览
     function getTemplate(type, url, name, size) {
         var that = this;
         switch (type) {
             case 'images':
                 return '<div class="layui-images-show-item sortable-item" data-files-url="' + url + '">' +
-                    (that.config.multiple === true
-                        ? '<span class="drag"><em class="iconfont icon-drag"></em></span>'
-                        : '') +
-                    '<span class="del"><em class="layui-icon layui-icon-close"></em></span>' +
                     '<img src="' + url + '" alt="">' +
-                    '<div class="layui-images-show-item-but">' +
-                    '<span class="preview" title="预览"><em class="layui-icon layui-icon-eye"></em></span>' +
-                    '<span class="replace" title="替换"><em class="layui-icon layui-icon-upload"></em></span>' +
-                    '</div>' +
+                    (that.config.multiple === true
+                        ? '<span class="drag" title="拖拽排序"><em class="iconfont icon-drag"></em></span>'
+                        : '') +
+                    '<span class="del" title="删除"><em class="layui-icon layui-icon-close"></em></span>' +
+                    '<span class="replace" title="替换图片"><em class="layui-icon layui-icon-upload"></em></span>' +
+                    '<span class="paste" title="粘贴截图到此"><em class="layui-icon layui-icon-edit"></em></span>' +
                     '</div>';
             default:
                 var formattedSize = this.formatSize(size);
@@ -157,7 +157,16 @@ layui.define(['layer'], function (exports) {
             $list.html(template);
         }
         this.updateHiddenField(data);
+        this.syncUploadEntry();
     };
+
+    // 单图模式：列表已有值时隐藏冗余的上传入口框（替换走卡片左下角按钮）
+    function syncUploadEntry() {
+        if (this.config.multiple === true || this.config.type !== 'images') return;
+        var $list = $(this.elem).find('.layui-images-show-list');
+        var hasItem = $list.children('[data-files-url], [data-progress-card]').length > 0;
+        $(this.elem).find('[data-upload]').toggleClass('layui-hide', hasItem);
+    }
 
     // 替换指定 url 的项：移除旧 DOM 后走 addItem（隐藏域由 state 层覆盖处理）
     function replaceItem(oldUrl, data) {
@@ -206,6 +215,7 @@ layui.define(['layer'], function (exports) {
         renderPreviews: renderPreviews,
         addItem: addItem,
         replaceItem: replaceItem,
+        syncUploadEntry: syncUploadEntry,
         preview: preview
     });
 });

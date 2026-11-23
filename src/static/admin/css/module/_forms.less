@@ -62,8 +62,8 @@
       flex-shrink: 0; /* 防止它被压缩 */
     }
 
-    // 拖拽样式
-    .drag, .del {
+    // 四角操作按钮：左上拖拽 / 右上删除 / 左下替换 / 右下粘贴；悬停卡片才显示
+    .drag, .del, .replace, .paste {
       background: rgba(0, 0, 0, 0.5);
       border-radius: 4px;
       width: 22px;
@@ -71,18 +71,56 @@
       line-height: 22px;
       text-align: center;
       position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 2;
+      z-index: 5;
+      opacity: 0;
+      transition: opacity 0.2s ease, background 0.2s ease;
+      cursor: pointer;
 
       em {
         color: #ffffff;
+        font-size: 14px;
+      }
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.78);
       }
     }
 
+    // 悬停单张卡片时显示该卡片的四角按钮
+    &-item:hover {
+      .drag, .del, .replace, .paste {
+        opacity: 1;
+      }
+    }
+
+    // 空上传框没有已上传卡片，粘贴入口常驻显示（悬停时加深）
+    &-item[data-upload] .paste {
+      opacity: 0.6;
+    }
+
+    &-item[data-upload]:hover .paste {
+      opacity: 1;
+    }
+
+    .drag {
+      top: 2px;
+      left: 2px;
+      cursor: move;
+    }
+
     .del {
-      left: unset;
-      right: 0;
+      top: 2px;
+      right: 2px;
+    }
+
+    .replace {
+      bottom: 2px;
+      left: 2px;
+    }
+
+    .paste {
+      bottom: 2px;
+      right: 2px;
     }
 
     img {

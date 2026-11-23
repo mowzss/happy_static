@@ -67,8 +67,8 @@ layui.define(['jquery', 'layer'], function (exports) {
 
         if (this.config.type === 'images' && this.config.multiple === false) {
             $itemContainer.remove();
-            // 上传入口在 list 外常驻，无需重建；仅重新绑定以确保事件有效
-            this.initUploader();
+            // 单图删空后恢复上传入口（入口常驻，无需重建事件）
+            this.syncUploadEntry();
         } else {
             $itemContainer.remove();
         }
