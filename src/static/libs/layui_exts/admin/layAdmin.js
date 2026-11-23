@@ -6,10 +6,9 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
         LAYOUT_ADMIN: '.layui-layout-admin',// 布局元素
         CONTENT_WRAPPER: '#happy-content',// tabs 容器
         LOADING_MASK: '.loading-mask', // 加载遮罩
-        DATA_OPEN: '[data-open]', // 全屏窗口打开
         DATA_MENU_OPEN: '[data-menu-open]',// 菜单打开
-        DATA_WIN_OPEN: '[data-win-open]',// 窗口打开
-        DATA_AJAX: '[data-ajax]'// ajax 请求
+        DATA_WIN_OPEN: '[data-win-open]' // 窗口打开
+        // data-open / data-ajax / data-confirm-ajax 统一由 layModal.bind() 处理
     };
 
     const STORAGE_KEYS = {
@@ -32,7 +31,6 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
         tabs = layui.tabs,
         layTabs = layui.layTabs,
         layMenu = layui.layMenu,
-        layModal = layui.layModal,
         encrypt = layui.encrypt,
         element = layui.element;
 
@@ -141,23 +139,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
                     tabs.change(layTabs.config.elem, 'home');
                 },
 
-                // 清理缓存
-                cleanCache: (othis) => {
-                    let url = othis.data('url');
-                    layer.confirm('确认清理缓存？', () => {
-                        sessionStorage.clear();
-                        layTabs.clearCache();
-                        if (url) {
-                            $.ajax({
-                                url: url,
-                                type: 'GET',
-                                success: (res) => layer.msg(res.msg)
-                            });
-                        } else {
-                            layer.msg('本地缓存已清空');
-                        }
-                    });
-                },
+                // cleanCache 已迁移至 layModal 的 data-confirm-ajax（data-before="clear-session,tab-cache"）
 
                 // 网页全屏
                 fullScreen: (othis) => {
@@ -182,27 +164,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
                         .catch(() => layer.msg(`${isFullscreen ? '退出' : '进入'}全屏模式失败,请手动操作`));
                 },
 
-                logout: (othis) => {
-                    let url = othis.data('href');
-                    if (url) {
-                        layer.confirm('确认退出系统？', () => {
-                            $.ajax({
-                                url: url,
-                                type: 'GET',
-                                success: (res) => {
-                                    layer.msg(res.msg);
-                                    if (res.code === 1) {
-                                        setTimeout(() => {
-                                            sessionStorage.clear();
-                                            localStorage.clear();
-                                            location.href = res.url;
-                                        }, 1000);
-                                    }
-                                }
-                            });
-                        });
-                    }
-                },
+                // logout 已迁移至 layModal 的 data-confirm-ajax（data-then="clear-all,redirect"）
 
                 // 菜单切换
                 menuSwitch: () => {
@@ -257,43 +219,7 @@ layui.define(['util', 'element', 'layer', 'jquery', 'tabs', 'layTabs', 'layMenu'
                 window.open(url, '_blank');
             });
 
-            // Ajax 请求事件
-            $body.on('click', SELECTORS.DATA_AJAX, (e) => {
-                e.preventDefault(); // 阻止默认行为
-
-                let $this = $(e.currentTarget);
-                let index = layer.load(1);
-
-                let url = $this.data('ajax');
-                let type = $this.data('type') || 'GET';
-                let value = $this.data('value') || {};
-                $.ajax({
-                    url: url,
-                    type: type,
-                    data: value,
-                    success: (res) => {
-                        layer.close(index);
-                        layer.msg(res.msg, {icon: res.code === 1 ? 1 : 2});
-                        // 请求成功后再刷新当前页签，避免展示旧数据
-                        if (res.code === 1) {
-                            layTabs.reload();
-                        }
-                    },
-                    error: () => {
-                        layer.close(index);
-                        layer.msg('网络错误');
-                    }
-                });
-            });
-            $body.on('click', SELECTORS.DATA_OPEN, (e) => {
-                e.preventDefault();
-                const $this = $(e.currentTarget);
-                layModal.open($this.data('open'), {
-                    title: $this.data('title') || $this.text().trim() || '窗口操作',
-                    type: $this.data('type') || 'GET',
-                    width: $this.data('width')
-                });
-            })
+            // data-ajax / data-open 已迁移至 layModal.bind()，由 common.js 统一绑定
         },
 
         requestFullscreen: function (element) {

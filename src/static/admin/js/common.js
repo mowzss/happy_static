@@ -128,8 +128,8 @@ layui.config({
         }
     });
 
-    // 打开弹窗（统一由 layModal 处理，成功判定 code === 1）
-    layModal.bind('[data-modal]');
+    // 声明式动作统一由 layModal 处理：data-modal / data-confirm-ajax / data-ajax / data-open
+    layModal.bind();
 
     // 辅助函数：更新提示框的位置，并进行边界检查
     function updateTooltipPosition(event, $tooltip) {
