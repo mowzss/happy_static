@@ -62,6 +62,41 @@ layui.define(['jquery', 'upload', 'layer', 'element', 'sortable', 'happyUpload',
             that.replaceTarget = oldUrl || null;
             that.getFileInput().click();
         });
+        // 粘贴截图上传（仅图片组件；富文本编辑器各有自己的实现，不走这里）
+        this.initPaste();
+    };
+
+    // 粘贴截图上传：容器可聚焦后接收 paste，从剪贴板提取图片文件
+    Uploads.prototype.initPaste = function () {
+        if (this.config.type !== 'images') return; // 文件类型不接粘贴
+        var that = this;
+        $(that.elem)
+            .attr('tabindex', '0')
+            .attr('title', '点击选中后可粘贴截图（Ctrl+V）直接上传')
+            .off('paste.uploadPaste')
+            .on('paste.uploadPaste', function (e) {
+                var items = (e.originalEvent && e.originalEvent.clipboardData && e.originalEvent.clipboardData.items) || [];
+                var imageFiles = [];
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i];
+                    if (item.kind === 'file' && /^image\//.test(item.type || '')) {
+                        var file = item.getAsFile && item.getAsFile();
+                        if (!file) continue;
+                        // 剪贴板图片通常无文件名，补一个带扩展名的名字供内核判断 ext/path
+                        if (!file.name) {
+                            var ext = (file.type.split('/')[1] || 'png').replace('jpeg', 'jpg').replace('+xml', '');
+                            try {
+                                file = new File([file], 'pasted_' + Date.now() + '.' + ext, { type: file.type });
+                            } catch (err) { /* 老浏览器不支持 File 构造时保持原样 */ }
+                        }
+                        imageFiles.push(file);
+                    }
+                }
+                if (!imageFiles.length) return;
+                e.preventDefault();
+                that.replaceTarget = null;
+                imageFiles.forEach(function (file) { that.handleFile(file); });
+            });
     };
 
     // 根据直传开关选择初始化方式
@@ -135,7 +170,7 @@ layui.define(['jquery', 'upload', 'layer', 'element', 'sortable', 'happyUpload',
         });
     };
 
-    // 处理一个选中文件：交给统一内核上传；替换模式成功后走替换逻辑
+    // 处理一个选中文件：就地进度卡 + 统一内核上传；替换模式成功后走替换逻辑
     Uploads.prototype.handleFile = function (file) {
         var that = this;
         var replacingUrl = that.replaceTarget;
@@ -146,19 +181,46 @@ layui.define(['jquery', 'upload', 'layer', 'element', 'sortable', 'happyUpload',
             return;
         }
 
-        layer.load();
+        // 回调模式（编辑器）不渲染进度卡，沿用各自反馈
+        if (that.callback) {
+            happyUpload.upload(file, {
+                signUrl: that.config.signUrl,
+                registerUrl: that.config.registerUrl,
+                saveUrl: that.config.severUrl,
+                maxSize: that.config.directMaxSize,
+                direct: that.config.direct,
+                fieldName: 'file'
+            }).then(function (data) {
+                that.applyUploaded(data, replacingUrl);
+            }).catch(function (err) {
+                layer.msg((err && err.message) || '上传失败');
+            });
+            return;
+        }
+
+        // 就地进度卡：单图清空列表占位，多图追加；替换模式保留旧项
+        var $card = that.createProgressCard(file);
+        var containerSelector = that.config.type === 'images' ? '.layui-images-show-list' : '.layui-files-show-list';
+        var $list = $(that.elem).find(containerSelector);
+        if (!that.config.multiple && !replacingUrl) {
+            $list.empty();
+        }
+        $list.append($card);
+
         happyUpload.upload(file, {
             signUrl: that.config.signUrl,
             registerUrl: that.config.registerUrl,
             saveUrl: that.config.severUrl,
             maxSize: that.config.directMaxSize,
             direct: that.config.direct,
-            fieldName: 'file'
+            fieldName: 'file',
+            progress: function (percent) { that.setProgress($card, percent); }
         }).then(function (data) {
-            layer.closeAll('loading');
+            that.removeProgressCard($card);
             that.applyUploaded(data, replacingUrl);
         }).catch(function (err) {
-            layer.closeAll('loading');
+            that.removeProgressCard($card);
+            // 单图非替换：进度卡失败后补回上传入口由 addItem 逻辑接管（入口在 list 外，无需重建）
             layer.msg((err && err.message) || '上传失败');
         });
     };

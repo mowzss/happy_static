@@ -56,6 +56,62 @@ layui.define(['layer'], function (exports) {
         }
     };
 
+    // 创建上传进度占位卡片（就地显示，图片用本地缩略图预览）
+    // 返回 jQuery 对象，由 core 插入到列表并在完成时替换
+    function createProgressCard(file) {
+        var that = this;
+        var isImage = that.config.type === 'images';
+        var html;
+
+        if (isImage) {
+            var thumb = URL.createObjectURL && /^image\//.test(file.type)
+                ? URL.createObjectURL(file) : '';
+            html = '<div class="layui-images-show-item upload-progress-card" data-progress-card>' +
+                (thumb ? '<img src="' + thumb + '" alt="">' : '<em class="layui-icon layui-icon-upload"></em>') +
+                '<div class="upload-progress-mask">' +
+                '<span class="upload-progress-percent">0%</span>' +
+                '<div class="upload-progress-track"><div class="upload-progress-bar"></div></div>' +
+                '</div>' +
+                '</div>';
+        } else {
+            html = '<div class="layui-files-show-item upload-progress-card upload-progress-file" data-progress-card>' +
+                '<em class="layui-icon layui-icon-loading"></em> ' + escapeHtml(file.name || 'uploading...') +
+                ' <span class="upload-progress-percent">0%</span>' +
+                '<div class="upload-progress-track"><div class="upload-progress-bar"></div></div>' +
+                '</div>';
+        }
+        var $card = $(html);
+        $card.data('objectUrl', thumb || '');
+        return $card;
+    }
+
+    // 更新进度条：百分比文字 + 条宽
+    function setProgress($card, percent) {
+        percent = Math.max(0, Math.min(100, Number(percent) || 0));
+        // 直传降级中转时进度会重新计数，这里只增不减，避免进度回退观感
+        var prev = Number($card.attr('data-progress')) || 0;
+        if (percent <= prev) return;
+        $card.attr('data-progress', percent);
+        $card.find('.upload-progress-percent').text(percent + '%');
+        $card.find('.upload-progress-bar').css('width', percent + '%');
+    }
+
+    // 完成：释放缩略图 URL，移除占位卡（正式项由 core 调 addItem/replaceItem 插入）
+    function removeProgressCard($card) {
+        var objectUrl = $card.data('objectUrl');
+        if (objectUrl && URL.revokeObjectURL) {
+            URL.revokeObjectURL(objectUrl);
+        }
+        $card.remove();
+    }
+
+    // HTML 转义（文件名来自用户/剪贴板，防注入）
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
     // 格式化文件大小
     function formatSize(bytes) {
         if (isNaN(bytes) || bytes === 0) return '0 B';
@@ -143,6 +199,9 @@ layui.define(['layer'], function (exports) {
     exports('uploadsView', {
         initView: initView,
         getTemplate: getTemplate,
+        createProgressCard: createProgressCard,
+        setProgress: setProgress,
+        removeProgressCard: removeProgressCard,
         formatSize: formatSize,
         renderPreviews: renderPreviews,
         addItem: addItem,

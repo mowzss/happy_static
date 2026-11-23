@@ -100,6 +100,46 @@
       color: #b1b1b1;
     }
 
+    // 上传进度占位卡：缩略图上覆盖遮罩 + 百分比 + 底部进度条
+    .upload-progress-card {
+      border-color: #16b777;
+
+      .upload-progress-mask {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.45);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .upload-progress-percent {
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1;
+      }
+
+      .upload-progress-track {
+        width: 66px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.35);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .upload-progress-bar {
+        width: 0;
+        height: 100%;
+        background: #16b777;
+        border-radius: 3px;
+        transition: width 0.15s ease;
+      }
+    }
+
     &-item:hover {
       border: 1px solid #16b777 !important;
 
@@ -169,6 +209,36 @@
       .del {
         margin-left: 15px;
         color: #e34d4d;
+      }
+    }
+
+    // 文件上传进度行
+    .upload-progress-file {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .upload-progress-percent {
+        color: #16b777;
+        font-size: 12px;
+        min-width: 34px;
+        text-align: right;
+      }
+
+      .upload-progress-track {
+        flex: 1;
+        height: 4px;
+        background: #eee;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .upload-progress-bar {
+        width: 0;
+        height: 100%;
+        background: #16b777;
+        border-radius: 3px;
+        transition: width 0.15s ease;
       }
     }
   }
