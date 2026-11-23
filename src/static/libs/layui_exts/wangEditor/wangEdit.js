@@ -1,5 +1,6 @@
-layui.define(['jquery', 'layer', 'wangEditor'], function (exports) {
+layui.define(['jquery', 'layer', 'wangEditor', 'happyUpload'], function (exports) {
     "use strict";
+    const happyUpload = layui.happyUpload;
     //引入css样式
     layui.link(layui.cache.base + "wangEditor/wangEditor.css", 'wangEditorCss')
     const wangEditor = layui.wangEditor;
@@ -19,134 +20,6 @@ layui.define(['jquery', 'layer', 'wangEditor'], function (exports) {
         mode: 'default', // or 'simple'
         elem: null, // 用户传入的元素
     };
-
-    // 随机文件名
-    const randomName = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-
-    // 获取直传签名（按文件 md5 精确签发）
-    const fetchSign = (config, md5) => new Promise((resolve, reject) => {
-        $.ajax({url: config.upload_sign_url, type: 'POST', dataType: 'json', data: {md5: md5}})
-            .done((res) => {
-                if (res && res.code === 0 && res.data && res.data.mode === 'direct') {
-                    resolve(res.data);
-                } else {
-                    reject(new Error('relay'));
-                }
-            })
-            .fail(() => reject(new Error('relay')));
-    });
-
-    // 按需加载 SparkMD5（通过 layui 外部模块机制，避免写死脚本路径）
-    const ensureSparkMD5 = () => {
-        if (typeof SparkMD5 !== 'undefined') return Promise.resolve();
-        return new Promise((resolve, reject) => {
-            layui.use(['sparkmd5'], () => {
-                typeof SparkMD5 !== 'undefined' ? resolve() : reject(new Error('MD5 组件加载失败'));
-            });
-        });
-    };
-
-    // SparkMD5 分块计算文件 md5（大文件不卡主线程）
-    const computeMd5 = (file) => ensureSparkMD5().then(() => new Promise((resolve, reject) => {
-        const chunkSize = 2 * 1024 * 1024;
-        const chunks = Math.ceil(file.size / chunkSize);
-        let current = 0;
-        const spark = new SparkMD5.ArrayBuffer();
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            spark.append(e.target.result);
-            current++;
-            if (current < chunks) {
-                loadNext();
-            } else {
-                resolve(spark.end());
-            }
-        };
-        reader.onerror = () => reject(new Error('读取文件失败'));
-        function loadNext() {
-            const start = current * chunkSize;
-            reader.readAsArrayBuffer(file.slice(start, Math.min(start + chunkSize, file.size)));
-        }
-        loadNext();
-    }));
-
-    // 上传到对象存储
-    const uploadToStorage = (file, key, info) => new Promise((resolve, reject) => {
-        const formData = new FormData();
-        if (info.driver === 'oss') {
-            formData.append('key', key);
-            formData.append('policy', info.policy);
-            formData.append('OSSAccessKeyId', info.accessId);
-            formData.append('signature', info.signature);
-            formData.append('success_action_status', String(info.successActionStatus || 200));
-        } else {
-            formData.append('token', info.token);
-            formData.append('key', key);
-        }
-        // 文件字段必须最后追加；multipart 文件名用 ASCII 安全名（OSS 对象名由 key 决定）
-        const extMatch = key.match(/\.[A-Za-z0-9]+$/);
-        formData.append('file', file, 'upload_' + randomName() + (extMatch ? extMatch[0] : ''));
-
-        const xhr = new XMLHttpRequest();
-        xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                resolve();
-            } else {
-                reject(new Error('直传失败'));
-            }
-        };
-        xhr.onerror = () => reject(new Error('直传失败'));
-        xhr.open('POST', info.host, true);
-        xhr.send(formData);
-    });
-
-    // 登记附件
-    const registerAttachment = (key, file, ext, info, config, md5) => new Promise((resolve, reject) => {
-        $.ajax({
-            url: info.registerUrl || config.upload_register_url,
-            type: 'POST',
-            dataType: 'json',
-            data: {path: key, name: file.name, size: file.size, ext: ext, md5: md5}
-        }).done((res) => {
-            if (res && res.code === config.serverResponseSuccessCode && res.data) {
-                resolve(res.data);
-            } else {
-                reject(new Error((res && res.msg) || '上传失败'));
-            }
-        }).fail(() => reject(new Error('上传登记失败')));
-    });
-
-    // 浏览器直传（md5 路径，内容级去重）
-    const directUploadImage = async (file, config) => {
-        const md5 = await computeMd5(file);
-        const info = await fetchSign(config, md5);
-        const ext = file.name && file.name.indexOf('.') > -1 ? file.name.split('.').pop().toLowerCase() : '';
-        const key = info.dir + md5 + (ext ? '.' + ext : '');
-        await uploadToStorage(file, key, info);
-        return registerAttachment(key, file, ext, info, config, md5);
-    };
-
-    // 服务器中转
-    const relayUploadImage = (file, config) => new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('file', file, file.name);
-        $.ajax({
-            url: config.upload_url,
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            dataType: 'json',
-            success: (res) => {
-                if (res && res.code === config.serverResponseSuccessCode && res.data) {
-                    resolve(res.data);
-                } else {
-                    reject(new Error((res && res.msg) || '上传失败'));
-                }
-            },
-            error: (xhr) => reject(new Error('网络错误：' + xhr.status))
-        });
-    });
 
     // 初始化WangEditor实例
     function initEditor(options) {
@@ -171,17 +44,18 @@ layui.define(['jquery', 'layer', 'wangEditor'], function (exports) {
                         // 第三方存储优先浏览器直传，失败回退服务器中转
                         async customUpload(file, insertFn) {
                             try {
-                                const data = await directUploadImage(file, config);
+                                // 统一上传内核：直传失败自动回退中转
+                                const data = await happyUpload.upload(file, {
+                                    signUrl: config.upload_sign_url,
+                                    registerUrl: config.upload_register_url,
+                                    saveUrl: config.upload_url,
+                                    successCode: config.serverResponseSuccessCode,
+                                    fieldName: 'file'
+                                });
                                 layer.msg("上传成功", {icon: 1});
                                 insertFn(data.url, data.name);
-                            } catch (e) {
-                                try {
-                                    const data = await relayUploadImage(file, config);
-                                    layer.msg("上传成功", {icon: 1});
-                                    insertFn(data.url, data.name);
-                                } catch (err) {
-                                    layer.msg((err && err.message) || "上传失败", {icon: 2});
-                                }
+                            } catch (err) {
+                                layer.msg((err && err.message) || "上传失败", {icon: 2});
                             }
                         },
                         customInsert(res, insertFn) {

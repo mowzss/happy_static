@@ -15,6 +15,11 @@ layui.config({
     fieldHandler: "admin/fieldHandler",
     layMenu: "admin/layMenu",
     layModal: "extends/layModal",
+    
+    happyUpload: "upload/happyUpload",
+    uploadsCore: "upload/uploads-core",
+    uploadsView: "upload/uploads-view",
+    uploadsState: "upload/uploads-state",
 
     cron: "cron/cron",
     xmSelect: "xm-select/xm-select",

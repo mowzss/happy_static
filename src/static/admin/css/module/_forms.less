@@ -86,8 +86,9 @@
     }
 
     img {
-      max-width: 90px;
-      min-height: 90px;
+      width: 90px;
+      height: 90px;
+      object-fit: cover; /* 固定方框内等比裁剪，避免原图比例拉伸变形 */
       position: absolute;
       top: 0;
       left: 0;

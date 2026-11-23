@@ -112,12 +112,13 @@ layui.define(['form', 'layer', 'jquery', 'layTable', 'layTabs', 'layModal'], fun
             })
         },
         uploads: function (elem) {
-            // 图片上传
-            elem.find('[data-file]').each(function () {
-                let that = this;
-                layui.use(['uploads'], function (uploads) {
-                    let multiple = that.dataset.multiple === "true", type = that.dataset.file,
-                        id = $(that).attr('id');
+            // 图片/文件上传：模块只 use 一次，再逐个初始化（uploads 模板层接口不变）
+            const fields = elem.find('[data-file]');
+            if (!fields.length) return;
+            layui.use(['uploads'], function (uploads) {
+                fields.each(function () {
+                    let multiple = this.dataset.multiple === "true", type = this.dataset.file,
+                        id = $(this).attr('id');
                     new uploads({
                         elem: "#" + id, type: type, multiple: multiple, sort: multiple,
                     });
