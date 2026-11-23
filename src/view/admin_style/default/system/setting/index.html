@@ -34,7 +34,7 @@
     layui.use(['jquery'], function () {
         var $ = layui.jquery, $this = $('#{$layui_id|default="setting-box"}');
         // 确保在文档准备就绪后触发 click 事件
-        $(document).ready(function () {
+        $(function () {
             $this.find('li.layui-this').each(function () {
                 $(this).trigger('click');
             });
