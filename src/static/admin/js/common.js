@@ -29,6 +29,7 @@ layui.config({
 
     encrypt: "encrypt/encrypt",
     //外部模块
+    sparkmd5: {src: AppLibs + "jquery/md5.min", api: "SparkMD5"},
     sortable: {src: AppLibs + "sortable/Sortable", api: "Sortable"},
     tinymce: {src: AppLibs + "tinymce/tinymce.min", api: "tinymce"},//tinymce
     wangEditor: {src: AppLibs + "wangEditor/index", api: "wangEditor"},//wangEditor

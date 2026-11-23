@@ -23,79 +23,112 @@ layui.define(['jquery', 'UECONFING', 'UE'], function (exports) {
         return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
     }
 
-    // 浏览器直传
-    function directUpload(file, callback, fallback) {
-        $.ajax({url: conf.signUrl, type: 'POST', dataType: 'json'})
-            .done(function (res) {
-                if (!(res && res.code === 0 && res.data && res.data.mode === 'direct')) {
-                    fallback();
-                    return;
-                }
-
-                var info = res.data;
-                var name = file.name || 'file';
-                var ext = name.indexOf('.') > -1 ? name.split('.').pop().toLowerCase() : '';
-                if (info.allowExts && info.allowExts.length && ext && info.allowExts.indexOf(ext) === -1) {
-                    handleError(callback, '不允许的文件类型');
-                    return;
-                }
-                if (info.maxSize && file.size > info.maxSize) {
-                    handleError(callback, '文件大小超过限制');
-                    return;
-                }
-
-                var key = info.dir + randomName() + (ext ? '.' + ext : '');
-                var formData = new FormData();
-                if (info.driver === 'oss') {
-                    formData.append('key', key);
-                    formData.append('policy', info.policy);
-                    formData.append('OSSAccessKeyId', info.accessId);
-                    formData.append('signature', info.signature);
-                    formData.append('success_action_status', String(info.successActionStatus || 200));
-                } else {
-                    formData.append('token', info.token);
-                    formData.append('key', key);
-                }
-                // 文件字段必须最后追加；multipart 文件名用 ASCII 安全名（OSS 对象名由 key 决定）
-                formData.append('file', file, 'upload_' + randomName() + (ext ? '.' + ext : ''));
-
-                var xhr = new XMLHttpRequest();
-                if (xhr.upload && callback.progress) {
-                    xhr.upload.addEventListener('progress', function (e) {
-                        if (e.lengthComputable) {
-                            callback.progress(Math.round((e.loaded / e.total) * 100));
-                        }
-                    }, false);
-                }
-                xhr.onload = function () {
-                    if (xhr.status < 200 || xhr.status >= 300) {
-                        fallback();
-                        return;
-                    }
-                    $.ajax({
-                        url: info.registerUrl || conf.registerUrl,
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {path: key, name: name, size: file.size, ext: ext}
-                    }).done(function (r) {
-                        if (r && r.code === 0 && r.data) {
-                            handleResponse({code: 0, data: r.data}, callback);
-                        } else {
-                            handleError(callback, (r && r.msg) || '上传失败');
-                        }
-                    }).fail(function () {
-                        handleError(callback, '上传登记失败');
-                    });
-                };
-                xhr.onerror = function () {
-                    fallback();
-                };
-                xhr.open('POST', info.host, true);
-                xhr.send(formData);
-            })
-            .fail(function () {
-                fallback();
+    // 按需加载 SparkMD5（通过 layui 外部模块机制，避免写死脚本路径）
+    function ensureSparkMD5() {
+        if (typeof SparkMD5 !== 'undefined') return Promise.resolve();
+        return new Promise(function (resolve, reject) {
+            layui.use(['sparkmd5'], function () {
+                typeof SparkMD5 !== 'undefined' ? resolve() : reject(new Error('MD5 组件加载失败'));
             });
+        });
+    }
+
+    // 用 SparkMD5 分块计算文件 md5（大文件不卡主线程）
+    function computeMd5(file) {
+        return ensureSparkMD5().then(function () {
+            return new Promise(function (resolve, reject) {
+                var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
+                var chunkSize = 2 * 1024 * 1024;
+                var chunks = Math.ceil(file.size / chunkSize);
+                var current = 0;
+                var spark = new SparkMD5.ArrayBuffer();
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    spark.append(e.target.result);
+                    current++;
+                    if (current < chunks) {
+                        loadNext();
+                    } else {
+                        resolve(spark.end());
+                    }
+                };
+                reader.onerror = function () { reject(new Error('读取文件失败')); };
+                function loadNext() {
+                    var start = current * chunkSize;
+                    var end = Math.min(start + chunkSize, file.size);
+                    reader.readAsArrayBuffer(blobSlice.call(file, start, end));
+                }
+                loadNext();
+            });
+        });
+    }
+
+    // 浏览器直传（md5 路径，内容级去重）
+    function directUpload(file, callback, fallback) {
+        var name = file.name || 'file';
+        var ext = name.indexOf('.') > -1 ? name.split('.').pop().toLowerCase() : '';
+
+        computeMd5(file).then(function (md5) {
+            return $.ajax({url: conf.signUrl, type: 'POST', dataType: 'json', data: {md5: md5}})
+                .then(function (res) {
+                    if (!(res && res.code === 0 && res.data && res.data.mode === 'direct')) {
+                        throw new Error((res && res.msg) || '获取直传签名失败');
+                    }
+                    return {info: res.data, md5: md5};
+                });
+        }).then(function (ctx) {
+            var info = ctx.info, md5 = ctx.md5;
+            var key = info.dir + md5 + (ext ? '.' + ext : '');
+            var formData = new FormData();
+            if (info.driver === 'oss') {
+                formData.append('key', key);
+                formData.append('policy', info.policy);
+                formData.append('OSSAccessKeyId', info.accessId);
+                formData.append('signature', info.signature);
+                formData.append('success_action_status', String(info.successActionStatus || 200));
+            } else {
+                formData.append('token', info.token);
+                formData.append('key', key);
+            }
+            // 文件字段必须最后追加；multipart 文件名用 ASCII 安全名（OSS 对象名由 key 决定）
+            formData.append('file', file, 'upload_' + randomName() + (ext ? '.' + ext : ''));
+
+            var xhr = new XMLHttpRequest();
+            if (xhr.upload && callback.progress) {
+                xhr.upload.addEventListener('progress', function (e) {
+                    if (e.lengthComputable) {
+                        callback.progress(Math.round((e.loaded / e.total) * 100));
+                    }
+                }, false);
+            }
+            xhr.onload = function () {
+                if (xhr.status < 200 || xhr.status >= 300) {
+                    fallback();
+                    return;
+                }
+                $.ajax({
+                    url: info.registerUrl || conf.registerUrl,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {path: key, name: name, size: file.size, ext: ext, md5: md5}
+                }).done(function (r) {
+                    if (r && r.code === 0 && r.data) {
+                        handleResponse({code: 0, data: r.data}, callback);
+                    } else {
+                        handleError(callback, (r && r.msg) || '上传失败');
+                    }
+                }).fail(function () {
+                    handleError(callback, '上传登记失败');
+                });
+            };
+            xhr.onerror = function () {
+                fallback();
+            };
+            xhr.open('POST', info.host, true);
+            xhr.send(formData);
+        }).catch(function () {
+            fallback();
+        });
     }
 
     // 服务器中转（原逻辑）

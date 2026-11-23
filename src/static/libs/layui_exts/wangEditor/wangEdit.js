@@ -23,9 +23,9 @@ layui.define(['jquery', 'layer', 'wangEditor'], function (exports) {
     // 随机文件名
     const randomName = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-    // 获取直传签名
-    const fetchSign = (config) => new Promise((resolve, reject) => {
-        $.ajax({url: config.upload_sign_url, type: 'POST', dataType: 'json'})
+    // 获取直传签名（按文件 md5 精确签发）
+    const fetchSign = (config, md5) => new Promise((resolve, reject) => {
+        $.ajax({url: config.upload_sign_url, type: 'POST', dataType: 'json', data: {md5: md5}})
             .done((res) => {
                 if (res && res.code === 0 && res.data && res.data.mode === 'direct') {
                     resolve(res.data);
@@ -35,6 +35,40 @@ layui.define(['jquery', 'layer', 'wangEditor'], function (exports) {
             })
             .fail(() => reject(new Error('relay')));
     });
+
+    // 按需加载 SparkMD5（通过 layui 外部模块机制，避免写死脚本路径）
+    const ensureSparkMD5 = () => {
+        if (typeof SparkMD5 !== 'undefined') return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            layui.use(['sparkmd5'], () => {
+                typeof SparkMD5 !== 'undefined' ? resolve() : reject(new Error('MD5 组件加载失败'));
+            });
+        });
+    };
+
+    // SparkMD5 分块计算文件 md5（大文件不卡主线程）
+    const computeMd5 = (file) => ensureSparkMD5().then(() => new Promise((resolve, reject) => {
+        const chunkSize = 2 * 1024 * 1024;
+        const chunks = Math.ceil(file.size / chunkSize);
+        let current = 0;
+        const spark = new SparkMD5.ArrayBuffer();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            spark.append(e.target.result);
+            current++;
+            if (current < chunks) {
+                loadNext();
+            } else {
+                resolve(spark.end());
+            }
+        };
+        reader.onerror = () => reject(new Error('读取文件失败'));
+        function loadNext() {
+            const start = current * chunkSize;
+            reader.readAsArrayBuffer(file.slice(start, Math.min(start + chunkSize, file.size)));
+        }
+        loadNext();
+    }));
 
     // 上传到对象存储
     const uploadToStorage = (file, key, info) => new Promise((resolve, reject) => {
@@ -67,12 +101,12 @@ layui.define(['jquery', 'layer', 'wangEditor'], function (exports) {
     });
 
     // 登记附件
-    const registerAttachment = (key, file, ext, info, config) => new Promise((resolve, reject) => {
+    const registerAttachment = (key, file, ext, info, config, md5) => new Promise((resolve, reject) => {
         $.ajax({
             url: info.registerUrl || config.upload_register_url,
             type: 'POST',
             dataType: 'json',
-            data: {path: key, name: file.name, size: file.size, ext: ext}
+            data: {path: key, name: file.name, size: file.size, ext: ext, md5: md5}
         }).done((res) => {
             if (res && res.code === config.serverResponseSuccessCode && res.data) {
                 resolve(res.data);
@@ -82,19 +116,14 @@ layui.define(['jquery', 'layer', 'wangEditor'], function (exports) {
         }).fail(() => reject(new Error('上传登记失败')));
     });
 
-    // 浏览器直传
+    // 浏览器直传（md5 路径，内容级去重）
     const directUploadImage = async (file, config) => {
-        const info = await fetchSign(config);
+        const md5 = await computeMd5(file);
+        const info = await fetchSign(config, md5);
         const ext = file.name && file.name.indexOf('.') > -1 ? file.name.split('.').pop().toLowerCase() : '';
-        if (info.allowExts && info.allowExts.length && ext && info.allowExts.indexOf(ext) === -1) {
-            throw new Error('不允许的文件类型');
-        }
-        if (info.maxSize && file.size > info.maxSize) {
-            throw new Error('文件大小超过限制');
-        }
-        const key = info.dir + randomName() + (ext ? '.' + ext : '');
+        const key = info.dir + md5 + (ext ? '.' + ext : '');
         await uploadToStorage(file, key, info);
-        return registerAttachment(key, file, ext, info, config);
+        return registerAttachment(key, file, ext, info, config, md5);
     };
 
     // 服务器中转

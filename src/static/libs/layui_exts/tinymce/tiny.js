@@ -85,71 +85,104 @@ layui.define(['jquery', 'tinymce',], function (exports) {
                 return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
             };
 
-            // 直传：取签名 -> 上传对象存储 -> 登记附件
-            var directUpload = function (blob, filename) {
+            // 按需加载 SparkMD5（通过 layui 外部模块机制，避免写死脚本路径）
+            var ensureSparkMD5 = function () {
+                if (typeof SparkMD5 !== 'undefined') return Promise.resolve();
                 return new Promise(function (resolve, reject) {
-                    $.ajax({url: config.upload_sign_url, type: 'POST', dataType: 'json'})
-                        .done(function (res) {
-                            if (!(res && res.code === 0 && res.data && res.data.mode === 'direct')) {
-                                reject(new Error('relay'));
-                                return;
-                            }
-                            var info = res.data;
-                            var ext = filename && filename.indexOf('.') > -1 ? filename.split('.').pop().toLowerCase() : '';
-                            if (info.allowExts && info.allowExts.length && info.allowExts.indexOf(ext) === -1) {
-                                reject(new Error('不允许的文件类型'));
-                                return;
-                            }
-                            if (info.maxSize && blob.size > info.maxSize) {
-                                reject(new Error('文件大小超过限制'));
-                                return;
-                            }
+                    layui.use(['sparkmd5'], function () {
+                        typeof SparkMD5 !== 'undefined' ? resolve() : reject(new Error('MD5 组件加载失败'));
+                    });
+                });
+            };
 
-                            var key = info.dir + randomName() + (ext ? '.' + ext : '');
-                            var formData = new FormData();
-                            if (info.driver === 'oss') {
-                                formData.append('key', key);
-                                formData.append('policy', info.policy);
-                                formData.append('OSSAccessKeyId', info.accessId);
-                                formData.append('signature', info.signature);
-                                formData.append('success_action_status', String(info.successActionStatus || 200));
+            // SparkMD5 分块计算 Blob 的 md5（大文件不卡主线程）
+            var computeMd5 = function (blob) {
+                return ensureSparkMD5().then(function () {
+                    return new Promise(function (resolve, reject) {
+                        var chunkSize = 2 * 1024 * 1024;
+                        var chunks = Math.ceil(blob.size / chunkSize);
+                        var current = 0;
+                        var spark = new SparkMD5.ArrayBuffer();
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            spark.append(e.target.result);
+                            current++;
+                            if (current < chunks) {
+                                loadNext();
                             } else {
-                                formData.append('token', info.token);
-                                formData.append('key', key);
+                                resolve(spark.end());
                             }
-                            // 文件字段必须最后追加；multipart 文件名用 ASCII 安全名（OSS 对象名由 key 决定）
-                            formData.append('file', blob, 'upload_' + randomName() + (ext ? '.' + ext : ''));
+                        };
+                        reader.onerror = function () { reject(new Error('读取文件失败')); };
+                        function loadNext() {
+                            var start = current * chunkSize;
+                            reader.readAsArrayBuffer(blob.slice(start, Math.min(start + chunkSize, blob.size)));
+                        }
+                        loadNext();
+                    });
+                });
+            };
 
-                            var xhr = new XMLHttpRequest();
-                            xhr.onload = function () {
-                                if (xhr.status < 200 || xhr.status >= 300) {
-                                    reject(new Error('直传失败'));
-                                    return;
-                                }
-                                $.ajax({
-                                    url: info.registerUrl || config.upload_register_url,
-                                    type: 'POST',
-                                    dataType: 'json',
-                                    data: {path: key, name: filename, size: blob.size, ext: ext}
-                                }).done(function (r) {
-                                    if (r && r.code === 0 && r.data && r.data.url) {
-                                        resolve(r.data.url);
-                                    } else {
-                                        reject(new Error((r && r.msg) || '上传失败'));
-                                    }
-                                }).fail(function () {
-                                    reject(new Error('上传登记失败'));
-                                });
-                            };
-                            xhr.onerror = function () {
+            // 直传：算 md5 -> 取签名 -> 上传对象存储 -> 登记附件（md5 路径，内容级去重）
+            var directUpload = function (blob, filename) {
+                return computeMd5(blob).then(function (md5) {
+                    return $.ajax({
+                        url: config.upload_sign_url,
+                        type: 'POST',
+                        dataType: 'json',
+                        data: { md5: md5 }
+                    }).then(function (res) {
+                        if (!(res && res.code === 0 && res.data && res.data.mode === 'direct')) {
+                            throw new Error('relay');
+                        }
+                        return { info: res.data, md5: md5 };
+                    });
+                }).then(function (ctx) {
+                    return new Promise(function (resolve, reject) {
+                        var info = ctx.info, md5 = ctx.md5;
+                        var ext = filename && filename.indexOf('.') > -1 ? filename.split('.').pop().toLowerCase() : '';
+                        var key = info.dir + md5 + (ext ? '.' + ext : '');
+                        var formData = new FormData();
+                        if (info.driver === 'oss') {
+                            formData.append('key', key);
+                            formData.append('policy', info.policy);
+                            formData.append('OSSAccessKeyId', info.accessId);
+                            formData.append('signature', info.signature);
+                            formData.append('success_action_status', String(info.successActionStatus || 200));
+                        } else {
+                            formData.append('token', info.token);
+                            formData.append('key', key);
+                        }
+                        // 文件字段必须最后追加；multipart 文件名用 ASCII 安全名（OSS 对象名由 key 决定）
+                        formData.append('file', blob, 'upload_' + randomName() + (ext ? '.' + ext : ''));
+
+                        var xhr = new XMLHttpRequest();
+                        xhr.onload = function () {
+                            if (xhr.status < 200 || xhr.status >= 300) {
                                 reject(new Error('直传失败'));
-                            };
-                            xhr.open('POST', info.host, true);
-                            xhr.send(formData);
-                        })
-                        .fail(function () {
-                            reject(new Error('relay'));
-                        });
+                                return;
+                            }
+                            $.ajax({
+                                url: info.registerUrl || config.upload_register_url,
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {path: key, name: filename, size: blob.size, ext: ext, md5: md5}
+                            }).done(function (r) {
+                                if (r && r.code === 0 && r.data && r.data.url) {
+                                    resolve(r.data.url);
+                                } else {
+                                    reject(new Error((r && r.msg) || '上传失败'));
+                                }
+                            }).fail(function () {
+                                reject(new Error('上传登记失败'));
+                            });
+                        };
+                        xhr.onerror = function () {
+                            reject(new Error('直传失败'));
+                        };
+                        xhr.open('POST', info.host, true);
+                        xhr.send(formData);
+                    });
                 });
             };
 
