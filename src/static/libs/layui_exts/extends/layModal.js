@@ -19,6 +19,7 @@ layui.define(['layer', 'jquery'], function (exports) {
      * - clear-all     : 清空 sessionStorage + localStorage
      * - tab-cache     : 清理 layTabs 缓存（layTabs 已加载时）
      * - tab-reload    : 刷新当前 tab（layTabs 已加载时，否则降级为整页 reload）
+     *                   可通过 data-then-delay 指定延时毫秒数，默认 0
      * - reload        : 整页刷新
      * - redirect      : 跳转到响应里的 res.url，或元素的 data-redirect
      * - close-current : 关闭最近一次弹层
@@ -45,10 +46,15 @@ layui.define(['layer', 'jquery'], function (exports) {
                     break;
                 case 'tab-reload':
                     var ltr = optional('layTabs');
+                    var reloadDelay = Number(ctx.$this.data('thenDelay')) || 0;
                     if (ltr && typeof ltr.reload === 'function') {
-                        ltr.reload();
+                        if (reloadDelay > 0) {
+                            setTimeout(function () { ltr.reload(); }, reloadDelay);
+                        } else {
+                            ltr.reload();
+                        }
                     } else {
-                        setTimeout(function () { location.reload(); }, 600);
+                        setTimeout(function () { location.reload(); }, Math.max(reloadDelay, 600));
                     }
                     break;
                 case 'reload':
@@ -73,6 +79,14 @@ layui.define(['layer', 'jquery'], function (exports) {
      * 统一 ajax：loading → msg → 成功后按 data-then 执行后续动作
      */
     function request($this, type, url, data) {
+        // data-value 可能是 JSON 字符串（部分 jQuery 版本不自动解析），做兜底
+        if (typeof data === 'string') {
+            try {
+                data = JSON.parse(data);
+            } catch (e) {
+                data = {};
+            }
+        }
         const ld = layer.load(1);
         return $.ajax({
             url: url,

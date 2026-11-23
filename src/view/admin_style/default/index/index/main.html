@@ -197,7 +197,12 @@
                             <button class="layui-btn layui-btn-xs layui-btn-normal">线上模式</button>
                             {/notempty}
                         </div>
-                        <button class="layui-btn layui-btn-xs layui-btn-primary" id="run_mode" data-status="{$is_debug?0:1}">
+                        <button class="layui-btn layui-btn-xs layui-btn-primary" id="run_mode"
+                                data-ajax="{:urls('runMode')}"
+                                data-type="POST"
+                                data-value='{"status": {$is_debug?0:1}}'
+                                data-then="tab-reload"
+                                data-then-delay="1000">
                             切换
                         </button>
                     </div>
@@ -340,7 +345,6 @@
 <script id="dash-trend-labels" type="application/json">{empty name="spider.trend.labels"}[]{else/}{:json_encode($spider.trend.labels)}{/empty}</script>
 <script id="dash-trend-series" type="application/json">{empty name="spider.trend.series"}[]{else/}{:json_encode($spider.trend.series)}{/empty}</script>
 <div id="dash-flags" style="display:none;"
-     data-run-mode-url="{:urls('runMode')}"
      data-happy-module="{notempty name='composer.happy_modules'}1{else/}0{/notempty}"
      data-system-module="{notempty name='composer.system_modules'}1{else/}0{/notempty}"
      data-has-trend="{notempty name='spider.trend.labels'}1{else/}0{/notempty}"></div>
@@ -351,10 +355,8 @@
     if (typeof layui === 'undefined') {
         // 页面是裸片段 + 无 layui 环境，跳过所有初始化，返回即可。
     } else {
-    layui.use(['layer', 'layTabs', 'table', 'echarts', 'jquery'], function () {
+    layui.use(['table', 'echarts', 'jquery'], function () {
         var $ = layui.jquery,
-            layTabs = layui.layTabs,
-            layer = layui.layer,
             table = layui.table,
             echarts = layui.echarts;
 
@@ -364,27 +366,12 @@
         var flags = document.getElementById('dash-flags');
         // 用原生 dataset 而非 jQuery .data()，避免 jQuery 把连字符属性转驼峰导致 key 不匹配
         // （jQuery .data('has-trend') 读不到 data-has-trend，需要 .data('hasTrend')）
-        var runModeUrl = flags.getAttribute('data-run-mode-url');
         var ds = flags.dataset;
         var hasHappyModule  = ds.happyModule  === '1';
         var hasSystemModule = ds.systemModule === '1';
         var hasTrend        = ds.hasTrend      === '1';
 
-        // 运行模式切换（保留原有逻辑）
-        $('#run_mode').on('click', function () {
-            var status = $(this).attr('data-status');
-            $.ajax({
-                url: runModeUrl,
-                type: 'post',
-                data: {status: status},
-                dataType: 'json',
-                success: function (res) {
-                    layer.msg(res.msg, {icon: res.code === 1 ? 1 : 2, time: 1000}, function () {
-                        layTabs.refresh();
-                    });
-                }
-            });
-        });
+        // 运行模式切换已改为声明式 data-ajax（见 #run_mode 按钮），由 layModal.bind() 统一处理
 
         // 初始化 Composer 依赖表格
         try {
