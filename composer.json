@@ -15,17 +15,10 @@
   "extra": {
     "module": {
       "make": {
-        "public/static/admin": "dist/static/admin",
-        "public/static/libs": "dist/static/libs",
-        "view/admin_style/default": "dist/view/admin_style/default",
-        "view/forms_style/default": "dist/view/forms_style/default"
+        "public/static/admin": "dist/static/admin"
       },
       "copy": {
-        "view/error": "dist/view/error",
-        "public/static/pc_style": "dist/static/pc_style",
-        "public/static/user": "dist/static/pc_style",
-        "view/home_style/default": "dist/view/home_style/default",
-        "view/user_style/default": "dist/view/user_style/default"
+        "view/error": "dist/view/error"
       },
       "del": true
     }
