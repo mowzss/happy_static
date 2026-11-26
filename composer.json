@@ -9,8 +9,8 @@
     }
   ],
   "require": {
-    "mowzs/happy-admin-system": "^1.0",
-    "mowzs/happy-admin-installer": "^1.0"
+    "mowzs/happy-admin-system": "dev-master",
+    "mowzs/happy-admin-installer": "dev-master"
   },
   "extra": {
     "module": {
