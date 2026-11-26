@@ -1,5 +1,6 @@
 *.log
 .env
+.idea
 composer.phar
 composer.lock
 .DS_Store
@@ -7,7 +8,6 @@ composer.lock
 Thumbs.db
 package-lock.json
 node_modules
-/.idea
 /.vscode
 /vendor
 /.settings
