@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="管理 生产" type="js.build_tools.gulp">
+    <node-interpreter>project</node-interpreter>
+    <node-options />
+    <gulpfile>$PROJECT_DIR$/../../libs/happy-static/gulpfile.js</gulpfile>
+    <tasks>
+      <task>prod</task>
+    </tasks>
+    <arguments />
+    <envs>
+      <env name="NODE_ENV" value="production" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>

@@ -1,0 +1,73 @@
+<style>
+    .totp-wrap { padding: 18px; }
+    .totp-card {
+        background: #fff; border: 1px solid #e6eaf0; border-radius: 8px;
+        padding: 18px 22px; box-shadow: 0 1px 3px rgba(15, 23, 42, .06);
+        max-width: 780px;
+    }
+    .totp-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .totp-head__title { font-size: 16px; font-weight: 600; color: #1e293b; }
+    .totp-badge {
+        font-size: 12px; line-height: 18px; padding: 2px 10px; border-radius: 10px;
+    }
+    .totp-badge--on { background: #dcfce7; color: #15803d; }
+    .totp-badge--off { background: #fef3c7; color: #b45309; }
+    .totp-desc { color: #64748b; font-size: 13px; line-height: 22px; margin-bottom: 16px; }
+    .totp-body { display: flex; gap: 24px; flex-wrap: wrap; }
+    .totp-qr {
+        width: 200px; height: 200px; border: 1px solid #eef2f7; border-radius: 8px;
+        padding: 6px; background: #fff;
+    }
+    .totp-qr img { width: 100%; height: 100%; object-fit: contain; }
+    .totp-side { flex: 1; min-width: 280px; }
+    .totp-step { color: #334155; font-size: 13px; line-height: 24px; margin-bottom: 8px; }
+    .totp-step b { color: #1d4ed8; }
+    .totp-secret {
+        font-family: Consolas, Monaco, monospace; font-size: 13px; letter-spacing: 1px;
+        background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px;
+        padding: 8px 10px; word-break: break-all; color: #0f172a; margin: 6px 0 14px;
+    }
+    .totp-form { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .totp-form .layui-input { width: 180px; letter-spacing: 4px; text-align: center; }
+    .totp-form .layui-btn { margin: 0; }
+    .totp-tip { color: #94a3b8; font-size: 12px; margin-top: 10px; }
+</style><div class="happy-container"><div class="totp-card"><div class="totp-head"> <span class="totp-head__title">二次验证（TOTP）</span> {if $bound} <span class="totp-badge totp-badge--on">已启用</span> {else/} <span class="totp-badge totp-badge--off">未启用</span> {/if}</div><div class="totp-desc"> 启用后，登录 {$username} 时除密码外还需输入手机验证器（Microsoft Authenticator / Google Authenticator） 上显示的 6 位动态验证码，可有效防止密码泄露后的账号被盗。</div> {if $bound}<div class="totp-side"><div class="totp-step">当前账号已于 <b>{$bound_at}</b> 绑定动态验证码。</div><div class="totp-step">如需更换手机或关闭二次验证，请输入当前验证码后关闭，再重新绑定。</div><form class="layui-form" lay-filter="totp-disable-form"><div class="totp-form"> <input type="text" name="code" class="layui-input" maxlength="6" placeholder="6 位验证码" autocomplete="one-time-code"> <button type="button" class="layui-btn layui-btn-danger" id="btn-disable">关闭二次验证</button></div></form><div class="totp-tip">若手机已丢失且无法获取验证码，请在服务器执行 TotpReset 命令重置（见交付说明）。</div></div> {else/}<div class="totp-body"><div class="totp-qr"> {notempty name="qrcode"} <img src="{$qrcode}" alt="TOTP 绑定二维码"> {/notempty}</div><div class="totp-side"><div class="totp-step">1. 打开手机上的验证器 App，选择「添加账户 → 其他账户 → 扫描二维码」。</div><div class="totp-step">2. 无法扫码时，手动添加并输入下面的密钥：</div><div class="totp-secret">{$secret}</div><div class="totp-step">3. 输入 App 上显示的当前 6 位验证码完成绑定：</div><form class="layui-form" lay-filter="totp-enable-form"><div class="totp-form"> <input type="text" name="code" class="layui-input" maxlength="6" placeholder="6 位验证码" autocomplete="one-time-code"> <button type="button" class="layui-btn" id="btn-enable">启用二次验证</button></div></form><div class="totp-tip">二维码 10 分钟内有效，过期请刷新页面重新获取。手机时间需自动同步，否则验证码可能不匹配。</div></div></div> {/if}</div></div><script>
+    if (typeof layui !== 'undefined') {
+        layui.use(['jquery', 'layer'], function () {
+            var $ = layui.jquery, layer = layui.layer;
+
+            function submit(url, $input) {
+                var code = ($input.val() || '').replace(/\s+/g, '');
+                if (!/^\d{6}$/.test(code)) {
+                    layer.msg('请输入 6 位数字验证码');
+                    return;
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: {code: code},
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res && res.code === 1) {
+                            layer.msg(res.msg || '操作成功', {icon: 1}, function () {
+                                location.reload();
+                            });
+                        } else {
+                            layer.msg((res && res.msg) || '操作失败', {icon: 2});
+                        }
+                    },
+                    error: function () {
+                        layer.msg('请求失败，请稍后重试', {icon: 2});
+                    }
+                });
+            }
+
+            $('#btn-enable').on('click', function () {
+                submit("{:urls('enable')}", $(this).closest('form').find('input[name="code"]'));
+            });
+            $('#btn-disable').on('click', function () {
+                submit("{:urls('disable')}", $(this).closest('form').find('input[name="code"]'));
+            });
+        });
+    }
+</script>

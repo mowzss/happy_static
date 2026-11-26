@@ -1,0 +1,32 @@
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.happy-tab-content {
+  animation: slideInFromBottom 0.5s ease-in-out forwards;
+  display: none;
+}
+
+/* 加载进度条容器 */
+#loading-bar {
+  position: fixed; /* 固定在页面顶部 */
+  top: 0;
+  left: 0;
+  width: 0; /* 初始宽度为0% */
+  height: 2px; /* 进度条的高度 */
+  background-color: #16b777; /* 进度条的颜色 */
+  z-index: 9999; /* 确保进度条在其他内容之上 */
+  transition: width 0.3s ease-in-out; /* 平滑过渡效果 */
+}
+
+/* 隐藏加载进度条时的样式 */
+#loading-bar.hidden {
+  display: none;
+}

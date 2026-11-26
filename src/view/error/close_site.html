@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>网站临时关闭 - 维护中</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f0f0f0;
+        }
+
+        .container {
+            text-align: center;
+            color: #333;
+            max-width: 600px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            animation: fadeInDown 2s ease-in-out;
+        }
+
+        p {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            animation: fadeInUp 2s ease-in-out 1s;
+        }
+
+        a {
+            text-decoration: none;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            color: #fff;
+            background-color: #0d6efd; /* 蓝色 */
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            animation: fadeInUp 2s ease-in-out 1.5s;
+        }
+
+        a:hover {
+            background-color: #0b5ed7;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .maintenance-icon {
+            font-size: 7rem;
+            margin-bottom: 20px;
+            color: #0d6efd;
+        }
+
+        .contact-info {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        .social-links a {
+            margin: 0 10px;
+            font-size: 1.5rem;
+            color: #333;
+            transition: color 0.3s;
+        }
+
+        .social-links a:hover {
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="maintenance-icon">🛠️</div>
+    <h1>网站正在维护中</h1>
+    <p>我们正在进行一些重要的更新，以提供更好的服务。请稍后再来访问。</p>
+    <p>预计将在 <strong>xxxx年xx月5日 XX:XX</strong> 恢复正常服务。</p>
+    <p class="contact-info">如果您有紧急问题，请联系我们的支持团队：<a href="XXX">XXX</a>
+    </p>
+    <!--    <p>您也可以关注我们的社交媒体获取最新动态：</p>-->
+    <!--    <div class="social-links">-->
+    <!--        <a href="https://twitter.com/yourcompany" target="_blank">TW</a>-->
+    <!--        <a href="https://facebook.com/yourcompany" target="_blank">FB</a>-->
+    <!--        <a href="https://instagram.com/yourcompany" target="_blank">IG</a>-->
+    <!--    </div>-->
+</div>
+
+</body>
+</html>
