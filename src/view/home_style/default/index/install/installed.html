@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>系统已安装 · Happy Admin</title>
+    <link rel="stylesheet" href="/static/libs/install/install.css">
+</head>
+<body>
+<div class="installed-wrap">
+    <div class="installed-card">
+        <div class="mark">✓</div>
+        <h1>系统已完成安装</h1>
+        <p>安装入口已锁定，如需重复安装请先解除锁定状态。</p>
+        <a class="btn" href="{$entrance_url}">进入系统后台</a>
+        <div class="note">
+            如需重新安装（会清空业务数据，请谨慎）：删除 config/install.lock，并将 config/happy.php 中的 installed 改为
+            false，再访问 install.html。配置备份位于 runtime/install/backup/。
+        </div>
+    </div>
+</div>
+</body>
+</html>
