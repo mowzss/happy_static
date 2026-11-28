@@ -17,9 +17,14 @@
     };
 
     const TASKS = [
-        { key: 'schema', action: 'install_schema', title: '初始化数据表', desc: '执行 system/install.sql，创建系统表与初始数据' },
-        { key: 'admin', action: 'install_admin', title: '创建管理员', desc: '写入超级管理员账号与站点基础配置' },
-        { key: 'finalize', action: 'install_finalize', title: '完成配置', desc: '生成系统配置、执行升级脚本并写入安装锁' }
+        {
+            key: 'schema',
+            action: 'install_schema',
+            title: '初始化数据表',
+            desc: '执行 system/install.sql，创建系统表与初始数据'
+        },
+        {key: 'admin', action: 'install_admin', title: '创建管理员', desc: '写入超级管理员账号与站点基础配置'},
+        {key: 'finalize', action: 'install_finalize', title: '完成配置', desc: '生成系统配置、执行升级脚本并写入安装锁'}
     ];
 
     const $ = (id) => document.getElementById(id);
@@ -40,13 +45,19 @@
         box.textContent = message;
         box.className = 'toast is-visible' + (type ? ' is-' + type : '');
         clearTimeout(box._timer);
-        box._timer = setTimeout(() => { box.className = 'toast'; }, 3200);
+        box._timer = setTimeout(() => {
+            box.className = 'toast';
+        }, 3200);
     }
 
     function showAlert(id, type, message) {
         const box = $(id);
         if (!box) return;
-        if (!message) { box.className = 'alert'; box.textContent = ''; return; }
+        if (!message) {
+            box.className = 'alert';
+            box.textContent = '';
+            return;
+        }
         box.className = 'alert is-visible alert-' + type;
         box.textContent = message;
     }
@@ -84,7 +95,7 @@
         Object.keys(params || {}).forEach((key) => body.set(key, params[key]));
         return fetch(S.api, {
             method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
             body: body
         }).then((response) => {
             if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -114,7 +125,7 @@
         const names = ['环境检测', '数据库配置', '站点与管理员', '安装完成'];
         const crumb = $('crumb');
         if (crumb) crumb.textContent = '/ ' + (names[step - 1] || '');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     // ---------------------------------------------------------------- 环境检测
@@ -198,7 +209,10 @@
     function runDbCheck() {
         const fields = dbFields();
         const invalid = validateDbClient(fields);
-        if (invalid) { showAlert('dbAlert', 'error', invalid); return; }
+        if (invalid) {
+            showAlert('dbAlert', 'error', invalid);
+            return;
+        }
         showAlert('dbAlert', 'info', '正在连接数据库…');
         setBusy($('btnDbTest'), true, '连接中…');
         api('check_database', fields).then((result) => {
@@ -208,6 +222,7 @@
                 $('dbResult').className = 'db-result';
                 $('btnDbSave').disabled = true;
                 S.dbChecked = false;
+                S.dbHasData = false;
                 return;
             }
             const data = result.data || {};
@@ -224,7 +239,8 @@
             $('dbResult').className = 'db-result is-visible';
             $('dbOverwriteBox').style.display = data.has_data ? 'block' : 'none';
             $('overwrite').checked = false;
-            $('btnDbSave').disabled = true;
+            // 空库：连接成功即可保存；已有同前缀表：需勾选覆盖确认后由 change 事件解锁
+            $('btnDbSave').disabled = !!data.has_data;
             showAlert('dbAlert', data.has_data ? 'warn' : 'ok',
                 data.has_data
                     ? '目标库检测到同前缀数据表。安装脚本会 DROP 并重建这些表，原数据将无法恢复，请先备份。'
@@ -235,19 +251,29 @@
     }
 
     function saveDatabase() {
-        if (!S.dbChecked) { showAlert('dbAlert', 'error', '请先测试数据库连接'); return; }
+        if (!S.dbChecked) {
+            showAlert('dbAlert', 'error', '请先测试数据库连接');
+            return;
+        }
         if (S.dbHasData && !$('overwrite').checked) {
             showAlert('dbAlert', 'error', '请先勾选覆盖确认');
             return;
         }
         const fields = dbFields();
         const invalid = validateDbClient(fields);
-        if (invalid) { showAlert('dbAlert', 'error', invalid); return; }
+        if (invalid) {
+            showAlert('dbAlert', 'error', invalid);
+            return;
+        }
         fields.overwrite = $('overwrite').checked ? '1' : '0';
         setBusy($('btnDbSave'), true, '保存中…');
         api('save_database', fields).then((result) => {
             setBusy($('btnDbSave'), false);
-            if (!result.ok) { showAlert('dbAlert', 'error', result.message); toast(result.message, 'error'); return; }
+            if (!result.ok) {
+                showAlert('dbAlert', 'error', result.message);
+                toast(result.message, 'error');
+                return;
+            }
             $('summaryDb').textContent = fields.db_host + ':' + fields.db_port + ' / ' + fields.db_name + ' / ' + fields.db_prefix;
             $('summaryEnv').textContent = 'PHP ' + (BOOT.php || '') + ' · 环境检测通过';
             showAlert('dbAlert', 'ok', '数据库配置已写入，请继续设置管理员。');
@@ -325,7 +351,7 @@
         const box = $('installLog');
         if (!box) return;
         const line = el('div', type ? 'l-' + type : '');
-        line.appendChild(el('span', 'l-time', new Date().toLocaleTimeString('zh-CN', { hour12: false })));
+        line.appendChild(el('span', 'l-time', new Date().toLocaleTimeString('zh-CN', {hour12: false})));
         line.appendChild(document.createTextNode(text));
         box.appendChild(line);
         box.scrollTop = box.scrollHeight;
@@ -339,7 +365,7 @@
         link.href = url;
         $('finishLink').href = url;
         $('finishUsername').textContent = data.username || '—';
-        $('finishTime').textContent = (S.state && S.state.finished_at) || new Date().toLocaleString('zh-CN', { hour12: false });
+        $('finishTime').textContent = (S.state && S.state.finished_at) || new Date().toLocaleString('zh-CN', {hour12: false});
         const warnings = data.warnings || [];
         $('finishWarnings').style.display = warnings.length ? 'block' : 'none';
         $('finishWarnings').textContent = warnings.join('；');
@@ -411,7 +437,10 @@
     function startInstall() {
         const fields = accountFields();
         const invalid = validateAccountClient(fields);
-        if (invalid) { showAlert('accountAlert', 'error', invalid); return; }
+        if (invalid) {
+            showAlert('accountAlert', 'error', invalid);
+            return;
+        }
         showAlert('accountAlert', '');
         setStep(4);
         renderTasks();
@@ -425,7 +454,10 @@
         setBusy($('btnResetFlow'), true, '重置中…');
         api('reset').then((result) => {
             setBusy($('btnResetFlow'), false);
-            if (!result.ok) { toast(result.message, 'error'); return; }
+            if (!result.ok) {
+                toast(result.message, 'error');
+                return;
+            }
             toast('已重置，页面即将刷新', 'ok');
             setTimeout(() => window.location.reload(), 600);
         });
@@ -455,10 +487,16 @@
         // 仅建表完成 -> 回到第 3 步重新填写管理员信息（密码不落盘）。
         let resumeMode = '';
         let initial = 1;
-        if (state.stage === 'done' || steps.finalize) { initial = 4; resumeMode = 'finished'; }
-        else if (steps.admin) { initial = 4; resumeMode = 'can_finalize'; }
-        else if (steps.schema) { initial = 3; resumeMode = 'need_account'; }
-        else if (state.stage === 'account' || state.db_saved) initial = 3;
+        if (state.stage === 'done' || steps.finalize) {
+            initial = 4;
+            resumeMode = 'finished';
+        } else if (steps.admin) {
+            initial = 4;
+            resumeMode = 'can_finalize';
+        } else if (steps.schema) {
+            initial = 3;
+            resumeMode = 'need_account';
+        } else if (state.stage === 'account' || state.db_saved) initial = 3;
         else if (state.stage === 'database' || state.env_checked) initial = 2;
         setStep(initial);
         S.envPassed = !!state.env_checked;
@@ -472,7 +510,11 @@
             if (resumeMode === 'finished') {
                 $('progressBar').style.width = '100%';
                 TASKS.forEach((task) => setTask(task.key, 'done', '已完成'));
-                showFinish({ entrance: '/' + (state.entrance || S.entrance), username: (state.account && state.account.username) || '', warnings: state.warnings || [] });
+                showFinish({
+                    entrance: '/' + (state.entrance || S.entrance),
+                    username: (state.account && state.account.username) || '',
+                    warnings: state.warnings || []
+                });
             } else {
                 appendLog('检测到未完成的安装流程，点击「继续完成安装」从中断处继续');
                 $('btnInstallContinue').style.display = 'inline-flex';
@@ -486,12 +528,25 @@
         }
 
         // 事件绑定
-        $('btnEnvRecheck').addEventListener('click', function () { runEnvCheck(this); });
-        $('btnEnvNext').addEventListener('click', () => { if (S.envPassed) setStep(2); });
+        $('btnEnvRecheck').addEventListener('click', function () {
+            runEnvCheck(this);
+        });
+        $('btnEnvNext').addEventListener('click', () => {
+            if (S.envPassed) setStep(2);
+        });
         $('btnDbBack').addEventListener('click', () => setStep(1));
         $('btnDbTest').addEventListener('click', runDbCheck);
         $('btnDbSave').addEventListener('click', saveDatabase);
-        $('overwrite').addEventListener('change', () => { $('btnDbSave').disabled = !(S.dbHasData && $('overwrite').checked || !S.dbHasData); });
+        $('overwrite').addEventListener('change', () => {
+            $('btnDbSave').disabled = !S.dbChecked || (S.dbHasData && !$('overwrite').checked);
+        });
+        // 连接信息变更后必须重新检测，避免保存未经校验的配置
+        $('dbForm').addEventListener('input', (e) => {
+            if (!e.target || e.target.id === 'overwrite') return;
+            S.dbChecked = false;
+            S.dbHasData = false;
+            $('btnDbSave').disabled = true;
+        });
         $('btnAccountBack').addEventListener('click', () => setStep(2));
         $('btnInstall').addEventListener('click', startInstall);
         $('btnInstallContinue').addEventListener('click', () => runInstallChain({}));
@@ -499,12 +554,25 @@
         $('btnReset').addEventListener('click', resetFlow);
         if (initial > 1) $('btnEnvNext').disabled = false;
         $('adminPassword').addEventListener('input', updateStrength);
-        $('dbForm').addEventListener('submit', (e) => { e.preventDefault(); runDbCheck(); });
-        $('accountForm').addEventListener('submit', (e) => { e.preventDefault(); startInstall(); });
+        $('dbForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            runDbCheck();
+        });
+        $('accountForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            startInstall();
+        });
 
         if (initial === 1) runEnvCheck(null);
-        else if (initial === 2) { S.envPassed = true; status('环境检测已通过', 'ok'); }
-        if (initial === 3) { S.envPassed = true; S.dbChecked = true; $('btnDbSave').disabled = false; }
+        else if (initial === 2) {
+            S.envPassed = true;
+            status('环境检测已通过', 'ok');
+        }
+        if (initial === 3) {
+            S.envPassed = true;
+            S.dbChecked = true;
+            $('btnDbSave').disabled = false;
+        }
         if (resumeMode === 'can_finalize') {
             appendLog('若不需要保留已执行的步骤，可点击「重置并重试」重新开始');
         }

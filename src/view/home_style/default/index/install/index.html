@@ -295,11 +295,8 @@
     <div class="overlay-box"><i class="spin"></i><span>正在处理…</span></div>
 </div>
 
-<script>window.INSTALL_BOOT = {
-:
-json_encode($boot, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)
-}
-;</script>
+<div id="installBootData" hidden data-boot="{$boot_json}"></div>
+<script>window.INSTALL_BOOT = JSON.parse(document.getElementById('installBootData').dataset.boot || '{}');</script>
 <script src="/static/libs/install/install.js"></script>
 </body>
 </html>

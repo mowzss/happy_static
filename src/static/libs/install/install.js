@@ -222,6 +222,7 @@
                 $('dbResult').className = 'db-result';
                 $('btnDbSave').disabled = true;
                 S.dbChecked = false;
+                S.dbHasData = false;
                 return;
             }
             const data = result.data || {};
@@ -238,7 +239,8 @@
             $('dbResult').className = 'db-result is-visible';
             $('dbOverwriteBox').style.display = data.has_data ? 'block' : 'none';
             $('overwrite').checked = false;
-            $('btnDbSave').disabled = true;
+            // 空库：连接成功即可保存；已有同前缀表：需勾选覆盖确认后由 change 事件解锁
+            $('btnDbSave').disabled = !!data.has_data;
             showAlert('dbAlert', data.has_data ? 'warn' : 'ok',
                 data.has_data
                     ? '目标库检测到同前缀数据表。安装脚本会 DROP 并重建这些表，原数据将无法恢复，请先备份。'
@@ -536,7 +538,14 @@
         $('btnDbTest').addEventListener('click', runDbCheck);
         $('btnDbSave').addEventListener('click', saveDatabase);
         $('overwrite').addEventListener('change', () => {
-            $('btnDbSave').disabled = !(S.dbHasData && $('overwrite').checked || !S.dbHasData);
+            $('btnDbSave').disabled = !S.dbChecked || (S.dbHasData && !$('overwrite').checked);
+        });
+        // 连接信息变更后必须重新检测，避免保存未经校验的配置
+        $('dbForm').addEventListener('input', (e) => {
+            if (!e.target || e.target.id === 'overwrite') return;
+            S.dbChecked = false;
+            S.dbHasData = false;
+            $('btnDbSave').disabled = true;
         });
         $('btnAccountBack').addEventListener('click', () => setStep(2));
         $('btnInstall').addEventListener('click', startInstall);
